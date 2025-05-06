@@ -1,0 +1,26 @@
+
+.selected-author{
+    background-color: #212529;
+    border-radius: 5px;
+    color: white;
+    list-style-type: none;
+}
+
+.articles{
+    background-color: #690808;
+    border-radius: 5px;
+    color: white;
+    list-style-type: none;
+}
+
+.status{
+    background-color: #dffc3a;
+    border-radius: 5px;
+    color: rgb(0, 0, 0);
+    list-style-type: none;  
+}
+
+#selected-icon{
+    color: red;
+}
+
