@@ -36,6 +36,18 @@ Route::get('/', function () {
 Route::get('/edicoes', function () {
     return view('revista/edicoes');
 });
+Route::get('/revista', function () {
+    return view('revista/revista');
+});
+Route::get('/sobre_nos', function () {
+    return view('revico/sobre_nos');
+});
+Route::get('/entrar', function () {
+    return view('auth/login');
+});
+Route::get('/redefinir_senha', function () {
+    return view('auth/passwords/email');
+});
 
 Route::get('/dashboard', function () {
     return view('dashboard');
