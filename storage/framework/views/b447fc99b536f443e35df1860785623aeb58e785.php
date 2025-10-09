@@ -13,65 +13,69 @@
                     style="height: 150px; margin-top: -60px; margin-bottom: 35px;">
                 <div class="masthead-subheading text-primary">Apoie nosso trabalho e ajude a manter a REVICO e a AVICO
                     ativas!</div>
-                <a class="btn btn-primary btn-xl text-uppercase mb-3" href="/">Assine a REVICO</a>
+                <a class="btn btn-primary btn-xl text-uppercase mb-3" href="/nova_edicao">Assine a REVICO</a>
             </div>
         </header>
 
         <section class="page-section" id="noticias">
             <h2 class="section-heading text-uppercase text-center">edições recentes</h2>
-            <div class="container px-lg-5 mb-2">
+            <div class="container px-lg-5 mb-2 mt-5">
                 <div class="carousel-inner mb-2" role="listbox">
-                    <div class="col-md-4 px-3 " style="float:left">
-                        <div>
+                    <a href="/revista" style="text-decoration: none; color: inherit;">
+                        <div class="card-hover col-md-4 px-3" style="float:left" href="/revista">
                             <div class="card" style="width: 280px; height: 420px; margin:auto;">
                                 <img class="card-img-top d-block w-100" src="storage/app/public/imagens/capas/21.png"
                                     alt="REVICO #21" height="290" width="610">
                                 <div class="card-body">
-                                    <p class="datanoticia">04-10-2025</p>
-                                    <p class="card-text altura-linha"><b>REVICO #21</b>
+                                    <p class="datanoticia">REVICO #21</p>
+                                    <p class="card-text altura-linha">
+                                        <b>Covid sob controle: Descobrindo quem resiste</b>
+                                    </p>
+                                    <p class="card-text altura-linha text-muted"
+                                        style="font-size: 11px; margin-top: -15px;">04-10-2025
                                     </p>
                                     <p></p>
-                                    <a class="btn btn-primary btn-sm" href="/revista">Leia Mais</a>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="col-md-4 px-3 lgcards " style="float:left">
-                        <div>
+                    </a>
+                    <a href="/revista" style="text-decoration: none; color: inherit;">
+                        <div class="card-hover col-md-4 px-3" style="float:left" href="/revista">
                             <div class="card" style="width: 280px; height: 420px; margin:auto;">
                                 <img class="card-img-top d-block w-100" src="storage/app/public/imagens/capas/20.png"
-                                    alt="REVICO #20" height="290" width="610">
+                                    alt="REVICO #21" height="290" width="610">
                                 <div class="card-body">
-                                    <p class="datanoticia">04-04-25</p>
-                                    <p class="card-text altura-linha"><b>REVICO #20</b>
+                                    <p class="datanoticia">REVICO #20</p>
+                                    <p class="card-text altura-linha">
+                                        <b>Protestos pelo Brasil: Vozes que transformam</b>
+                                    </p>
+                                    <p class="card-text altura-linha text-muted"
+                                        style="font-size: 11px; margin-top: -15px;">27-09-2025
                                     </p>
                                     <p></p>
-                                    <a class="btn btn-primary btn-sm"
-                                        href="https://avicobrasil.com.br/noticias/noticia/26">Leia
-                                        Mais</a>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="col-md-4 px-3 lgcards " style="float:left">
-                        <div>
+                    </a>
+                    <a href="/revista" style="text-decoration: none; color: inherit;">
+                        <div class="card-hover col-md-4 px-3" style="float:left" href="/revista">
                             <div class="card" style="width: 280px; height: 420px; margin:auto;">
                                 <img class="card-img-top d-block w-100" src="storage/app/public/imagens/capas/19.png"
-                                    alt="REVICO #19" height="290" width="610">
+                                    alt="REVICO #21" height="290" width="610">
                                 <div class="card-body">
-                                    <p class="datanoticia">04-04-23</p>
-                                    <p class="card-text altura-linha"><b>REVICO #19</b>
+                                    <p class="datanoticia">REVICO #19</p>
+                                    <p class="card-text altura-linha">
+                                        <b>Sequelas da pandemia: O que ficou no corpo e na mente</b>
+                                    </p>
+                                    <p class="card-text altura-linha text-muted"
+                                        style="font-size: 11px; margin-top: -15px;">20-09-2025
                                     </p>
                                     <p></p>
-                                    <a class="btn btn-primary btn-sm"
-                                        href="https://avicobrasil.com.br/noticias/noticia/25">Leia
-                                        Mais</a>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </a>
                 </div>
-
                 <!-- Livewire Component wire-end:eA6BAo4ZwyP8F7BTErlo -->
             </div>
         </section>

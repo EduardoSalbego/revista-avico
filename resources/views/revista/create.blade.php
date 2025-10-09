@@ -1,127 +1,122 @@
-<!-- Scripts -->
-<script src="{{ asset('js/editorSearch.js') }}" defer></script>
-<script src="{{ asset('js/periodoChamado.js') }}" defer></script>
+<!DOCTYPE html>
+<html lang="pt-br">
+@include('layouts/head')
 
- <!-- Styles -->
- <link href="{{ asset('css/select.css') }}" rel="stylesheet" type="text/css">
+<body id="page-top">
+    @include('layouts/topbar')
 
+    <main class="container py-5" style="margin-top: 50px;">
+        <h2 class="text-center mb-4">
+            Criando a edição #{{ $proximaEdicao ?? '1' }} da revista
+        </h2>
 
-<?php
-    use Illuminate\Support\Facades\DB;
-?>
+        <form action="" method="POST" enctype="multipart/form-data">
+            @csrf
 
-@extends('layouts.app')
-
-@section('content')
-<div class="container pt-5" >
-    <div  class="row justify-content-center align-items-center">
-        <div class="col-md-6">
-            <div class="col-md-12">
-                <form class="form" action="{{ route('create.revista')}}" method="POST">
-                    
-                    @csrf
-                    <h3 class="text-center">Cadastro de Nova Revista</h3>
-                    <?php
-                        if(isset($_GET['err'])){
-                            echo '<h6 class="text-center" id="obrigatorio"><small>Erro ao cadastrar nova revista!</small></h6>';
-                        }
-                    ?>
-                    <div class="form-group mb-2">
-                        <label for="titulo" class="ms-3" m>Título<span id="obrigatorio">*</span></label><br>
-                        <input type="text" name="titulo" id="titulo" class="form-control" required>
-                    </div>
-                    <div class="form-group mb-2">
-                        <label for="editor" class="ms-3">Editor<span id="obrigatorio">*</span></label><br>
-                        <input type="text" name="editor_id" id="editor_id" hidden>
-                        <input type="text" name="editor" id="editor_input" class="form-control" placeholder="" onkeyup="searchEditor(this.value)" autocomplete="off" required>
-
-                        <ul class="list-group ms-4 me-4 col col-11"  id="editor">
-                    </div>
-                    <div class="form-group mb-2">
-                        <label for="issn" class="ms-3">ISSN<span id="obrigatorio">*</span></label><br>
-                        <input type="text" name="issn" maxlength="8" id="issn" class="form-control" required>
-                    </div>
-                    <div class="form-group mb-2">
-                        <label for="limite" class="ms-3">Limite de Artigos<span id="obrigatorio">*</span></label><br>
-                        <input type="text" name="limite" id="limite" class="form-control" required>
-                    </div>
-
-                    <div class="d-flex">
-                        <div class="form-group mb-2 col-5 me-5">
-                            <label for="periodicidade" class="ms-3">Periodicidade<span id="obrigatorio">*</span></label><br>
-                            <select class="form-control" name="periodicidade" id="periodicidade">
-                            <option value="" disabled>-</option>
-                            <?php
-                                  $periodicidades = DB::table('periodicidades')->get();
-                                  foreach($periodicidades as $p){
-                                      echo '<option value='.$p->id.'>'.$p->descricaoPeriodicidade.'</option>';
-                                  }
-                            ?>
-                        </select>
-                        </div>
-
-                        <div class="form-group mb-2 col-6 ">
-                        <label for="areas" class="ms-3">Áreas</label><br>
-
-                        <select class="form-control" name="areas" id="areas">
-                            <option value="" disabled>-</option>
-                            <?php
-                                  $areas = DB::table('areas')->get();
-                                  foreach($areas as $area){
-                                      echo '<option value='.$area->id.'>'.$area->descricaoArea.'</option>';
-                                  }
-                            ?>
-                        </select>
-                       </div>
-                    </div>
-                    <hr>
-                    <a type="button" class="btn btn-success btn-sm" onclick="add()" >
-                        <i class="fa fa-plus fa-1x" style="transition:none !important;" aria-hidden="true"></i>            
-                    </a>
-                    <a class="btn btn-secondary btn-sm" onclick="del()">
-                        <i class="fa fa-minus fa-1x" style="transition:none !important;" aria-hidden="true"></i>
-                    </a>
-                    <h6 class="text-center" id="obrigatorio"><small>{!! session()->get('ERRO') !!}</small></h6>
-                    <label class="ms-3 mb-2" scope="col">Periodo(s) de Chamado<span id="obrigatorio">* </span></label>
-                    <table id="view-table" style="width: 90px !important; transition:none !important;" class="table table-sm table-borderless">
-                        <thead class="table-dark">
-                            <th class="" scope="col">Data Inicio</th>
-                            <th class="" scope="col">Data Final</th>
-                            <th class="" scope="col">Divulgação</th>
-                            <th class="" scope="col">Avaliações</th>
-   
-                        </thead>
-                        <tbody >
-                            <tr scope="row" >
-    
-                                <td><input type="date" name="dataInicio[]" class="form-control" id="dataInicio" style="border-radius: 0% !important;
-                                                  border-color: transparent !important;
-                                                  border-bottom: solid 2px black !important;" required></td>    
-                                <td><input type="date" name="dataFinal[]" class="form-control" id="dataFinal" style="border-radius: 0% !important;
-                                                  border-color: transparent !important;
-                                                  border-bottom: solid 2px black !important;" required></td>      
-                                <td><input type="date" name="dataDivulgacao[]" class="form-control" id="dataDivulgacao" style="border-radius: 0% !important;
-                                                  border-color: transparent !important;
-                                                  border-bottom: solid 2px black !important;" required></td>      
-                                <td><input type="date" name="dataMaximaAvaliacao[]" class="form-control" id="dataAvaliacao" style="border-radius: 0% !important;
-                                                  border-color: transparent !important;
-                                                  border-bottom: solid 2px black !important;" required></td>                                                                                                                                                                                
-                            </tr>
-
-
-                        </tbody>
-                    </table>
-                   
-                    <div class="row">
-                        <div class="col-3 form-group pt-2">
-                            <input type="submit" name="submit" id="btnSubmit" class="btn btn-success btn-md" style="color:white;" value="Cadastrar">
-                        </div>
-
-                    </div>
-                </form>
+            <div class="mb-3">
+                <label for="titulo" class="form-label">Título da Edição</label>
+                <input type="text" class="form-control" id="titulo" name="titulo"
+                    placeholder="Ex: Edição de Outubro 2025" required>
             </div>
-        </div>
-    </div>
-</div>
-<x-footer/>
-@endsection
+
+            <div class="mb-3">
+                <label for="autor" class="form-label">Autor</label>
+                <input type="text" class="form-control" id="autor" name="autor" placeholder="Nome do autor principal"
+                    required>
+            </div>
+
+            <div class="mb-3">
+                <label for="imagem_capa" class="form-label">Imagem de Capa</label>
+                <input type="file" class="form-control" id="imagem_capa" name="imagem_capa" accept="image/*" required>
+            </div>
+
+            <hr>
+
+            <h4 class="mb-3">Conteúdo da Revista</h4>
+
+            <div id="blocos-container"></div>
+
+            <div class="d-flex justify-content-center mt-3">
+                <button type="button" class="btn btn-outline-primary me-2" onclick="adicionarBloco('paragrafo')">+
+                    Parágrafo</button>
+                <button type="button" class="btn btn-outline-primary me-2" onclick="adicionarBloco('subtitulo')">+
+                    Subtítulo</button>
+                <button type="button" class="btn btn-outline-primary" onclick="adicionarBloco('imagem')">+
+                    Imagem</button>
+            </div>
+
+            <div class="mt-5 text-center">
+                <button type="submit" class="btn btn-primary btn-lg">Salvar Edição</button>
+            </div>
+        </form>
+    </main>
+
+    @include('layouts/footer')
+
+    <script>
+        let contador = 0;
+
+        function adicionarBloco(tipo) {
+            contador++;
+            const container = document.getElementById('blocos-container');
+            const div = document.createElement('div');
+            div.classList.add('card', 'p-3', 'mb-3', 'bloco');
+            div.dataset.id = contador;
+
+            let conteudo = '';
+
+            if (tipo === 'paragrafo') {
+                conteudo = `
+                    <label>Parágrafo</label>
+                    <textarea name="conteudo[]" class="form-control" rows="3" required></textarea>
+                    <input type="hidden" name="tipo[]" value="paragrafo">
+                `;
+            } else if (tipo === 'subtitulo') {
+                conteudo = `
+                    <label>Subtítulo</label>
+                    <input type="text" name="conteudo[]" class="form-control" required>
+                    <input type="hidden" name="tipo[]" value="subtitulo">
+                `;
+            } else if (tipo === 'imagem') {
+                conteudo = `
+                    <label>Imagem</label>
+                    <input type="file" name="conteudo[]" class="form-control" accept="image/*" required>
+                    <input type="hidden" name="tipo[]" value="imagem">
+                `;
+            }
+
+            div.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <strong>${tipo.charAt(0).toUpperCase() + tipo.slice(1)}</strong>
+                    <div>
+                        <button type="button" class="btn btn-sm btn-outline-primary me-1" onclick="moverBloco(this, -1)">▲</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary me-1" onclick="moverBloco(this, 1)">▼</button>
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removerBloco(this)">Excluir</button>
+                    </div>
+                </div>
+                ${conteudo}
+            `;
+
+            container.appendChild(div);
+        }
+
+        function removerBloco(botao) {
+            botao.closest('.bloco').remove();
+        }
+
+        function moverBloco(botao, direcao) {
+            const bloco = botao.closest('.bloco');
+            const container = document.getElementById('blocos-container');
+            const blocos = [...container.children];
+            const index = blocos.indexOf(bloco);
+
+            if (direcao === -1 && index > 0) {
+                container.insertBefore(bloco, blocos[index - 1]);
+            } else if (direcao === 1 && index < blocos.length - 1) {
+                container.insertBefore(bloco, blocos[index + 2]);
+            }
+        }
+    </script>
+</body>
+
+</html>

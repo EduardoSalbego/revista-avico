@@ -20,6 +20,7 @@
             </header>
             <div class="artigo-duas-colunas">
 
+                <h1>Covid sob controle: Descobrindo quem resiste</h1>
                 <img src="storage/app/public/imagens/teste_covid.png" alt="Pessoa realizando teste de covid"
                     class="img-coluna">
 
@@ -121,18 +122,17 @@
 
     </main>
     <?php echo $__env->make('layouts/footer', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
-    <!-- Script para alternar a exibição -->
     <script>
         document.getElementById("toggleFormBtn").addEventListener("click", function () {
             const form = document.getElementById("commentForm");
             if (form.style.display === "none") {
                 form.style.display = "block";
-                this.textContent = "✖ Fechar formulário";
+                this.textContent = "Fechar formulário";
                 this.classList.remove("btn-primary");
                 this.classList.add("btn-primary");
             } else {
                 form.style.display = "none";
-                this.textContent = "💬 Deixe seu comentário";
+                this.textContent = "Deixe seu comentário";
                 this.classList.remove("btn-danger");
                 this.classList.add("btn-primary");
             }

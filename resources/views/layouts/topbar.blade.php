@@ -15,7 +15,7 @@
                     <a class="nav-link" href="/sobre_nos">Sobre a Revico</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/">assine</a>
+                    <a class="nav-link" href="/assinar">assine</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="/entrar">Login</a>

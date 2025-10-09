@@ -42,8 +42,19 @@ Route::get('/revista', function () {
 Route::get('/sobre_nos', function () {
     return view('revico/sobre_nos');
 });
+Route::get('/assinar', function () {
+    return view('revico/assinatura');
+});
+Route::get('/nova_edicao', function () {
+    return view('revista/create');
+});
+
+// AUTH
 Route::get('/entrar', function () {
     return view('auth/login');
+});
+Route::get('/cadastro', function () {
+    return view('auth/register');
 });
 Route::get('/redefinir_senha', function () {
     return view('auth/passwords/email');
