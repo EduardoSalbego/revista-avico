@@ -10,9 +10,8 @@
     <main id="content" style="margin-bottom: 65px;">
         <section class="page-section">
             <div class="col-md-4 col-md-offset-4 container">
-                <form action="https://avicobrasil.com.br/login" method="POST">
-                    <input type="hidden" name="_token" value="1YfeHZwJ87K8cwljkVEbutM8ODkFZBFNInQ4Oi3g">
-
+                <form action="<?php echo e(route('login')); ?>" method="POST">
+                    <?php echo csrf_field(); ?>
                     <div class="form-group mb-2">
                         <label class="form-label" for="emailInput">Email</label>
                         <input class="form-control" name="email" id="emailInput" type="email"

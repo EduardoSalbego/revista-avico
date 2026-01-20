@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Http\Controllers\AuthController;
 
 /*
 |--------------------------------------------------------------------------
@@ -59,6 +60,18 @@ Route::get('/cadastro', function () {
 Route::get('/redefinir_senha', function () {
     return view('auth/passwords/email');
 });
+// CADASTRO
+Route::post('/register', [AuthController::class, 'register'])->name('register');
+// LOGIN
+Route::get('/login', [AuthenticatedSessionController::class, 'create'])
+    ->name('login');
+
+Route::post('/login', [AuthenticatedSessionController::class, 'store']);
+// LOGOUT
+Route::post('/logout', function () {
+    Auth::logout();
+    return redirect('/')->with('success', 'Você saiu da sua conta.');
+})->name('logout');
 
 Route::get('/dashboard', function () {
     return view('dashboard');

@@ -10,7 +10,7 @@
     <main id="content" style="margin-bottom: -90px;">
         <section class="page-section">
             <div class="col-md-4 col-md-offset-4 container">
-                <form action="/registrar" method="POST">
+                <form action="{{ route('register') }}" method="POST">
                     @csrf
                     <h3 class="text-center mb-4">Crie sua conta</h3>
 
@@ -46,7 +46,17 @@
                         <a href="/entrar" class="btn btn-outline-secondary">Já tem uma conta? Faça login</a>
                     </div>
                 </form>
+                @if ($errors->any())
+                    <div class="alert alert-danger mt-4">
+                        <ul class="mb-0">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
             </div>
+
         </section>
     </main>
 

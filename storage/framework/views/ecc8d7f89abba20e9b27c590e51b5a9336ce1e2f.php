@@ -10,7 +10,7 @@
     <main id="content" style="margin-bottom: -90px;">
         <section class="page-section">
             <div class="col-md-4 col-md-offset-4 container">
-                <form action="/registrar" method="POST">
+                <form action="<?php echo e(route('register')); ?>" method="POST">
                     <?php echo csrf_field(); ?>
                     <h3 class="text-center mb-4">Crie sua conta</h3>
 
@@ -46,7 +46,17 @@
                         <a href="/entrar" class="btn btn-outline-secondary">Já tem uma conta? Faça login</a>
                     </div>
                 </form>
+                <?php if($errors->any()): ?>
+                    <div class="alert alert-danger mt-4">
+                        <ul class="mb-0">
+                            <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <li><?php echo e($error); ?></li>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                        </ul>
+                    </div>
+                <?php endif; ?>
             </div>
+
         </section>
     </main>
 

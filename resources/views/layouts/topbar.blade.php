@@ -14,12 +14,32 @@
                 <li class="nav-item">
                     <a class="nav-link" href="/sobre_nos">Sobre a Revico</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/assinar">assine</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/entrar">Login</a>
-                </li>
+                @auth
+                    <li class="nav-item">
+                        <a class="nav-link" href="/assinar">assine</a>
+                    </li>
+
+
+                    <div class="dropdown">
+                        <button class="btn btn-secondary btn-nav-drop dropdown-toggle nav-item nav-link" type="button"
+                            id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                            style="text-transform: uppercase;">
+                            {{ Auth::user()->name }}
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                            <li><a class="dropdown-item" href="/perfil">Editar Perfil</a></li>
+                            <form action="{{ route('logout') }}" method="POST" class="d-inline">
+                                @csrf
+                                <button class="dropdown-item" type="submit" class="dropdown-item">SAIR</button>
+                            </form>
+                        </ul>
+                    </div>
+                @else
+                    <li class="nav-item">
+                        <a class="nav-link" href="/entrar">Login</a>
+                    </li>
+                @endauth
+
             </ul>
         </div>
     </div>
