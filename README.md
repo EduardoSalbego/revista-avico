@@ -10,7 +10,7 @@ This project is a comprehensive **Scientific Magazine Management System**, curre
 
 <p align="center">
   <strong style="font-size: 1.2em;">Platform Demo</strong><br><br>
-  <video src="./assets/homepage-demo.mov" controls width="800" title="Avico Magazine Platform Demo"></video>
+  <video src="./assets/homepage-demo.mp4" controls width="800" title="Avico Magazine Platform Demo"></video>
   <br>
 </p>
 
