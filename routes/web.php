@@ -4,6 +4,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,66 +16,52 @@ use App\Http\Controllers\AuthController;
 | contains the "web" middleware group. Now create something great!
 |
 */
-/*
-Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
-});
+// ==========================================
+// 1. ROTAS PÚBLICAS (Visitantes em geral)
+// ==========================================
+Route::get('/', function () { return view('welcome'); }) -> name('welcome');
+Route::get('/edicoes', function () { return view('revista/edicoes'); }) -> name('edicoes');
+Route::get('/revista', function () { return view('revista/revista'); }) -> name('revista');
+Route::get('/sobre_nos', function () { return view('revico/sobre_nos'); }) -> name('sobre_nos');
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-*/
 
-Route::get('/', function () {
-    return view('welcome');
-});
-
-Route::get('/edicoes', function () {
-    return view('revista/edicoes');
-});
-Route::get('/revista', function () {
-    return view('revista/revista');
-});
-Route::get('/sobre_nos', function () {
-    return view('revico/sobre_nos');
-});
-Route::get('/assinar', function () {
-    return view('revico/assinatura');
-});
-Route::get('/nova_edicao', function () {
-    return view('revista/create');
-});
-
-// AUTH
-Route::get('/entrar', function () {
-    return view('auth/login');
-});
-Route::get('/cadastro', function () {
-    return view('auth/register');
-});
-Route::get('/redefinir_senha', function () {
-    return view('auth/passwords/email');
-});
-// CADASTRO
+// ==========================================
+// 2. Rotas de Autenticação (Acesso deslogado)
+// ==========================================
+Route::get('/entrar', function () { return view('auth/login'); });
+Route::get('/cadastro', function () { return view('auth/register'); });
+Route::get('/redefinir_senha', function () { return view('auth/passwords/email'); });
 Route::post('/register', [AuthController::class, 'register'])->name('register');
-// LOGIN
-Route::get('/login', [AuthenticatedSessionController::class, 'create'])
-    ->name('login');
-
+Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
 Route::post('/login', [AuthenticatedSessionController::class, 'store']);
-// LOGOUT
-Route::post('/logout', function () {
-    Auth::logout();
-    return redirect('/')->with('success', 'Você saiu da sua conta.');
-})->name('logout');
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+
+// ==========================================
+// 3. ROTAS AUTENTICADAS (Requer Login)
+// ==========================================
+Route::middleware('auth')->group(function () {
+    Route::get('/assinar', function () { return view('revico/assinatura'); }) -> name('assinar');
+    Route::post('/logout', function () {
+        Auth::logout();
+        return redirect('/')->with('success', 'Você saiu da sua conta.');
+    })->name('logout');
+    Route::get('/dashboard', function () {
+        return view('dashboard');
+    })->middleware(['auth', 'verified'])->name('dashboard');
+});
+
+// ==========================================
+// 4. ROTAS ADMINISTRATIVAS (Requer Admin)
+// ==========================================
+
+
+// ==========================================
+// 5. ROTAS DE EDITORIA (Requer Colaborador)
+// ==========================================
+Route::middleware('role:colaborador')->group(function () {
+    Route::get('/nova_edicao', function () {
+        return view('revista/create');
+    });
+});
 
 require __DIR__ . '/auth.php';
