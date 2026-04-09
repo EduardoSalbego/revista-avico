@@ -4,7 +4,9 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Edicao\EdicaoController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Auth\RegisteredUserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -28,12 +30,11 @@ Route::get('/sobre_nos', function () { return view('revico/sobre_nos'); }) -> na
 // ==========================================
 // 2. Rotas de Autenticação (Acesso deslogado)
 // ==========================================
-Route::get('/entrar', function () { return view('auth/login'); });
-Route::get('/cadastro', function () { return view('auth/register'); });
-Route::get('/redefinir_senha', function () { return view('auth/passwords/email'); });
-Route::post('/register', [AuthController::class, 'register'])->name('register');
 Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
 Route::post('/login', [AuthenticatedSessionController::class, 'store']);
+Route::get('/register', [RegisteredUserController::class, 'create'])->name('register');
+Route::post('/register', [RegisteredUserController::class, 'store']);
+Route::get('/redefinir_senha', function () { return view('auth.passwords.email'); });
 
 
 // ==========================================
@@ -59,9 +60,8 @@ Route::middleware('auth')->group(function () {
 // 5. ROTAS DE EDITORIA (Requer Colaborador)
 // ==========================================
 Route::middleware('role:colaborador')->group(function () {
-    Route::get('/nova_edicao', function () {
-        return view('revista/create');
-    });
+    Route::get('/nova_edicao', [EdicaoController::class, 'create'])->name('create.edicao');
+    Route::post('/nova_edicao', [EdicaoController::class, 'store'])->name('store.edicao');
 });
 
 require __DIR__ . '/auth.php';

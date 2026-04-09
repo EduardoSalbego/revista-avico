@@ -13,7 +13,7 @@
                     style="height: 150px; margin-top: -60px; margin-bottom: 35px;">
                 <div class="masthead-subheading text-primary">Apoie nosso trabalho e ajude a manter a REVICO e a AVICO
                     ativas!</div>
-                <a class="btn btn-primary btn-xl text-uppercase mb-3" href="/nova_edicao">Assine a REVICO</a>
+                <a class="btn btn-primary btn-xl text-uppercase mb-3" href="/assinar">Assine a REVICO</a>
             </div>
         </header>
 

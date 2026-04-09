@@ -15,9 +15,15 @@
                     <a class="nav-link" href="/sobre_nos">Sobre a Revico</a>
                 </li>
                 @auth
-                    <li class="nav-item">
-                        <a class="nav-link" href="/assinar">assine</a>
-                    </li>
+                    @if (in_array(Auth::user()->role, ['admin', 'colaborador']))
+                        <li class="nav-item">
+                            <a class="nav-link" href="/nova_edicao">nova edição</a>
+                        </li>
+                    @else
+                        <li class="nav-item">
+                            <a class="nav-link" href="/assinar">assine</a>
+                        </li>
+                    @endif
 
 
                     <div class="dropdown">
@@ -36,7 +42,7 @@
                     </div>
                 @else
                     <li class="nav-item">
-                        <a class="nav-link" href="/entrar">Login</a>
+                        <a class="nav-link" href="/login">Login</a>
                     </li>
                 @endauth
 

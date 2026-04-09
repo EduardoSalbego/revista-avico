@@ -43,7 +43,7 @@
                     </div>
 
                     <div class="text-center">
-                        <a href="/entrar" class="btn btn-outline-secondary">Já tem uma conta? Faça login</a>
+                        <a href="/login" class="btn btn-outline-secondary">Já tem uma conta? Faça login</a>
                     </div>
                 </form>
                 @if ($errors->any())

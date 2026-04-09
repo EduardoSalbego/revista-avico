@@ -12,49 +12,85 @@ use App\Models\Avaliacao;
 
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 
 
 class EdicaoController extends Controller
 {
-    public function create($id)
+    public function create()
     {
-        $revista = Revista::where('id', $id)->first();
-        $submissoesartigo = SubmissaoArtigo::all();
-        $submissoes = Submissao::where('revista_id', $id)->get();
-        $artigos = ArtigoFinal::where('situacao_id', '=', 3)->get();
+        $proximaEdicao = Edicao::count() + 1;
 
-        $arr = array();
-        $notas = array();
-        foreach ($submissoes as $submissao) {
-            $id_da_submissao_certa = $submissao->id;
-            foreach ($submissoesartigo as $submissaoartigo) {
-                if ($submissaoartigo->submissao_id == $id_da_submissao_certa) {
-                    $id_do_artigo_certo = $submissaoartigo->artigo_id;
-                    foreach ($artigos as $artigo) {
-                        if ($artigo->id == $id_do_artigo_certo) {
-                            $numAvaliadores = ArtigoAvaliador::where('artigo_id', $artigo->id)->count('avaliador_id');
-                            $sum = Avaliacao::where('artigo_id', $id_do_artigo_certo)->sum('nota');
-                            $media = $sum / $numAvaliadores;
-                            if($numAvaliadores >= 2){
-                                array_push($arr, $artigo);
-                                array_push($notas, $media);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // mandar array pra view
-        return view('edicao.create', compact('arr', 'revista', 'submissoes', 'notas'));
+        return view('revista.create', compact('proximaEdicao'));
     }
-
-
     public function manage($id)
     {
         $revista = Revista::where('id', $id)->first();
         $edicoes = Edicao::paginate(10);
 
         return view('edicao.manage', compact('edicoes', 'revista'));
+    }
+
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'titulo' => 'required|string|max:255',
+            'autor' => 'required|string|max:255',
+            'imagem_capa' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            'tipo_conteudo' => 'required|in:blocos,pdf',
+            'arquivo_pdf' => 'required_if:tipo_conteudo,pdf|mimes:pdf|max:10240', 
+        ]);
+
+        // 2. Upload da Imagem de Capa
+        $caminhoCapa = $request->file('imagem_capa')->store('capas', 'public');
+
+        // 3. Criando a instância da Edição
+        $edicao = new Edicao();
+        $edicao->titulo = $request->titulo;
+        $edicao->autor = $request->autor;
+        $edicao->imagem_capa = $caminhoCapa;
+        $edicao->tipo_conteudo = $request->tipo_conteudo;
+
+        // 4. Lógica de Salvamento baseada no Tipo de Conteúdo
+        if ($request->tipo_conteudo === 'pdf') {
+            
+            // Faz o upload do PDF
+            $caminhoPdf = $request->file('arquivo_pdf')->store('edicoes_pdfs', 'public');
+            $edicao->arquivo_pdf = $caminhoPdf;
+            $edicao->conteudo_blocos = null; // Garante que a coluna de blocos fique vazia
+
+        } else {
+            
+            // Lógica para os Blocos
+            $blocosFormatados = [];
+            
+            if ($request->has('tipo') && $request->has('conteudo')) {
+                foreach ($request->tipo as $index => $tipo) {
+                    $conteudo = $request->conteudo[$index];
+
+                    // Se o bloco for uma imagem, precisamos fazer o upload dela também
+                    if ($tipo === 'imagem' && $request->file("conteudo.{$index}")) {
+                        $conteudo = $request->file("conteudo.{$index}")->store('blocos_imagens', 'public');
+                    }
+
+                    $blocosFormatados[] = [
+                        'tipo' => $tipo,
+                        'conteudo' => $conteudo,
+                        'ordem' => $index + 1
+                    ];
+                }
+            }
+            
+            // Salva os blocos em formato JSON no banco de dados
+            $edicao->conteudo_blocos = json_encode($blocosFormatados);
+            $edicao->arquivo_pdf = null;
+        }
+
+        // 5. Salva no banco de dados
+        $edicao->save();
+
+        // 6. Redireciona com mensagem de sucesso
+        return redirect()->back()->with('success', 'Edição da revista criada com sucesso!');
     }
 }

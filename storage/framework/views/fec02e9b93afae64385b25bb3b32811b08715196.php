@@ -15,9 +15,15 @@
                     <a class="nav-link" href="/sobre_nos">Sobre a Revico</a>
                 </li>
                 <?php if(auth()->guard()->check()): ?>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/assinar">assine</a>
-                    </li>
+                    <?php if(in_array(Auth::user()->role, ['admin', 'colaborador'])): ?>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/nova_edicao">nova edição</a>
+                        </li>
+                    <?php else: ?>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/assinar">assine</a>
+                        </li>
+                    <?php endif; ?>
 
 
                     <div class="dropdown">
@@ -37,7 +43,7 @@
                     </div>
                 <?php else: ?>
                     <li class="nav-item">
-                        <a class="nav-link" href="/entrar">Login</a>
+                        <a class="nav-link" href="/login">Login</a>
                     </li>
                 <?php endif; ?>
 

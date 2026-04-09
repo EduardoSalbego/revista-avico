@@ -14,13 +14,13 @@ class Edicao extends Migration
     public function up()
     {
         Schema::create('edicoes', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
             $table->string('titulo');
-            $table->bigInteger('numero_edicao')->default(0);
-            $table->unsignedBigInteger('revista_id')->default(0);
-
-            $table->foreign('revista_id')->references('id')->on('revistas');
+            $table->string('autor');
+            $table->string('imagem_capa');
+            $table->enum('tipo_conteudo', ['blocos', 'pdf']);
+            $table->string('arquivo_pdf')->nullable();
+            $table->json('conteudo_blocos')->nullable();
+            $table->timestamps();
         });
     }
 

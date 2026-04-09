@@ -29,7 +29,7 @@
                     </div>
 
                     <div class="text-center">
-                        <a href="/cadastro" class="btn btn-outline-secondary">Não possui uma conta? Cadastre-se</a>
+                        <a href="/register" class="btn btn-outline-secondary">Não possui uma conta? Cadastre-se</a>
                         <a href="/redefinir_senha" class="d-block mb-2" style="font-size: 15px;">Esqueci minha senha</a>
                     </div>
                 </form>

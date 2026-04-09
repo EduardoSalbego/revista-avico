@@ -9,13 +9,11 @@ class Edicao extends Model{
     
     protected $fillable = [
         'titulo',
-        'dataEdicao',  
-        'numero_edicao',
-        'revista_id'
+        'autor',  
+        'imagem_capa',
+        'tipo_conteudo',
+        'arquivo_pdf',
+        'conteudo_blocos'
     ];
-
-    public function revista(){
-        $this->hasOne(Revista::class, 'id', 'revista_id');
-    }
 }
 ?>
