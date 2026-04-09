@@ -249,7 +249,7 @@ svg:not(:root).svg-inline--fa {
     padding-left: 0;
 }
 
-.fa-ul > li {
+.fa-ul>li {
     position: relative;
 }
 
@@ -288,10 +288,8 @@ svg:not(:root).svg-inline--fa {
     animation-direction: var(--fa-animation-direction, normal);
     -webkit-animation-duration: var(--fa-animation-duration, 1s);
     animation-duration: var(--fa-animation-duration, 1s);
-    -webkit-animation-iteration-count: var(
-        --fa-animation-iteration-count,
-        infinite
-    );
+    -webkit-animation-iteration-count: var(--fa-animation-iteration-count,
+            infinite);
     animation-iteration-count: var(--fa-animation-iteration-count, infinite);
     -webkit-animation-timing-function: var(--fa-animation-timing, ease-in-out);
     animation-timing-function: var(--fa-animation-timing, ease-in-out);
@@ -306,19 +304,13 @@ svg:not(:root).svg-inline--fa {
     animation-direction: var(--fa-animation-direction, normal);
     -webkit-animation-duration: var(--fa-animation-duration, 1s);
     animation-duration: var(--fa-animation-duration, 1s);
-    -webkit-animation-iteration-count: var(
-        --fa-animation-iteration-count,
-        infinite
-    );
+    -webkit-animation-iteration-count: var(--fa-animation-iteration-count,
+            infinite);
     animation-iteration-count: var(--fa-animation-iteration-count, infinite);
-    -webkit-animation-timing-function: var(
-        --fa-animation-timing,
-        cubic-bezier(0.28, 0.84, 0.42, 1)
-    );
-    animation-timing-function: var(
-        --fa-animation-timing,
-        cubic-bezier(0.28, 0.84, 0.42, 1)
-    );
+    -webkit-animation-timing-function: var(--fa-animation-timing,
+            cubic-bezier(0.28, 0.84, 0.42, 1));
+    animation-timing-function: var(--fa-animation-timing,
+            cubic-bezier(0.28, 0.84, 0.42, 1));
 }
 
 .fa-fade {
@@ -330,19 +322,13 @@ svg:not(:root).svg-inline--fa {
     animation-direction: var(--fa-animation-direction, normal);
     -webkit-animation-duration: var(--fa-animation-duration, 1s);
     animation-duration: var(--fa-animation-duration, 1s);
-    -webkit-animation-iteration-count: var(
-        --fa-animation-iteration-count,
-        infinite
-    );
+    -webkit-animation-iteration-count: var(--fa-animation-iteration-count,
+            infinite);
     animation-iteration-count: var(--fa-animation-iteration-count, infinite);
-    -webkit-animation-timing-function: var(
-        --fa-animation-timing,
-        cubic-bezier(0.4, 0, 0.6, 1)
-    );
-    animation-timing-function: var(
-        --fa-animation-timing,
-        cubic-bezier(0.4, 0, 0.6, 1)
-    );
+    -webkit-animation-timing-function: var(--fa-animation-timing,
+            cubic-bezier(0.4, 0, 0.6, 1));
+    animation-timing-function: var(--fa-animation-timing,
+            cubic-bezier(0.4, 0, 0.6, 1));
 }
 
 .fa-beat-fade {
@@ -354,19 +340,13 @@ svg:not(:root).svg-inline--fa {
     animation-direction: var(--fa-animation-direction, normal);
     -webkit-animation-duration: var(--fa-animation-duration, 1s);
     animation-duration: var(--fa-animation-duration, 1s);
-    -webkit-animation-iteration-count: var(
-        --fa-animation-iteration-count,
-        infinite
-    );
+    -webkit-animation-iteration-count: var(--fa-animation-iteration-count,
+            infinite);
     animation-iteration-count: var(--fa-animation-iteration-count, infinite);
-    -webkit-animation-timing-function: var(
-        --fa-animation-timing,
-        cubic-bezier(0.4, 0, 0.6, 1)
-    );
-    animation-timing-function: var(
-        --fa-animation-timing,
-        cubic-bezier(0.4, 0, 0.6, 1)
-    );
+    -webkit-animation-timing-function: var(--fa-animation-timing,
+            cubic-bezier(0.4, 0, 0.6, 1));
+    animation-timing-function: var(--fa-animation-timing,
+            cubic-bezier(0.4, 0, 0.6, 1));
 }
 
 .fa-flip {
@@ -378,10 +358,8 @@ svg:not(:root).svg-inline--fa {
     animation-direction: var(--fa-animation-direction, normal);
     -webkit-animation-duration: var(--fa-animation-duration, 1s);
     animation-duration: var(--fa-animation-duration, 1s);
-    -webkit-animation-iteration-count: var(
-        --fa-animation-iteration-count,
-        infinite
-    );
+    -webkit-animation-iteration-count: var(--fa-animation-iteration-count,
+            infinite);
     animation-iteration-count: var(--fa-animation-iteration-count, infinite);
     -webkit-animation-timing-function: var(--fa-animation-timing, ease-in-out);
     animation-timing-function: var(--fa-animation-timing, ease-in-out);
@@ -396,10 +374,8 @@ svg:not(:root).svg-inline--fa {
     animation-direction: var(--fa-animation-direction, normal);
     -webkit-animation-duration: var(--fa-animation-duration, 1s);
     animation-duration: var(--fa-animation-duration, 1s);
-    -webkit-animation-iteration-count: var(
-        --fa-animation-iteration-count,
-        infinite
-    );
+    -webkit-animation-iteration-count: var(--fa-animation-iteration-count,
+            infinite);
     animation-iteration-count: var(--fa-animation-iteration-count, infinite);
     -webkit-animation-timing-function: var(--fa-animation-timing, linear);
     animation-timing-function: var(--fa-animation-timing, linear);
@@ -414,10 +390,8 @@ svg:not(:root).svg-inline--fa {
     animation-direction: var(--fa-animation-direction, normal);
     -webkit-animation-duration: var(--fa-animation-duration, 2s);
     animation-duration: var(--fa-animation-duration, 2s);
-    -webkit-animation-iteration-count: var(
-        --fa-animation-iteration-count,
-        infinite
-    );
+    -webkit-animation-iteration-count: var(--fa-animation-iteration-count,
+            infinite);
     animation-iteration-count: var(--fa-animation-iteration-count, infinite);
     -webkit-animation-timing-function: var(--fa-animation-timing, linear);
     animation-timing-function: var(--fa-animation-timing, linear);
@@ -435,16 +409,15 @@ svg:not(:root).svg-inline--fa {
     animation-direction: var(--fa-animation-direction, normal);
     -webkit-animation-duration: var(--fa-animation-duration, 1s);
     animation-duration: var(--fa-animation-duration, 1s);
-    -webkit-animation-iteration-count: var(
-        --fa-animation-iteration-count,
-        infinite
-    );
+    -webkit-animation-iteration-count: var(--fa-animation-iteration-count,
+            infinite);
     animation-iteration-count: var(--fa-animation-iteration-count, infinite);
     -webkit-animation-timing-function: var(--fa-animation-timing, steps(8));
     animation-timing-function: var(--fa-animation-timing, steps(8));
 }
 
 @media (prefers-reduced-motion: reduce) {
+
     .fa-beat,
     .fa-beat-fade,
     .fa-bounce,
@@ -466,6 +439,7 @@ svg:not(:root).svg-inline--fa {
 }
 
 @-webkit-keyframes fa-beat {
+
     0%,
     90% {
         -webkit-transform: scale(1);
@@ -479,6 +453,7 @@ svg:not(:root).svg-inline--fa {
 }
 
 @keyframes fa-beat {
+
     0%,
     90% {
         -webkit-transform: scale(1);
@@ -498,47 +473,28 @@ svg:not(:root).svg-inline--fa {
     }
 
     10% {
-        -webkit-transform: scale(
-                var(--fa-bounce-start-scale-x, 1.1),
-                var(--fa-bounce-start-scale-y, 0.9)
-            )
-            translateY(0);
-        transform: scale(
-                var(--fa-bounce-start-scale-x, 1.1),
-                var(--fa-bounce-start-scale-y, 0.9)
-            )
-            translateY(0);
+        -webkit-transform: scale(var(--fa-bounce-start-scale-x, 1.1),
+                var(--fa-bounce-start-scale-y, 0.9)) translateY(0);
+        transform: scale(var(--fa-bounce-start-scale-x, 1.1),
+                var(--fa-bounce-start-scale-y, 0.9)) translateY(0);
     }
 
     30% {
-        -webkit-transform: scale(
-                var(--fa-bounce-jump-scale-x, 0.9),
-                var(--fa-bounce-jump-scale-y, 1.1)
-            )
-            translateY(var(--fa-bounce-height, -0.5em));
-        transform: scale(
-                var(--fa-bounce-jump-scale-x, 0.9),
-                var(--fa-bounce-jump-scale-y, 1.1)
-            )
-            translateY(var(--fa-bounce-height, -0.5em));
+        -webkit-transform: scale(var(--fa-bounce-jump-scale-x, 0.9),
+                var(--fa-bounce-jump-scale-y, 1.1)) translateY(var(--fa-bounce-height, -0.5em));
+        transform: scale(var(--fa-bounce-jump-scale-x, 0.9),
+                var(--fa-bounce-jump-scale-y, 1.1)) translateY(var(--fa-bounce-height, -0.5em));
     }
 
     50% {
-        -webkit-transform: scale(
-                var(--fa-bounce-land-scale-x, 1.05),
-                var(--fa-bounce-land-scale-y, 0.95)
-            )
-            translateY(0);
-        transform: scale(
-                var(--fa-bounce-land-scale-x, 1.05),
-                var(--fa-bounce-land-scale-y, 0.95)
-            )
-            translateY(0);
+        -webkit-transform: scale(var(--fa-bounce-land-scale-x, 1.05),
+                var(--fa-bounce-land-scale-y, 0.95)) translateY(0);
+        transform: scale(var(--fa-bounce-land-scale-x, 1.05),
+                var(--fa-bounce-land-scale-y, 0.95)) translateY(0);
     }
 
     57% {
-        -webkit-transform: scale(1, 1)
-            translateY(var(--fa-bounce-rebound, -0.125em));
+        -webkit-transform: scale(1, 1) translateY(var(--fa-bounce-rebound, -0.125em));
         transform: scale(1, 1) translateY(var(--fa-bounce-rebound, -0.125em));
     }
 
@@ -560,47 +516,28 @@ svg:not(:root).svg-inline--fa {
     }
 
     10% {
-        -webkit-transform: scale(
-                var(--fa-bounce-start-scale-x, 1.1),
-                var(--fa-bounce-start-scale-y, 0.9)
-            )
-            translateY(0);
-        transform: scale(
-                var(--fa-bounce-start-scale-x, 1.1),
-                var(--fa-bounce-start-scale-y, 0.9)
-            )
-            translateY(0);
+        -webkit-transform: scale(var(--fa-bounce-start-scale-x, 1.1),
+                var(--fa-bounce-start-scale-y, 0.9)) translateY(0);
+        transform: scale(var(--fa-bounce-start-scale-x, 1.1),
+                var(--fa-bounce-start-scale-y, 0.9)) translateY(0);
     }
 
     30% {
-        -webkit-transform: scale(
-                var(--fa-bounce-jump-scale-x, 0.9),
-                var(--fa-bounce-jump-scale-y, 1.1)
-            )
-            translateY(var(--fa-bounce-height, -0.5em));
-        transform: scale(
-                var(--fa-bounce-jump-scale-x, 0.9),
-                var(--fa-bounce-jump-scale-y, 1.1)
-            )
-            translateY(var(--fa-bounce-height, -0.5em));
+        -webkit-transform: scale(var(--fa-bounce-jump-scale-x, 0.9),
+                var(--fa-bounce-jump-scale-y, 1.1)) translateY(var(--fa-bounce-height, -0.5em));
+        transform: scale(var(--fa-bounce-jump-scale-x, 0.9),
+                var(--fa-bounce-jump-scale-y, 1.1)) translateY(var(--fa-bounce-height, -0.5em));
     }
 
     50% {
-        -webkit-transform: scale(
-                var(--fa-bounce-land-scale-x, 1.05),
-                var(--fa-bounce-land-scale-y, 0.95)
-            )
-            translateY(0);
-        transform: scale(
-                var(--fa-bounce-land-scale-x, 1.05),
-                var(--fa-bounce-land-scale-y, 0.95)
-            )
-            translateY(0);
+        -webkit-transform: scale(var(--fa-bounce-land-scale-x, 1.05),
+                var(--fa-bounce-land-scale-y, 0.95)) translateY(0);
+        transform: scale(var(--fa-bounce-land-scale-x, 1.05),
+                var(--fa-bounce-land-scale-y, 0.95)) translateY(0);
     }
 
     57% {
-        -webkit-transform: scale(1, 1)
-            translateY(var(--fa-bounce-rebound, -0.125em));
+        -webkit-transform: scale(1, 1) translateY(var(--fa-bounce-rebound, -0.125em));
         transform: scale(1, 1) translateY(var(--fa-bounce-rebound, -0.125em));
     }
 
@@ -628,6 +565,7 @@ svg:not(:root).svg-inline--fa {
 }
 
 @-webkit-keyframes fa-beat-fade {
+
     0%,
     100% {
         opacity: var(--fa-beat-fade-opacity, 0.4);
@@ -643,6 +581,7 @@ svg:not(:root).svg-inline--fa {
 }
 
 @keyframes fa-beat-fade {
+
     0%,
     100% {
         opacity: var(--fa-beat-fade-opacity, 0.4);
@@ -659,35 +598,27 @@ svg:not(:root).svg-inline--fa {
 
 @-webkit-keyframes fa-flip {
     50% {
-        -webkit-transform: rotate3d(
-            var(--fa-flip-x, 0),
-            var(--fa-flip-y, 1),
-            var(--fa-flip-z, 0),
-            var(--fa-flip-angle, -180deg)
-        );
-        transform: rotate3d(
-            var(--fa-flip-x, 0),
-            var(--fa-flip-y, 1),
-            var(--fa-flip-z, 0),
-            var(--fa-flip-angle, -180deg)
-        );
+        -webkit-transform: rotate3d(var(--fa-flip-x, 0),
+                var(--fa-flip-y, 1),
+                var(--fa-flip-z, 0),
+                var(--fa-flip-angle, -180deg));
+        transform: rotate3d(var(--fa-flip-x, 0),
+                var(--fa-flip-y, 1),
+                var(--fa-flip-z, 0),
+                var(--fa-flip-angle, -180deg));
     }
 }
 
 @keyframes fa-flip {
     50% {
-        -webkit-transform: rotate3d(
-            var(--fa-flip-x, 0),
-            var(--fa-flip-y, 1),
-            var(--fa-flip-z, 0),
-            var(--fa-flip-angle, -180deg)
-        );
-        transform: rotate3d(
-            var(--fa-flip-x, 0),
-            var(--fa-flip-y, 1),
-            var(--fa-flip-z, 0),
-            var(--fa-flip-angle, -180deg)
-        );
+        -webkit-transform: rotate3d(var(--fa-flip-x, 0),
+                var(--fa-flip-y, 1),
+                var(--fa-flip-z, 0),
+                var(--fa-flip-angle, -180deg));
+        transform: rotate3d(var(--fa-flip-x, 0),
+                var(--fa-flip-y, 1),
+                var(--fa-flip-z, 0),
+                var(--fa-flip-angle, -180deg));
     }
 }
 
@@ -969,9 +900,7 @@ trix-editor [data-trix-attachment] figcaption textarea.trix-autoresize-clone {
     max-height: 0px;
 }
 
-trix-editor
-    [data-trix-attachment]
-    figcaption[data-trix-placeholder]:empty::before {
+trix-editor [data-trix-attachment] figcaption[data-trix-placeholder]:empty::before {
     content: attr(data-trix-placeholder);
     color: graytext;
 }
@@ -1016,18 +945,24 @@ trix-toolbar [data-trix-dialog] [data-trix-validate]:invalid {
 
 .edicao-header {
     display: flex;
-    justify-content: space-between; /* separa os elementos */
-    align-items: center; /* centraliza verticalmente */
-    background-color: #f2f2f2; /* cinza claro */
-    padding: 10px 20px; /* espaçamento interno */
-    border-radius: 5px; /* cantos levemente arredondados */
+    justify-content: space-between;
+    /* separa os elementos */
+    align-items: center;
+    /* centraliza verticalmente */
+    background-color: #f2f2f2;
+    /* cinza claro */
+    padding: 10px 20px;
+    /* espaçamento interno */
+    border-radius: 5px;
+    /* cantos levemente arredondados */
     font-weight: 500;
     font-size: 0.95rem;
 }
 
 .edicao-header .site {
     text-align: center;
-    flex: 1; /* ocupa o meio */
+    flex: 1;
+    /* ocupa o meio */
 }
 
 .edicao-header .data {
@@ -1041,8 +976,10 @@ trix-toolbar [data-trix-dialog] [data-trix-validate]:invalid {
 }
 
 .artigo-duas-colunas {
-    column-count: 2; /* Divide em duas colunas */
-    column-gap: 50px; /* Espaço entre as colunas */
+    column-count: 2;
+    /* Divide em duas colunas */
+    column-gap: 50px;
+    /* Espaço entre as colunas */
     text-align: justify;
     font-size: 1rem;
     line-height: 1.7;
@@ -1051,18 +988,27 @@ trix-toolbar [data-trix-dialog] [data-trix-validate]:invalid {
 }
 
 .artigo-duas-colunas h2 {
-    column-span: all; /* título ocupa toda a largura */
+    column-span: all;
+    /* título ocupa toda a largura */
     text-align: center;
     margin-bottom: 25px;
 }
 
+.artigo-duas-colunas h3 {
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
 .artigo-duas-colunas p {
     margin-bottom: 15px;
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
 .img-coluna {
     width: 100%;
-    break-inside: avoid; /* evita que a imagem quebre entre colunas */
+    break-inside: avoid;
+    /* evita que a imagem quebre entre colunas */
     margin: 15px 0;
     border-radius: 8px;
 }
@@ -1135,11 +1081,11 @@ trix-toolbar [data-trix-dialog] [data-trix-validate]:invalid {
     transition: transform 0.3s ease;
     cursor: pointer;
 }
-  
-  .card-hover:hover {
+
+.card-hover:hover {
     transform: scale(1.05);
 }
-  
+
 .carousel-inner {
     overflow: visible;
-  }
+}

@@ -1,7 +1,7 @@
 <nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="mainNav">
     <div class="container">
         <a class="navbar-brand" href="/">
-            <img src="storage/app/public/imagens/logo_revista_com_texto.png" alt="Logo REVICO"
+            <img src="<?php echo e(asset('storage/imagens/logo_revista_com_texto.png')); ?>" alt="Logo REVICO"
                 style="height: 60px;"></a>
         <div class="collapse navbar-collapse" id="navbarResponsive">
             <ul class="navbar-nav text-uppercase ms-auto py-4 py-lg-0">

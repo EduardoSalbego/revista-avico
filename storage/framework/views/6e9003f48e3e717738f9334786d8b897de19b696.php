@@ -28,7 +28,7 @@
                     
                     <?php if($edicoes->isEmpty()): ?>
                         <div class="col-12 text-center">
-                            <p style="color: black; font-size: 1.2rem;">Nenhuma edição encontrada com esse termo.</p>
+                            <p style="color: black; font-size: 1.2rem;">Nenhuma edição encontrada.</p>
                         </div>
                     <?php else: ?>
                         

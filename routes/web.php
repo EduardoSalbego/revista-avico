@@ -22,6 +22,7 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 // ==========================================
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/edicoes', [EdicaoController::class, 'index'])->name('edicoes');
+Route::get('/revista/{id}', [EdicaoController::class, 'show'])->name('revista.show');
 Route::get('/revista', function () { return view('revista/revista'); }) -> name('revista');
 Route::get('/sobre_nos', function () { return view('revico/sobre_nos'); }) -> name('sobre_nos');
 

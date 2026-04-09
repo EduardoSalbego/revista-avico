@@ -9,7 +9,7 @@
     <main id="content">
         <header class="masthead" style="background-image: url('images/assets/img/home-bg.jpg')">
             <div class="container">
-                <img src="storage/app/public/imagens/logo_revista.png" alt="Logo REVICO"
+                <img src="{{ asset('storage/imagens/logo_revista.png') }}" alt="Logo REVICO"
                     style="height: 150px; margin-top: -60px; margin-bottom: 35px;">
                 <div class="masthead-subheading text-primary">Apoie nosso trabalho e ajude a manter a REVICO e a AVICO
                     ativas!</div>
@@ -62,7 +62,7 @@
             <div class="container">
                 <div class="text-center mb-5">
                     <h2>Por que assinar a</h2>
-                    <img src="storage/app/public/imagens/revico_texto.png" alt="Logo REVICO"
+                    <img src="{{ asset('storage/imagens/revico_texto.png') }}" alt="Logo REVICO"
                         style="height: 40px; margin-bottom: 20px;">
                     <p class="lead">Descubra os benefícios exclusivos que você terá como assinante da nossa revista
                         digital</p>

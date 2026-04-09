@@ -130,6 +130,7 @@
                 conteudo = `
                     <label class="form-label fw-bold text-muted">Imagem</label>
                     <input type="file" name="conteudo[]" class="form-control" accept="image/*" required>
+                    <small class="text-muted">Tamanho máximo: 2MB</small>
                     <input type="hidden" name="tipo[]" value="imagem">
                 `;
             }

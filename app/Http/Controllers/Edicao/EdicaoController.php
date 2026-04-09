@@ -12,6 +12,11 @@ use Illuminate\Http\Request;
 
 class EdicaoController extends Controller
 {
+    /*
+    * Função para listar as edições
+    * @param Request $request
+    * @return \Illuminate\View\View
+    */
     public function index(Request $request)
     {
         $query = Edicao::query();
@@ -24,11 +29,33 @@ class EdicaoController extends Controller
     
         return view('revista.edicoes', compact('edicoes'));
     }
+
+    /*
+    * Função para mostrar uma edição específica
+    * @param int $id
+    * @return \Illuminate\View\View
+    */
+    public function show($id)
+    {
+        $edicao = Edicao::findOrFail($id);
+        return view('revista.show', compact('edicao'));
+    }
+
+    /*
+    * Função para criar uma nova edição
+    * @return \Illuminate\View\View
+    */
     public function create()
     {
         $proximaEdicao = Edicao::count() + 1;
         return view('revista.create', compact('proximaEdicao'));
     }
+
+    /*
+    * Função para gerenciar as edições
+    * @param int $id
+    * @return \Illuminate\View\View
+    */
     public function manage($id)
     {
         $revista = Revista::where('id', $id)->first();
@@ -37,7 +64,11 @@ class EdicaoController extends Controller
         return view('edicao.manage', compact('edicoes', 'revista'));
     }
 
-
+    /*
+    * Função para salvar uma nova edição
+    * @param Request $request
+    * @return \Illuminate\Http\RedirectResponse
+    */
     public function store(Request $request)
     {
         $request->validate([
@@ -48,39 +79,61 @@ class EdicaoController extends Controller
             'arquivo_pdf' => 'required_if:tipo_conteudo,pdf|mimes:pdf|max:10240', 
         ]);
 
-        // 2. Upload da Imagem de Capa
         $arquivo = $request->file('imagem_capa');
         $nomeArquivo = time() . '_' . $arquivo->getClientOriginalName();
         $arquivo->move(public_path('capas'), $nomeArquivo);
         $caminhoCapa = 'capas/' . $nomeArquivo;
 
-        // 3. Criando a instância da Edição
         $edicao = new Edicao();
         $edicao->titulo = $request->titulo;
         $edicao->autor = $request->autor;
         $edicao->imagem_capa = $caminhoCapa;
         $edicao->tipo_conteudo = $request->tipo_conteudo;
 
-        // 4. Lógica de Salvamento baseada no Tipo de Conteúdo
         if ($request->tipo_conteudo === 'pdf') {
-            
-            // Faz o upload do PDF
-            $caminhoPdf = $request->file('arquivo_pdf')->store('edicoes_pdfs', 'public');
-            $edicao->arquivo_pdf = $caminhoPdf;
-            $edicao->conteudo_blocos = null; // Garante que a coluna de blocos fique vazia
 
-        } else {
+            $arquivo = $request->file('arquivo_pdf');
+            $nomeArquivo = time() . '_' . $arquivo->getClientOriginalName();
+            $arquivo->move(public_path('edicoes_pdfs'), $nomeArquivo);
+            $caminhoPdf = 'edicoes_pdfs/' . $nomeArquivo;
             
-            // Lógica para os Blocos
+            $edicao->arquivo_pdf = $caminhoPdf;
+            $edicao->conteudo_blocos = null;
+            
+        } else {
             $blocosFormatados = [];
             
-            if ($request->has('tipo') && $request->has('conteudo')) {
-                foreach ($request->tipo as $index => $tipo) {
-                    $conteudo = $request->conteudo[$index];
+            if ($request->has('tipo')) {
+                // O PHP separa automaticamente o que é texto do que é arquivo.
+                // Pegamos as duas listas separadas:
+                $textos = $request->input('conteudo', []);
+                $arquivos = $request->file('conteudo', []);
+                
+                // Criamos contadores independentes para cada lista
+                $indiceTexto = 0;
+                $indiceArquivo = 0;
 
-                    // Se o bloco for uma imagem, precisamos fazer o upload dela também
-                    if ($tipo === 'imagem' && $request->file("conteudo.{$index}")) {
-                        $conteudo = $request->file("conteudo.{$index}")->store('blocos_imagens', 'public');
+                foreach ($request->tipo as $index => $tipo) {
+                    $conteudo = null;
+                
+                    if ($tipo === 'imagem') {
+                        // Verifica se existe um arquivo no contador atual de arquivos
+                        if (isset($arquivos[$indiceArquivo])) {
+                            $arquivo = $arquivos[$indiceArquivo];
+                            $nomeArquivo = time() . '_' . $arquivo->getClientOriginalName();
+                            
+                            // Salva direto na pasta public para evitar o erro de symlink
+                            $arquivo->move(public_path('blocos_imagens'), $nomeArquivo);
+                            $conteudo = 'blocos_imagens/' . $nomeArquivo;
+                        }
+                        $indiceArquivo++; // Avança apenas o contador de arquivos
+                        
+                    } else { 
+                        // Verifica se existe um texto no contador atual de textos
+                        if (isset($textos[$indiceTexto])) {
+                            $conteudo = $textos[$indiceTexto];
+                        }
+                        $indiceTexto++; // Avança apenas o contador de textos
                     }
 
                     $blocosFormatados[] = [
@@ -91,15 +144,12 @@ class EdicaoController extends Controller
                 }
             }
             
-            // Salva os blocos em formato JSON no banco de dados
             $edicao->conteudo_blocos = json_encode($blocosFormatados);
             $edicao->arquivo_pdf = null;
         }
-
-        // 5. Salva no banco de dados
+        
         $edicao->save();
 
-        // 6. Redireciona com mensagem de sucesso
         return redirect()->back()->with('success', 'Edição da revista criada com sucesso!');
     }
 }
