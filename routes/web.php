@@ -2,8 +2,7 @@
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
-use App\Http\Controllers\AuthController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Edicao\EdicaoController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
@@ -21,8 +20,8 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 // ==========================================
 // 1. ROTAS PÚBLICAS (Visitantes em geral)
 // ==========================================
-Route::get('/', function () { return view('welcome'); }) -> name('welcome');
-Route::get('/edicoes', function () { return view('revista/edicoes'); }) -> name('edicoes');
+Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/edicoes', [EdicaoController::class, 'index'])->name('edicoes');
 Route::get('/revista', function () { return view('revista/revista'); }) -> name('revista');
 Route::get('/sobre_nos', function () { return view('revico/sobre_nos'); }) -> name('sobre_nos');
 

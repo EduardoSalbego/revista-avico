@@ -21,62 +21,40 @@
             <h2 class="section-heading text-uppercase text-center">edições recentes</h2>
             <div class="container px-lg-5 mb-2 mt-5">
                 <div class="carousel-inner mb-2" role="listbox">
-                    <a href="/revista" style="text-decoration: none; color: inherit;">
-                        <div class="card-hover col-md-4 px-3" style="float:left" href="/revista">
-                            <div class="card" style="width: 280px; height: 420px; margin:auto;">
-                                <img class="card-img-top d-block w-100" src="storage/app/public/imagens/capas/21.png"
-                                    alt="REVICO #21" height="290" width="610">
-                                <div class="card-body">
-                                    <p class="datanoticia">REVICO #21</p>
-                                    <p class="card-text altura-linha">
-                                        <b>Covid sob controle: Descobrindo quem resiste</b>
-                                    </p>
-                                    <p class="card-text altura-linha text-muted"
-                                        style="font-size: 11px; margin-top: -15px;">04-10-2025
-                                    </p>
-                                    <p></p>
+
+                    {{-- Loop para iterar sobre as últimas edições --}}
+                    @foreach($ultimasEdicoes as $edicao)
+                        {{-- Dica: Depois você pode ajustar esse href para apontar para a rota de leitura da edição
+                        específica --}}
+                        <a href="/revista/{{ $edicao->id }}" style="text-decoration: none; color: inherit;">
+                            <div class="card-hover col-md-4 px-3" style="float:left">
+                                <div class="card" style="width: 280px; height: 420px; margin:auto;">
+
+                                    {{-- Usa o helper asset() para buscar a imagem na pasta storage --}}
+                                    <img class="card-img-top d-block w-100"
+                                    src="{{ asset($edicao->imagem_capa) }}" alt="{{ $edicao->titulo }}"
+                                        height="290" width="610" style="object-fit: cover;">
+
+                                    <div class="card-body">
+                                        {{-- Exibe o ID da edição como número --}}
+                                        <p class="datanoticia">REVICO #{{ $edicao->id }}</p>
+
+                                        <p class="card-text altura-linha">
+                                            <b>{{ $edicao->titulo }}</b>
+                                        </p>
+
+                                        <p class="card-text altura-linha text-muted"
+                                            style="font-size: 11px; margin-top: -15px;">
+                                            {{-- Formata a data de created_at para o padrão brasileiro --}}
+                                            {{ \Carbon\Carbon::parse($edicao->created_at)->format('d-m-Y') }}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </a>
-                    <a href="/revista" style="text-decoration: none; color: inherit;">
-                        <div class="card-hover col-md-4 px-3" style="float:left" href="/revista">
-                            <div class="card" style="width: 280px; height: 420px; margin:auto;">
-                                <img class="card-img-top d-block w-100" src="storage/app/public/imagens/capas/20.png"
-                                    alt="REVICO #21" height="290" width="610">
-                                <div class="card-body">
-                                    <p class="datanoticia">REVICO #20</p>
-                                    <p class="card-text altura-linha">
-                                        <b>Protestos pelo Brasil: Vozes que transformam</b>
-                                    </p>
-                                    <p class="card-text altura-linha text-muted"
-                                        style="font-size: 11px; margin-top: -15px;">27-09-2025
-                                    </p>
-                                    <p></p>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                    <a href="/revista" style="text-decoration: none; color: inherit;">
-                        <div class="card-hover col-md-4 px-3" style="float:left" href="/revista">
-                            <div class="card" style="width: 280px; height: 420px; margin:auto;">
-                                <img class="card-img-top d-block w-100" src="storage/app/public/imagens/capas/19.png"
-                                    alt="REVICO #21" height="290" width="610">
-                                <div class="card-body">
-                                    <p class="datanoticia">REVICO #19</p>
-                                    <p class="card-text altura-linha">
-                                        <b>Sequelas da pandemia: O que ficou no corpo e na mente</b>
-                                    </p>
-                                    <p class="card-text altura-linha text-muted"
-                                        style="font-size: 11px; margin-top: -15px;">20-09-2025
-                                    </p>
-                                    <p></p>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
+                        </a>
+                    @endforeach
+
                 </div>
-                <!-- Livewire Component wire-end:eA6BAo4ZwyP8F7BTErlo -->
             </div>
         </section>
 

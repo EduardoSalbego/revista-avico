@@ -4,11 +4,6 @@ namespace App\Http\Controllers\Edicao;
 
 use App\Models\Edicao;
 use App\Models\Revista;
-use App\Models\Submissao;
-use App\Models\ArtigoFinal;
-use App\Models\ArtigoAvaliador;
-use App\Models\SubmissaoArtigo;
-use App\Models\Avaliacao;
 
 
 use App\Http\Controllers\Controller;
@@ -17,10 +12,21 @@ use Illuminate\Http\Request;
 
 class EdicaoController extends Controller
 {
+    public function index(Request $request)
+    {
+        $query = Edicao::query();
+    
+        if ($request->has('busca') && $request->busca != '') {
+            $query->where('titulo', 'like', '%' . $request->busca . '%');
+        }
+    
+        $edicoes = $query->orderBy('created_at', 'desc')->paginate(9);
+    
+        return view('revista.edicoes', compact('edicoes'));
+    }
     public function create()
     {
         $proximaEdicao = Edicao::count() + 1;
-
         return view('revista.create', compact('proximaEdicao'));
     }
     public function manage($id)
@@ -43,7 +49,10 @@ class EdicaoController extends Controller
         ]);
 
         // 2. Upload da Imagem de Capa
-        $caminhoCapa = $request->file('imagem_capa')->store('capas', 'public');
+        $arquivo = $request->file('imagem_capa');
+        $nomeArquivo = time() . '_' . $arquivo->getClientOriginalName();
+        $arquivo->move(public_path('capas'), $nomeArquivo);
+        $caminhoCapa = 'capas/' . $nomeArquivo;
 
         // 3. Criando a instância da Edição
         $edicao = new Edicao();

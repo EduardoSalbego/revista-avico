@@ -14,6 +14,7 @@ class Edicao extends Migration
     public function up()
     {
         Schema::create('edicoes', function (Blueprint $table) {
+            $table->id();
             $table->string('titulo');
             $table->string('autor');
             $table->string('imagem_capa');

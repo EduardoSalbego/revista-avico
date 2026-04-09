@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\Edicao;
 
 class HomeController extends Controller
 {
@@ -23,7 +23,8 @@ class HomeController extends Controller
      */
     public function index()
     {
-        return view('home');
+        $ultimasEdicoes = Edicao::orderBy('created_at', 'desc')->take(3)->get();
+        return view('welcome', compact('ultimasEdicoes'));
     }
 
     public function revista(){
