@@ -13,14 +13,14 @@
             <div class="container my-5">
                 <h2 class="section-heading text-uppercase mb-4" style="color: black;">Edições da REVICO</h2>
 
-                <form action="{{ route('edicoes') }}" method="GET" class="d-flex mb-5" role="search">
+                <form action="{{ route('edicoes.index') }}" method="GET" class="d-flex mb-5" role="search">
                     <input class="form-control me-2" type="search" name="busca" value="{{ request('busca') }}"
                         placeholder="Buscar edição pelo título..." aria-label="Buscar">
                     <button class="btn btn-primary" type="submit">Pesquisar</button>
 
                     {{-- Botão para limpar a busca, caso o usuário tenha pesquisado algo --}}
                     @if(request()->has('busca') && request('busca') != '')
-                        <a href="{{ route('edicoes') }}" class="btn btn-outline-secondary ms-2">Limpar</a>
+                        <a href="{{ route('edicoes.index') }}" class="btn btn-outline-secondary ms-2">Limpar</a>
                     @endif
                 </form>
 
@@ -50,7 +50,7 @@
 
                                         {{-- Botão "Leia Mais" empurrado para a base do card --}}
                                         <div class="mt-auto">
-                                            <a class="btn btn-primary btn-sm w-100" href="/revista/{{ $edicao->id }}">Leia
+                                            <a class="btn btn-primary btn-sm w-100" href="/edicoes/{{ $edicao->id }}">Leia
                                                 Mais</a>
                                         </div>
                                     </div>

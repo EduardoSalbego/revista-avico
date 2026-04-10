@@ -19,10 +19,10 @@
             style="margin-top: -50px; background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
             <header class="edicao-header mb-4 border-bottom pb-3">
                 
-                <span class="data me-3"><strong>Data:</strong>
+                <span class="data me-3">
                     <?php echo e(\Carbon\Carbon::parse($edicao->created_at)->format('d/m/Y')); ?></span>
-                <span class="site me-3"><strong>Edição:</strong> #<?php echo e($edicao->id); ?></span>
-                <span class="edicao"><strong>Autor:</strong> <?php echo e($edicao->autor); ?></span>
+                <span class="site me-3">Edição #<?php echo e($edicao->id); ?></span>
+                <span class="edicao"> <?php echo e($edicao->autor); ?></span>
             </header>
 
             <div class="<?php echo e($edicao->tipo_conteudo === 'pdf' ? '' : 'artigo-duas-colunas'); ?>">

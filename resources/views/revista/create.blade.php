@@ -10,7 +10,7 @@
             Criando a edição #{{ $proximaEdicao ?? '1' }} da revista
         </h2>
 
-        <form action="{{ route('store.edicao') }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('edicoes.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
 
             <div class="card p-4 mb-4">

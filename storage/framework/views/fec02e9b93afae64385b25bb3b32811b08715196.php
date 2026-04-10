@@ -6,7 +6,7 @@
         <div class="collapse navbar-collapse" id="navbarResponsive">
             <ul class="navbar-nav text-uppercase ms-auto py-4 py-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link" href="/edicoes">EDIÇÕES</a>
+                    <a class="nav-link" href="<?php echo e(route('edicoes.index')); ?>">EDIÇÕES</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="/">Autores e Colaboradores</a>
@@ -17,7 +17,7 @@
                 <?php if(auth()->guard()->check()): ?>
                     <?php if(in_array(Auth::user()->role, ['admin', 'colaborador'])): ?>
                         <li class="nav-item">
-                            <a class="nav-link" href="/nova_edicao">nova edição</a>
+                            <a class="nav-link" href="<?php echo e(route('edicoes.create')); ?>">nova edição</a>
                         </li>
                     <?php else: ?>
                         <li class="nav-item">
@@ -34,6 +34,14 @@
 
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                            <?php if(Auth::user()->role === 'admin'): ?>
+                                <li><a class="dropdown-item" href="/admin/usuarios">Gerenciar Usuários</a></li>
+                                <li><a class="dropdown-item" href="/admin/edicoes">Gerenciar Edições</a></li>
+                            <?php endif; ?>
+
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
                             <li><a class="dropdown-item" href="/perfil">Editar Perfil</a></li>
                             <form action="<?php echo e(route('logout')); ?>" method="POST" class="d-inline">
                                 <?php echo csrf_field(); ?>

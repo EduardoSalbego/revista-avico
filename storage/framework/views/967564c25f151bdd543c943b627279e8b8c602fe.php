@@ -10,7 +10,7 @@
             Criando a edição #<?php echo e($proximaEdicao ?? '1'); ?> da revista
         </h2>
 
-        <form action="<?php echo e(route('store.edicao')); ?>" method="POST" enctype="multipart/form-data">
+        <form action="<?php echo e(route('edicoes.store')); ?>" method="POST" enctype="multipart/form-data">
             <?php echo csrf_field(); ?>
 
             <div class="card p-4 mb-4">

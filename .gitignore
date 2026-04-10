@@ -18,3 +18,7 @@
 /storage/*.key
 /storage/pail
 /vendor
+
+public/blocos_imagens
+public/capas
+public/edicoes_pdfs

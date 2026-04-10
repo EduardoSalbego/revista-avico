@@ -1,6 +1,6 @@
 <?php
 
-use Illuminate\Foundation\Application;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Edicao\EdicaoController;
@@ -21,10 +21,14 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 // 1. ROTAS PÚBLICAS (Visitantes em geral)
 // ==========================================
 Route::get('/', [HomeController::class, 'index'])->name('home');
-Route::get('/edicoes', [EdicaoController::class, 'index'])->name('edicoes');
-Route::get('/revista/{id}', [EdicaoController::class, 'show'])->name('revista.show');
-Route::get('/revista', function () { return view('revista/revista'); }) -> name('revista');
 Route::get('/sobre_nos', function () { return view('revico/sobre_nos'); }) -> name('sobre_nos');
+
+Route::prefix('edicoes')->name('edicoes.')->group(function () {
+    Route::get('/', [EdicaoController::class, 'index'])->name('index');
+    Route::get('/{id}', [EdicaoController::class, 'show'])->where('id', '[0-9]+')->name('show');
+});
+
+Route::get('/revista2', function () { return view('revista/revista'); }) -> name('revista');
 
 
 // ==========================================
@@ -42,10 +46,7 @@ Route::get('/redefinir_senha', function () { return view('auth.passwords.email')
 // ==========================================
 Route::middleware('auth')->group(function () {
     Route::get('/assinar', function () { return view('revico/assinatura'); }) -> name('assinar');
-    Route::post('/logout', function () {
-        Auth::logout();
-        return redirect('/')->with('success', 'Você saiu da sua conta.');
-    })->name('logout');
+    Route::get('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->middleware(['auth', 'verified'])->name('dashboard');
@@ -54,14 +55,25 @@ Route::middleware('auth')->group(function () {
 // ==========================================
 // 4. ROTAS ADMINISTRATIVAS (Requer Admin)
 // ==========================================
+Route::middleware('role:admin')->prefix('admin')->as('admin.')->group(function () {
+    Route::resource('usuarios', UserController::class);
 
+    Route::prefix('edicoes')->name('edicoes.')->group(function () {
+        Route::get('/', [EdicaoController::class, 'indexAdmin'])->name('index');
+        Route::prefix('/{id}')->where(['id' => '[0-9]+'])->group(function () {
+            Route::get('/editar', [EdicaoController::class, 'edit'])->name('edit');
+            Route::put('/', [EdicaoController::class, 'update'])->name('update');
+            Route::delete('/', [EdicaoController::class, 'destroy'])->name('destroy');
+        });
+    });
+});
 
 // ==========================================
 // 5. ROTAS DE EDITORIA (Requer Colaborador)
 // ==========================================
 Route::middleware('role:colaborador')->group(function () {
-    Route::get('/nova_edicao', [EdicaoController::class, 'create'])->name('create.edicao');
-    Route::post('/nova_edicao', [EdicaoController::class, 'store'])->name('store.edicao');
+    Route::get('/edicoes/create', [EdicaoController::class, 'create'])->name('edicoes.create');
+    Route::post('/edicoes/create', [EdicaoController::class, 'store'])->name('edicoes.store');
 });
 
 require __DIR__ . '/auth.php';

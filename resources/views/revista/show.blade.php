@@ -19,10 +19,10 @@
             style="margin-top: -50px; background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
             <header class="edicao-header mb-4 border-bottom pb-3">
                 {{-- Formata a data para padrão BR --}}
-                <span class="data me-3"><strong>Data:</strong>
+                <span class="data me-3">
                     {{ \Carbon\Carbon::parse($edicao->created_at)->format('d/m/Y') }}</span>
-                <span class="site me-3"><strong>Edição:</strong> #{{ $edicao->id }}</span>
-                <span class="edicao"><strong>Autor:</strong> {{ $edicao->autor }}</span>
+                <span class="site me-3">Edição #{{ $edicao->id }}</span>
+                <span class="edicao"> {{ $edicao->autor }}</span>
             </header>
 
             <div class="{{ $edicao->tipo_conteudo === 'pdf' ? '' : 'artigo-duas-colunas' }}">

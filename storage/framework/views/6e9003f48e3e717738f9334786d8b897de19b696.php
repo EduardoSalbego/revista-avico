@@ -13,14 +13,14 @@
             <div class="container my-5">
                 <h2 class="section-heading text-uppercase mb-4" style="color: black;">Edições da REVICO</h2>
 
-                <form action="<?php echo e(route('edicoes')); ?>" method="GET" class="d-flex mb-5" role="search">
+                <form action="<?php echo e(route('edicoes.index')); ?>" method="GET" class="d-flex mb-5" role="search">
                     <input class="form-control me-2" type="search" name="busca" value="<?php echo e(request('busca')); ?>"
                         placeholder="Buscar edição pelo título..." aria-label="Buscar">
                     <button class="btn btn-primary" type="submit">Pesquisar</button>
 
                     
                     <?php if(request()->has('busca') && request('busca') != ''): ?>
-                        <a href="<?php echo e(route('edicoes')); ?>" class="btn btn-outline-secondary ms-2">Limpar</a>
+                        <a href="<?php echo e(route('edicoes.index')); ?>" class="btn btn-outline-secondary ms-2">Limpar</a>
                     <?php endif; ?>
                 </form>
 
@@ -51,7 +51,7 @@
 
                                         
                                         <div class="mt-auto">
-                                            <a class="btn btn-primary btn-sm w-100" href="/revista/<?php echo e($edicao->id); ?>">Leia
+                                            <a class="btn btn-primary btn-sm w-100" href="/edicoes/<?php echo e($edicao->id); ?>">Leia
                                                 Mais</a>
                                         </div>
                                     </div>
