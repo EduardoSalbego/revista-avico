@@ -11,7 +11,8 @@
 
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2>Novo Usuário</h2>
-                    <a href="<?php echo e(route('usuarios.index')); ?>" class="btn btn-outline-secondary">Voltar para a Lista</a>
+                    <a href="<?php echo e(route('admin.usuarios.index')); ?>" class="btn btn-outline-secondary">Voltar para a
+                        Lista</a>
                 </div>
 
                 <?php if($errors->any()): ?>
@@ -26,7 +27,7 @@
 
                 <div class="card shadow-sm border-0">
                     <div class="card-body p-4">
-                        <form action="<?php echo e(route('usuarios.store')); ?>" method="POST">
+                        <form action="<?php echo e(route('admin.usuarios.store')); ?>" method="POST">
                             <?php echo csrf_field(); ?>
 
                             <div class="mb-3">

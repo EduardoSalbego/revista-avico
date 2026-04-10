@@ -11,7 +11,8 @@
 
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2>Novo Usuário</h2>
-                    <a href="{{ route('usuarios.index') }}" class="btn btn-outline-secondary">Voltar para a Lista</a>
+                    <a href="{{ route('admin.usuarios.index') }}" class="btn btn-outline-secondary">Voltar para a
+                        Lista</a>
                 </div>
 
                 @if ($errors->any())
@@ -26,7 +27,7 @@
 
                 <div class="card shadow-sm border-0">
                     <div class="card-body p-4">
-                        <form action="{{ route('usuarios.store') }}" method="POST">
+                        <form action="{{ route('admin.usuarios.store') }}" method="POST">
                             @csrf
 
                             <div class="mb-3">
@@ -42,14 +43,14 @@
                             </div>
 
                             <div class="mb-3">
-                                <label for="perfil" class="form-label fw-bold">Perfil de Acesso</label>
-                                <select class="form-select" id="perfil" name="perfil" required>
+                                <label for="role" class="form-label fw-bold">Perfil de Acesso</label>
+                                <select class="form-select" id="role" name="role" required>
                                     <option value="" disabled selected>Selecione um perfil...</option>
-                                    <option value="leitor" {{ old('perfil') == 'leitor' ? 'selected' : '' }}>Leitor
+                                    <option value="leitor" {{ old('role') == 'leitor' ? 'selected' : '' }}>Leitor
                                     </option>
-                                    <option value="colaborador" {{ old('perfil') == 'colaborador' ? 'selected' : '' }}>
+                                    <option value="colaborador" {{ old('role') == 'colaborador' ? 'selected' : '' }}>
                                         Colaborador (Pode enviar textos)</option>
-                                    <option value="admin" {{ old('perfil') == 'admin' ? 'selected' : '' }}>Administrador
+                                    <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Administrador
                                         (Acesso total)</option>
                                 </select>
                             </div>

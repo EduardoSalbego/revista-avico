@@ -8,7 +8,7 @@
     <main class="container py-5" style="margin-top: 80px; min-height: 80vh;">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2>Gerenciar Usuários</h2>
-            <a href="{{ route('usuarios.create') }}" class="btn btn-success">+ Novo Usuário</a>
+            <a href="{{ route('admin.usuarios.create') }}" class="btn btn-success">+ Novo Usuário</a>
         </div>
 
         @if(session('success'))
@@ -45,10 +45,11 @@
                                 </td>
                                 <td>{{ \Carbon\Carbon::parse($user->created_at)->format('d/m/Y') }}</td>
                                 <td class="text-center">
-                                    <a href="{{ route('usuarios.edit', $user->id) }}"
+                                    <a href="{{ route('admin.usuarios.edit', $user->id) }}"
                                         class="btn btn-sm btn-outline-primary">Editar</a>
 
-                                    <form action="{{ route('usuarios.destroy', $user->id) }}" method="POST" class="d-inline"
+                                    <form action="{{ route('admin.usuarios.destroy', $user->id) }}" method="POST"
+                                        class="d-inline"
                                         onsubmit="return confirm('Tem certeza que deseja excluir este usuário?');">
                                         @csrf
                                         @method('DELETE')

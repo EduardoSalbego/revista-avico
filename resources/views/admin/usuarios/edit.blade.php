@@ -11,7 +11,8 @@
 
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2>Editar Usuário: <span class="text-primary">{{ $usuario->name }}</span></h2>
-                    <a href="{{ route('usuarios.index') }}" class="btn btn-outline-secondary">Voltar para a Lista</a>
+                    <a href="{{ route('admin.usuarios.index') }}" class="btn btn-outline-secondary">Voltar para a
+                        Lista</a>
                 </div>
 
                 @if ($errors->any())
@@ -27,7 +28,7 @@
                 <div class="card shadow-sm border-0">
                     <div class="card-body p-4">
                         {{-- O action aponta para o update passando o ID do usuário --}}
-                        <form action="{{ route('usuarios.update', $usuario->id) }}" method="POST">
+                        <form action="{{ route('admin.usuarios.update', $usuario->id) }}" method="POST">
                             @csrf
                             @method('PUT')
 
@@ -44,11 +45,11 @@
                             </div>
 
                             <div class="mb-3">
-                                <label for="perfil" class="form-label fw-bold">Perfil de Acesso</label>
-                                <select class="form-select" id="perfil" name="perfil" required>
-                                    <option value="leitor" {{ (old('perfil', $usuario->perfil) == 'leitor') ? 'selected' : '' }}>Leitor</option>
-                                    <option value="colaborador" {{ (old('perfil', $usuario->perfil) == 'colaborador') ? 'selected' : '' }}>Colaborador (Pode enviar textos)</option>
-                                    <option value="admin" {{ (old('perfil', $usuario->perfil) == 'admin') ? 'selected' : '' }}>Administrador (Acesso total)</option>
+                                <label for="role" class="form-label fw-bold">Perfil de Acesso</label>
+                                <select class="form-select" id="role" name="role" required>
+                                    <option value="leitor" {{ (old('role', $usuario->role) == 'leitor') ? 'selected' : '' }}>Leitor</option>
+                                    <option value="colaborador" {{ (old('role', $usuario->role) == 'colaborador') ? 'selected' : '' }}>Colaborador (Pode enviar textos)</option>
+                                    <option value="admin" {{ (old('role', $usuario->role) == 'admin') ? 'selected' : '' }}>Administrador (Acesso total)</option>
                                 </select>
                             </div>
 

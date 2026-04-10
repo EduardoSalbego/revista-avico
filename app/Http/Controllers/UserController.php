@@ -37,17 +37,17 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8',
-            'perfil' => 'required|in:leitor,colaborador,admin'
+            'role' => 'required|in:leitor,colaborador,admin'
         ]);
 
         User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password), 
-            'perfil' => $request->perfil,
+            'role' => $request->role,
         ]);
 
-        return redirect()->route('usuarios.index')->with('success', 'Usuário criado com sucesso!');
+        return redirect()->route('admin.usuarios.index')->with('success', 'Usuário criado com sucesso!');
     }
 
     /**
@@ -83,15 +83,14 @@ class UserController extends Controller
 
         $request->validate([
             'name' => 'required|string|max:255',
-            // Valida o e-mail garantindo que não é de outro usuário, exceto ele mesmo
             'email' => 'required|string|email|max:255|unique:users,email,' . $usuario->id,
-            'perfil' => 'required|in:leitor,colaborador,admin'
+            'role' => 'required|in:leitor,colaborador,admin'
         ]);
 
         $dados = [
             'name' => $request->name,
             'email' => $request->email,
-            'perfil' => $request->perfil,
+            'role' => $request->role,
         ];
 
         // Só atualiza a senha se o admin digitou uma nova
@@ -101,7 +100,7 @@ class UserController extends Controller
 
         $usuario->update($dados);
 
-        return redirect()->route('usuarios.index')->with('success', 'Usuário atualizado!');
+        return redirect()->route('admin.usuarios.index')->with('success', 'Usuário atualizado!');
     }
 
     /**
@@ -114,6 +113,6 @@ class UserController extends Controller
         $usuario = User::findOrFail($id);
         $usuario->delete();
 
-        return redirect()->route('usuarios.index')->with('success', 'Usuário excluído!');
+        return redirect()->route('admin.usuarios.index')->with('success', 'Usuário excluído!');
     }
 }
