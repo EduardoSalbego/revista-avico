@@ -4,6 +4,7 @@ use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Edicao\EdicaoController;
+use App\Http\Controllers\Edicao\ComentarioController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 
@@ -47,6 +48,10 @@ Route::get('/redefinir_senha', function () { return view('auth.passwords.email')
 Route::middleware('auth')->group(function () {
     Route::get('/assinar', function () { return view('revico/assinatura'); }) -> name('assinar');
     Route::get('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
+    Route::prefix('comentarios')->name('comentarios.')->group(function () {
+        Route::post('/', [ComentarioController::class, 'store'])->name('store');
+        Route::delete('/{id}', [ComentarioController::class, 'destroy'])->name('destroy');
+    });
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->middleware(['auth', 'verified'])->name('dashboard');

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Edicao;
 
 use App\Models\Edicao;
-
+use App\Models\Comentario;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -37,7 +37,11 @@ class EdicaoController extends Controller
     public function show($id)
     {
         $edicao = Edicao::findOrFail($id);
-        return view('revista.show', compact('edicao'));
+        $comentarios = Comentario::with('user')
+                                ->where('edicao_id', $id)
+                                ->orderBy('created_at', 'desc')
+                                ->get();
+        return view('revista.show', compact('edicao', 'comentarios'));
     }
 
     /*
