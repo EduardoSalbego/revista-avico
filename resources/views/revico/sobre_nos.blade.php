@@ -49,7 +49,8 @@
                 </p>
                 <p>
                 </p>
-                <div class="text-center"><a class="btn btn-primary btn-xl text-uppercase" href="/">Assine a REVICO</a>
+                <div class="text-center"><a class="btn btn-primary btn-xl text-uppercase" href="/assinar">Assine a
+                        REVICO</a>
                 </div>
             </div>
         </section>

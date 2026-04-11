@@ -25,7 +25,7 @@
                     
                     <?php $__currentLoopData = $ultimasEdicoes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $edicao): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                         
-                        <a href="/revista/<?php echo e($edicao->id); ?>" style="text-decoration: none; color: inherit;">
+                        <a href="/edicoes/<?php echo e($edicao->id); ?>" style="text-decoration: none; color: inherit;">
                             <div class="card-hover col-md-4 px-3" style="float:left">
                                 <div class="card" style="width: 280px; height: 420px; margin:auto;">
 

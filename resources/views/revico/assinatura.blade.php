@@ -12,7 +12,7 @@
             <div class="container mt-5 pt-5">
                 <div class="text-center mb-4" style="margin-top: -60px;">
                     <h2>Assine a</h2>
-                    <img src="storage/app/public/imagens/revico_texto.png" alt="Logo REVICO"
+                    <img src="{{ asset('storage/imagens/revico_texto.png') }}" alt="Logo REVICO"
                         style="height: 40px; margin-bottom: 20px;">
                 </div>
                 <p class="text-center text-muted mb-5">Escolha o melhor plano para você e tenha acesso a todas
@@ -35,7 +35,8 @@
                             <div class="card-body text-center">
                                 <h5 class="card-title">Plano Mensal</h5>
                                 <p class="card-text text-muted" id="expiraMensal">Acesso até
-                                    {{ $mensal->format('d/m/Y') }}</p>
+                                    {{ $mensal->format('d/m/Y') }}
+                                </p>
                                 <h3 class="text-primary mb-4">R$ 9,90/mês</h3>
                                 <button class="btn btn-primary w-100"
                                     onclick="selectPlan('Mensal', 9.90)">Selecionar</button>
@@ -48,7 +49,8 @@
                             <div class="card-body text-center">
                                 <h5 class="card-title">Plano Semestral</h5>
                                 <p class="card-text text-muted" id="expiraSemestral">Acesso até
-                                    {{ $semestral->format('d/m/Y') }}</p>
+                                    {{ $semestral->format('d/m/Y') }}
+                                </p>
                                 <h3 class="text-primary mb-4">R$ 49,90</h3>
                                 <button class="btn btn-primary w-100"
                                     onclick="selectPlan('Semestral', 49.90)">Selecionar</button>
@@ -61,7 +63,8 @@
                             <div class="card-body text-center">
                                 <h5 class="card-title">Plano Anual</h5>
                                 <p class="card-text text-muted" id="expiraAnual">Acesso até
-                                    {{ $anual->format('d/m/Y') }}</p>
+                                    {{ $anual->format('d/m/Y') }}
+                                </p>
                                 <h3 class="text-primary mb-4">R$ 89,90</h3>
                                 <button class="btn btn-primary w-100"
                                     onclick="selectPlan('Anual', 89.90)">Selecionar</button>

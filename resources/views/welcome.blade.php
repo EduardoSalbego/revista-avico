@@ -26,7 +26,7 @@
                     @foreach($ultimasEdicoes as $edicao)
                         {{-- Dica: Depois você pode ajustar esse href para apontar para a rota de leitura da edição
                         específica --}}
-                        <a href="/revista/{{ $edicao->id }}" style="text-decoration: none; color: inherit;">
+                        <a href="/edicoes/{{ $edicao->id }}" style="text-decoration: none; color: inherit;">
                             <div class="card-hover col-md-4 px-3" style="float:left">
                                 <div class="card" style="width: 280px; height: 420px; margin:auto;">
 
