@@ -74,50 +74,79 @@
 
         <section class="py-5 bg-light mt-5">
             <div class="container">
-                <h4 class="text-center mb-4">Comentários</h4>
+                <h4 class="text-center mb-4">Comentários (<?php echo e($comentarios->count()); ?>)</h4>
 
-                <div class="mb-5">
-                    <div class="card mb-3">
-                        <div class="card-body">
-                            <h6 class="card-title mb-1">Maria Luiza</h6>
-                            <small class="text-muted">Postado em 05/10/2025</small>
-                            <p class="card-text mt-2">Texto incrível! É fascinante como a ciência ainda está descobrindo
-                                novas respostas sobre a covid.</p>
-                        </div>
+                <?php if(session('success')): ?>
+                    <div class="alert alert-success text-center max-w-600 mx-auto" style="max-width: 600px;">
+                        <?php echo e(session('success')); ?>
+
                     </div>
+                <?php endif; ?>
 
-                    <div class="card mb-3">
-                        <div class="card-body">
-                            <h6 class="card-title mb-1">João Pereira</h6>
-                            <small class="text-muted">Postado em 04/10/2025</small>
-                            <p class="card-text mt-2">Li a edição completa e fiquei impressionado com a pesquisa.
-                                Parabéns à equipe da Revico!</p>
-                        </div>
-                    </div>
-                </div>
+                <div class="mb-5" style="max-width: 800px; margin: 0 auto;">
+                    
+                    <?php $__empty_1 = true; $__currentLoopData = $comentarios; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $comentario): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                        <div class="card mb-3 shadow-sm border-0">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="card-title mb-1 text-primary"><?php echo e($comentario->user->name); ?></h6>
+                                        <small class="text-muted">Postado em
+                                            <?php echo e(\Carbon\Carbon::parse($comentario->created_at)->format('d/m/Y')); ?></small>
+                                    </div>
+                                    <?php if(auth()->guard()->check()): ?>
+                                        <?php if(Auth::id() === $comentario->user_id || Auth::user()->role === 'admin'): ?>
+                                            <form action="<?php echo e(route('comentarios.destroy', $comentario->id)); ?>" method="POST"
+                                                onsubmit="return confirm('Tem certeza que deseja apagar este comentário?');">
+                                                <?php echo csrf_field(); ?>
+                                                <?php echo method_field('DELETE'); ?>
+                                                <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                    title="Apagar comentário">
+                                                    <i class="bi bi-trash-fill"></i> </button>
+                                            </form>
+                                        <?php endif; ?>
+                                    <?php endif; ?>
+                                </div>
 
-                <div class="text-center mb-4">
-                    <button id="toggleFormBtn" class="btn btn-primary px-4 py-2" style="border-radius: 8px;">
-                        💬 Deixe seu comentário
-                    </button>
-                </div>
-
-                <div id="commentForm" class="card" style="display: none; max-width: 600px; margin: auto;">
-                    <div class="card-body">
-                        <h5 class="card-title">Novo Comentário</h5>
-                        <form action="#" method="POST">
-                            <?php echo csrf_field(); ?>
-                            
-                            <input type="hidden" name="edicao_id" value="<?php echo e($edicao->id); ?>">
-
-                            <div class="mb-3">
-                                <textarea class="form-control" name="comentario" id="comentario" rows="3"
-                                    placeholder="Escreva aqui..." required></textarea>
+                                <p class="card-text mt-3" style="white-space: pre-line;"><?php echo e($comentario->conteudo); ?></p>
                             </div>
-                            <button type="submit" class="btn btn-success">Enviar</button>
-                        </form>
-                    </div>
+                        </div>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                        <p class="text-center text-muted">Nenhum comentário ainda. Seja o primeiro a comentar!</p>
+                    <?php endif; ?>
                 </div>
+
+                <?php if(auth()->guard()->check()): ?>
+                    <div class="text-center mb-4">
+                        <button id="toggleFormBtn" class="btn btn-primary px-4 py-2 shadow-sm" style="border-radius: 8px;">
+                            Deixe um comentário
+                        </button>
+                    </div>
+
+                    <div id="commentForm" class="card shadow"
+                        style="display: none; max-width: 600px; margin: auto; border: 0;">
+                        <div class="card-body p-4">
+                            <h5 class="card-title mb-3">Novo Comentário</h5>
+                            <form action="<?php echo e(route('comentarios.store')); ?>" method="POST">
+                                <?php echo csrf_field(); ?>
+                                <input type="hidden" name="edicao_id" value="<?php echo e($edicao->id); ?>">
+
+                                <div class="mb-3">
+                                    <textarea class="form-control bg-light" name="comentario" id="comentario" rows="4"
+                                        placeholder="Escreva sua opinião aqui..." required></textarea>
+                                </div>
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-success">Enviar Comentário</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                <?php else: ?>
+                    <div class="text-center mt-4">
+                        <p class="text-muted">Você precisa estar logado para comentar.</p>
+                        <a href="<?php echo e(route('login')); ?>" class="btn btn-outline-primary">Fazer Login</a>
+                    </div>
+                <?php endif; ?>
             </div>
         </section>
 
@@ -131,12 +160,12 @@
             const form = document.getElementById("commentForm");
             if (form.style.display === "none") {
                 form.style.display = "block";
-                this.textContent = "Fechar formulário";
+                this.textContent = "Cancelar";
                 this.classList.remove("btn-primary");
-                this.classList.add("btn-danger"); // Alterei para btn-danger para fazer sentido com o "Fechar"
+                this.classList.add("btn-danger");
             } else {
                 form.style.display = "none";
-                this.textContent = "💬 Deixe seu comentário";
+                this.textContent = "Deixe um comentário";
                 this.classList.remove("btn-danger");
                 this.classList.add("btn-primary");
             }
