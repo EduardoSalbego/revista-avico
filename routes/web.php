@@ -7,6 +7,8 @@ use App\Http\Controllers\Edicao\EdicaoController;
 use App\Http\Controllers\Edicao\ComentarioController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\Assinatura\AssinaturaController;
+use App\Http\Controllers\Perfil\ProfileController;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,27 +28,36 @@ Route::get('/sobre_nos', function () { return view('revico/sobre_nos'); }) -> na
 
 Route::prefix('edicoes')->name('edicoes.')->group(function () {
     Route::get('/', [EdicaoController::class, 'index'])->name('index');
-    Route::get('/{id}', [EdicaoController::class, 'show'])->where('id', '[0-9]+')->name('show');
 });
 
 Route::get('/revista2', function () { return view('revista/revista'); }) -> name('revista');
 
-
-// ==========================================
-// 2. Rotas de Autenticação (Acesso deslogado)
-// ==========================================
+// Rotas de Autenticação
 Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
 Route::post('/login', [AuthenticatedSessionController::class, 'store']);
 Route::get('/register', [RegisteredUserController::class, 'create'])->name('register');
 Route::post('/register', [RegisteredUserController::class, 'store']);
 Route::get('/redefinir_senha', function () { return view('auth.passwords.email'); });
 
+// ==========================================
+// 2. Rotas de Assinantes
+// ==========================================
+Route::middleware(['auth', 'assinatura'])->group(function(){
+    Route::prefix('edicoes')->name('edicoes.')->group(function () {
+        Route::get('/{id}', [EdicaoController::class, 'show'])->where('id', '[0-9]+')->name('show');
+    });
+});
 
 // ==========================================
 // 3. ROTAS AUTENTICADAS (Requer Login)
 // ==========================================
 Route::middleware('auth')->group(function () {
     Route::get('/assinar', function () { return view('revico/assinatura'); }) -> name('assinar');
+    Route::post('/processar_pagamento', [AssinaturaController::class, 'processar'])->name('pagamento.processar');
+
+    Route::get('/perfil', [ProfileController::class, 'index'])->name('perfil.index');
+    Route::put('/perfil', [ProfileController::class, 'update'])->name('perfil.update');
+    
     Route::get('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
     Route::prefix('comentarios')->name('comentarios.')->group(function () {
         Route::post('/', [ComentarioController::class, 'store'])->name('store');

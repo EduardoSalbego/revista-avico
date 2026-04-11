@@ -36,12 +36,12 @@
                             @if(Auth::user()->role === 'admin')
                                 <li><a class="dropdown-item" href="/admin/usuarios">Gerenciar Usuários</a></li>
                                 <li><a class="dropdown-item" href="/admin/edicoes">Gerenciar Edições</a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
                             @endif
 
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            <li><a class="dropdown-item" href="/perfil">Editar Perfil</a></li>
+                            <li><a class="dropdown-item" href="/perfil">Perfil</a></li>
                             <form action="{{ route('logout') }}" method="POST" class="d-inline">
                                 @csrf
                                 <button class="dropdown-item" type="submit" class="dropdown-item">SAIR</button>

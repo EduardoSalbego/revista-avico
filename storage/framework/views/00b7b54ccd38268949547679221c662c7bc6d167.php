@@ -45,12 +45,10 @@
 
                 <?php elseif($edicao->tipo_conteudo === 'blocos'): ?>
 
-                    
                     <?php
                         $blocos = json_decode($edicao->conteudo_blocos, true) ?? [];
                     ?>
 
-                    
                     <?php $__currentLoopData = $blocos; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $bloco): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                         <?php if($bloco['tipo'] === 'paragrafo'): ?>
                             <p class="mb-3" style="text-align: justify; line-height: 1.8;">

@@ -10,7 +10,17 @@
     <main id="content" style="margin-bottom: 113px;">
         <section class="page-section">
             <div class="container mt-5 pt-5">
-                <div class="text-center mb-4" style="margin-top: -60px;">
+
+                <?php if(session('warning')): ?>
+                    <div class="alert alert-warning text-center mx-auto mb-4 shadow-sm border-0"
+                        style="max-width: 600px; border-radius: 8px;">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <?php echo e(session('warning')); ?>
+
+                    </div>
+                <?php endif; ?>
+
+                <div class="text-center mb-4" style="margin-top: <?php echo e(session('warning') ? '0' : '-60px'); ?>;">
                     <h2>Assine a</h2>
                     <img src="<?php echo e(asset('storage/imagens/revico_texto.png')); ?>" alt="Logo REVICO"
                         style="height: 40px; margin-bottom: 20px;">
@@ -19,17 +29,30 @@
                     as edições exclusivas da revista!</p>
 
                 <?php
-                    // Data atual
-                    $hoje = now();
-
+                    $user = Auth::user();
+                    $dataBase = ($user && $user->assinante_ate && \Carbon\Carbon::parse($user->assinante_ate)->isFuture())
+                        ? \Carbon\Carbon::parse($user->assinante_ate)
+                        : now();
                     // Somando períodos
-                    $mensal = $hoje->copy()->addMonth();
-                    $semestral = $hoje->copy()->addMonths(6);
-                    $anual = $hoje->copy()->addYear();
+                    $mensal = $dataBase->copy()->addMonth();
+                    $semestral = $dataBase->copy()->addMonths(6);
+                    $anual = $dataBase->copy()->addYear();
                 ?>
 
+                <?php if(auth()->guard()->check()): ?>
+                    <?php if(Auth::user()->assinante_ate && \Carbon\Carbon::parse(Auth::user()->assinante_ate)->isFuture()): ?>
+                        <div class="alert alert-info text-center mx-auto mb-4 shadow-sm border-0"
+                            style="max-width: 700px; border-radius: 8px;">
+                            <i class="fas fa-crown text-warning me-2"></i>
+                            <strong>Você já é um assinante ativo!</strong><br>
+                            Seu acesso atual é válido até
+                            <strong><?php echo e(\Carbon\Carbon::parse(Auth::user()->assinante_ate)->format('d/m/Y')); ?></strong>.<br>
+                            <small>Ao selecionar um novo plano abaixo, o tempo será <u>somado</u> à sua assinatura
+                                atual.</small>
+                        </div>
+                    <?php endif; ?>
+                <?php endif; ?>
                 <div class="row justify-content-center">
-                    <!-- Planos -->
                     <div class="col-md-4 mb-4">
                         <div class="card shadow-lg border-0 h-100">
                             <div class="card-body text-center">
@@ -76,30 +99,29 @@
                     </div>
                 </div>
 
-                <!-- Formulário de pagamento -->
-                <div id="paymentSection" class="mt-5" style="display: none;">
+                <div id="paymentSection" class="mt-5 card p-4 shadow-sm border-0"
+                    style="display: none; max-width: 700px; margin: 0 auto;">
                     <h4 class="text-center mb-3">
                         Plano <span id="planoSelecionadoTexto" class="fw-bold text-primary"></span> selecionado!
                         <br>Escolha a forma de pagamento:
                     </h4>
 
                     <div class="d-flex justify-content-center gap-4 mb-4">
-                        <button class="btn btn-success" onclick="showPix()">PIX</button>
-                        <button class="btn btn-primary" onclick="showCard()">Cartão</button>
+                        <button class="btn btn-success px-4" onclick="showPix()">PIX</button>
+                        <button class="btn btn-primary px-4" onclick="showCard()">Cartão de Crédito</button>
                     </div>
 
-                    <!-- Pagamento Pix -->
                     <div id="pixSection" class="text-center" style="display: none;">
                         <h5>Escaneie o QR Code para pagar</h5>
-                        <img src="/storage/app/public/imagens/qrcode-pix-exemplo.png" alt="QR Code Pix"
-                            style="width: 200px; margin: 20px auto;">
-                        <p class="text-muted">Após o pagamento, o acesso será liberado automaticamente.</p>
+                        <img src="<?php echo e(asset('storage/imagens/qrcode-pix-exemplo.png')); ?>" alt="QR Code Pix"
+                            style="width: 400px; margin: 20px auto;">
                     </div>
 
-                    <!-- Pagamento com Cartão -->
-                    <div id="cardSection" class="col-md-6 mx-auto" style="display: none;">
-                        <form action="/processar_pagamento" method="POST">
+                    <div id="cardSection" class="col-md-8 mx-auto" style="display: none;">
+                        <form action="<?php echo e(route('pagamento.processar')); ?>" method="POST">
                             <?php echo csrf_field(); ?>
+                            <input type="hidden" name="plano" class="planoInput" id="planoInputCard">
+
                             <div class="form-group mb-3">
                                 <label for="cardNumber">Número do Cartão</label>
                                 <input type="text" class="form-control" id="cardNumber"
@@ -120,8 +142,9 @@
                                     <input type="text" class="form-control" id="cvv" placeholder="123" required>
                                 </div>
                             </div>
-                            <div class="d-grid">
-                                <button type="submit" class="btn btn-primary">Finalizar Pagamento</button>
+                            <div class="d-grid mt-3">
+                                <button type="submit" class="btn btn-primary btn-lg"
+                                    onclick="loadingButton(this)">Finalizar Pagamento</button>
                             </div>
                         </form>
                     </div>
@@ -137,8 +160,15 @@
             document.getElementById('paymentSection').style.display = 'block';
             document.getElementById('pixSection').style.display = 'none';
             document.getElementById('cardSection').style.display = 'none';
-            window.selectedPlan = plan;
+
             document.getElementById('planoSelecionadoTexto').textContent = plan;
+
+            let inputs = document.getElementsByClassName('planoInput');
+            for (let i = 0; i < inputs.length; i++) {
+                inputs[i].value = plan;
+            }
+
+            document.getElementById('paymentSection').scrollIntoView({ behavior: 'smooth' });
         }
 
         function showPix() {
@@ -149,6 +179,13 @@
         function showCard() {
             document.getElementById('pixSection').style.display = 'none';
             document.getElementById('cardSection').style.display = 'block';
+        }
+
+        function loadingButton(btn) {
+            setTimeout(function () {
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processando...';
+                btn.classList.add('disabled');
+            }, 50);
         }
     </script>
 </body>
