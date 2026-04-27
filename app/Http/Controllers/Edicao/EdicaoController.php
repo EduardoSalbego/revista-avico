@@ -12,42 +12,42 @@ use Illuminate\Http\Request;
 class EdicaoController extends Controller
 {
     /*
-    * Função para listar as edições
-    * @param Request $request
-    * @return \Illuminate\View\View
-    */
+     * Função para listar as edições
+     * @param Request $request
+     * @return \Illuminate\View\View
+     */
     public function index(Request $request)
     {
         $query = Edicao::query();
-    
+
         if ($request->has('busca') && $request->busca != '') {
             $query->where('titulo', 'like', '%' . $request->busca . '%');
         }
-    
+
         $edicoes = $query->orderBy('created_at', 'desc')->paginate(9);
-    
+
         return view('revista.edicoes', compact('edicoes'));
     }
 
     /*
-    * Função para mostrar uma edição específica
-    * @param int $id
-    * @return \Illuminate\View\View
-    */
+     * Função para mostrar uma edição específica
+     * @param int $id
+     * @return \Illuminate\View\View
+     */
     public function show($id)
     {
         $edicao = Edicao::findOrFail($id);
         $comentarios = Comentario::with('user')
-                                ->where('edicao_id', $id)
-                                ->orderBy('created_at', 'desc')
-                                ->get();
+            ->where('edicao_id', $id)
+            ->orderBy('created_at', 'desc')
+            ->get();
         return view('revista.show', compact('edicao', 'comentarios'));
     }
 
     /*
-    * Função para criar uma nova edição
-    * @return \Illuminate\View\View
-    */
+     * Função para criar uma nova edição
+     * @return \Illuminate\View\View
+     */
     public function create()
     {
         $proximaEdicao = Edicao::count() + 1;
@@ -55,18 +55,26 @@ class EdicaoController extends Controller
     }
 
     /*
-    * Função para salvar uma nova edição
-    * @param Request $request
-    * @return \Illuminate\Http\RedirectResponse
-    */
+     * Função para salvar uma nova edição
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function store(Request $request)
     {
-        $request->validate([
-            'titulo' => 'required|string|max:255',
-            'autor' => 'required|string|max:255',
-            'imagem_capa' => 'required|image|mimes:jpeg,png,jpg|max:2048', 
-            'conteudo_html' => 'required|string',
-        ]);
+        // Rascunho tem validação mais leve (campos opcionais)
+        $isRascunho = $request->input('status') === 'rascunho';
+
+        $rules = [
+            'titulo' => $isRascunho ? 'nullable|string|max:255' : 'required|string|max:255',
+            'autor' => $isRascunho ? 'nullable|string|max:255' : 'required|string|max:255',
+            'imagem_capa' => $isRascunho ? 'nullable|image|max:5120' : 'required|image|max:5120',
+            'status' => 'required|in:rascunho,publicado',
+            'capitulos' => $isRascunho ? 'nullable|array' : 'required|array|min:1',
+            'capitulos.*.titulo' => $isRascunho ? 'nullable|string|max:255' : 'required|string|max:255',
+            'capitulos.*.conteudo_html' => 'nullable|string',
+            'capitulos.*.ordem' => 'nullable|integer',
+        ];
+        $request->validate($rules);
 
 
         $arquivo = $request->file('imagem_capa');
@@ -78,10 +86,26 @@ class EdicaoController extends Controller
         $edicao->titulo = $request->titulo;
         $edicao->autor = $request->autor;
         $edicao->imagem_capa = $caminhoCapa;
-        $edicao->conteudo_html = $request->conteudo_html;
+        $edicao->status = $request->status;
         $edicao->save();
 
-        return redirect()->back()->with('success', 'Edição da revista criada com sucesso!');
+        // Cria os capítulos
+        if ($request->filled('capitulos')) {
+            foreach ($request->capitulos as $dadosCapitulo) {
+
+                $edicao->capitulos()->create([
+                    'titulo' => $dadosCapitulo['titulo'] ?? 'Sem título',
+                    'conteudo_html' => $dadosCapitulo['conteudo_html'],
+                    'ordem' => $dadosCapitulo['ordem'] ?? 0,
+                ]);
+            }
+        }
+
+        $mensagem = $request->status === 'rascunho'
+            ? 'Rascunho salvo com sucesso!'
+            : 'Edição publicada com sucesso!';
+
+        return redirect()->route('edicoes.index')->with('success', $mensagem);
     }
 
     // Lista todas as edições no formato de tabela para o admin
@@ -95,7 +119,7 @@ class EdicaoController extends Controller
     public function destroy($id)
     {
         $edicao = Edicao::findOrFail($id);
-        
+
         $edicao->delete();
 
         return redirect()->route('admin.edicoes.index')->with('success', 'Edição excluída com sucesso!');
@@ -118,7 +142,7 @@ class EdicaoController extends Controller
             'autor' => 'required|string|max:255',
             'imagem_capa' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'tipo_conteudo' => 'required|in:blocos,pdf',
-            'arquivo_pdf' => 'nullable|mimes:pdf|max:10240', 
+            'arquivo_pdf' => 'nullable|mimes:pdf|max:10240',
         ]);
 
         $edicao->titulo = $request->titulo;
@@ -133,7 +157,7 @@ class EdicaoController extends Controller
         }
 
         if ($request->tipo_conteudo === 'pdf') {
-            
+
             if ($request->hasFile('arquivo_pdf')) {
                 $arquivo = $request->file('arquivo_pdf');
                 $nomeArquivo = time() . '_' . $arquivo->getClientOriginalName();
@@ -141,21 +165,21 @@ class EdicaoController extends Controller
                 $edicao->arquivo_pdf = 'edicoes_pdfs/' . $nomeArquivo;
             }
             $edicao->conteudo_blocos = null;
-            
+
         } else {
             $blocosFormatados = [];
-            
+
             if ($request->has('tipo')) {
                 $textos = $request->input('conteudo', []);
                 $arquivos = $request->file('conteudo', []);
-                $conteudosAntigos = $request->input('conteudo_antigo', []); 
-                
+                $conteudosAntigos = $request->input('conteudo_antigo', []);
+
                 $indiceTexto = 0;
                 $indiceArquivo = 0;
 
                 foreach ($request->tipo as $index => $tipo) {
                     $conteudo = null;
-                
+
                     if ($tipo === 'imagem') {
                         if (isset($arquivos[$indiceArquivo])) {
                             $arquivo = $arquivos[$indiceArquivo];
@@ -165,13 +189,13 @@ class EdicaoController extends Controller
                         } else {
                             $conteudo = $conteudosAntigos[$index] ?? null;
                         }
-                        $indiceArquivo++; 
-                        
-                    } else { 
+                        $indiceArquivo++;
+
+                    } else {
                         if (isset($textos[$indiceTexto])) {
                             $conteudo = $textos[$indiceTexto];
                         }
-                        $indiceTexto++; 
+                        $indiceTexto++;
                     }
 
                     $blocosFormatados[] = [
@@ -181,7 +205,7 @@ class EdicaoController extends Controller
                     ];
                 }
             }
-            
+
             $edicao->conteudo_blocos = json_encode($blocosFormatados);
             $edicao->arquivo_pdf = null;
         }

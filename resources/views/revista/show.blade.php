@@ -25,15 +25,13 @@
                 <span class="edicao"> {{ $edicao->autor }}</span>
             </header>
 
-            <div class="artigo-duas-colunas">
-                <h1 class="mb-4">{{ $edicao->titulo }}</h1>
-
-                {{-- Conteúdo HTML salvo pelo editor --}}
-                <div class="conteudo-edicao">
-                    {!! $edicao->conteudo_html !!}
+            <h2 class="mb-4" style="text-align: center;">{{ $edicao->titulo }}</h2>
+            @foreach($edicao->capitulos as $capitulo)
+                <h3>{{ $capitulo->titulo }}</h3>
+                <div class="conteudo-edicao artigo-duas-colunas">
+                    {!! $capitulo->conteudo_html !!}
                 </div>
-
-            </div>
+            @endforeach
         </div>
 
         <section class="py-5 bg-light mt-5">

@@ -25,16 +25,14 @@
                 <span class="edicao"> <?php echo e($edicao->autor); ?></span>
             </header>
 
-            <div class="artigo-duas-colunas">
-                <h1 class="mb-4"><?php echo e($edicao->titulo); ?></h1>
-
-                
-                <div class="conteudo-edicao">
-                    <?php echo $edicao->conteudo_html; ?>
+            <h2 class="mb-4" style="text-align: center;"><?php echo e($edicao->titulo); ?></h2>
+            <?php $__currentLoopData = $edicao->capitulos; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $capitulo): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                <h3><?php echo e($capitulo->titulo); ?></h3>
+                <div class="conteudo-edicao artigo-duas-colunas">
+                    <?php echo $capitulo->conteudo_html; ?>
 
                 </div>
-
-            </div>
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
         </div>
 
         <section class="py-5 bg-light mt-5">

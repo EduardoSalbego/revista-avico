@@ -5,24 +5,37 @@
 <body id="page-top">
     <?php echo $__env->make('layouts/topbar', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
 
+    
+    <div class="modal fade" id="modalPreview" tabindex="-1" aria-labelledby="modalPreviewLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalPreviewLabel">Preview do Capítulo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    
+                    <div class="container" style="max-width: 800px;">
+                        <div id="preview-titulo-capitulo" class="mb-3 text-muted small"></div>
+                        <div id="preview-conteudo" class="artigo-duas-colunas conteudo-edicao"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <main class="container py-5" style="margin-top: 50px;">
         <h2 class="text-center mb-4">
             Criando a edição #<?php echo e($proximaEdicao ?? '1'); ?> da revista
         </h2>
 
-        <?php if($errors->any()): ?>
-            <div class="alert alert-danger">
-                <h5 class="mb-2">⚠️ Erros ao salvar:</h5>
-                <ul class="mb-0">
-                    <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                        <li><?php echo e($error); ?></li>
-                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                </ul>
-            </div>
-        <?php endif; ?>
-
-        <form action="<?php echo e(route('edicoes.store')); ?>" method="POST" enctype="multipart/form-data">
+        <form id="form-edicao" action="<?php echo e(route('edicoes.store')); ?>" method="POST" enctype="multipart/form-data">
             <?php echo csrf_field(); ?>
+            
+            <input type="hidden" name="status" id="input-status" value="publicado">
 
             
             <div class="card p-4 mb-4">
@@ -31,127 +44,216 @@
                 <div class="mb-3">
                     <label for="titulo" class="form-label">Título da Edição</label>
                     <input type="text" class="form-control" id="titulo" name="titulo"
-                        placeholder="Ex: Edição de Outubro 2025" required>
+                        placeholder="Ex: Edição de Outubro 2025" value="<?php echo e(old('titulo')); ?>" required>
                 </div>
 
                 <div class="mb-3">
                     <label for="autor" class="form-label">Autor</label>
                     <input type="text" class="form-control" id="autor" name="autor"
-                        placeholder="Nome do autor principal" required>
+                        placeholder="Nome do autor principal" value="<?php echo e(old('autor')); ?>" required>
                 </div>
 
                 <div class="mb-3">
                     <label for="imagem_capa" class="form-label">Imagem de Capa</label>
-                    <input type="file" class="form-control" id="imagem_capa" name="imagem_capa"
-                        accept="image/*" required>
+                    <input type="file" class="form-control" id="imagem_capa" name="imagem_capa" accept="image/*"
+                        required>
                 </div>
             </div>
 
             
             <div class="card p-4 mb-4">
-                <h4 class="mb-3">Conteúdo da Revista</h4>
-                <p class="text-muted mb-3">
-                    Cole o conteúdo do Word diretamente abaixo. Títulos, parágrafos, negrito,
-                    itálico e listas serão preservados automaticamente.
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0">Capítulos</h4>
+                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="adicionarCapitulo()">
+                        + Adicionar Capítulo
+                    </button>
+                </div>
+
+                <p class="text-muted small mb-4">
+                    Cada capítulo tem seu próprio editor. Cole o conteúdo do Word diretamente em cada um.
                 </p>
 
-                
-                <textarea id="conteudo_editor" name="conteudo_html"><?php echo e(old('conteudo_html')); ?></textarea>
-
-                <?php $__errorArgs = ['conteudo_html'];
-$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
-if ($__bag->has($__errorArgs[0])) :
-if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?>
-                    <div class="text-danger mt-2 small"><?php echo e($message); ?></div>
-                <?php unset($message);
-if (isset($__messageOriginal)) { $message = $__messageOriginal; }
-endif;
-unset($__errorArgs, $__bag); ?>
+                <div id="capitulos-container">
+                    
+                </div>
             </div>
 
-            <div class="mt-4 text-center">
-                <button type="submit" class="btn btn-primary btn-lg px-5">Salvar Edição</button>
+            
+            <div class="mt-4 d-flex justify-content-center gap-3">
+                <button type="button" class="btn btn-outline-secondary btn-lg px-5" onclick="salvarRascunho()">
+                    Salvar como rascunho
+                </button>
+                <button type="submit" class="btn btn-primary btn-lg px-5" onclick="definirStatus('publicado')">
+                    Publicar Edição
+                </button>
             </div>
         </form>
     </main>
 
     <?php echo $__env->make('layouts/footer', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
 
-    
     <script src="https://cdn.jsdelivr.net/npm/tinymce@6/tinymce.min.js" referrerpolicy="origin"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 
     <script>
-        tinymce.init({
-            selector: '#conteudo_editor',
-            language: 'pt_BR',           // requer o language pack – veja observações abaixo
-            height: 600,
-            menubar: false,
-            branding: false,
+        let contadorCapitulos = 0;
+        const editors = {}; // rastreia instâncias TinyMCE por ID
 
-            // Plugins essenciais
-            plugins: [
-                'advlist', 'autolink', 'lists', 'link', 'image',
-                'charmap', 'preview', 'searchreplace', 'visualblocks',
-                'fullscreen', 'insertdatetime', 'table', 'wordcount',
-                'paste'                  // paste plugin: limpa lixo do Word
-            ],
-
-            toolbar:
-                'undo redo | blocks | ' +
-                'bold italic underline strikethrough | ' +
-                'bullist numlist | ' +
-                'link image table | ' +
-                'alignleft aligncenter alignright | ' +
-                'removeformat | fullscreen',
-
-            // Configurações de paste do Word
-            // O TinyMCE detecta automaticamente conteúdo do Word e limpa o HTML proprietário,
-            // preservando apenas a semântica (h1-h6, strong, em, ul, ol, p, table…)
-            paste_as_text: false,           // false = preserva formatação (negrito, itálico etc.)
-            paste_remove_styles_if_webkit: true,
-            paste_merge_formats: true,
-            smart_paste: true,              // TinyMCE 6+
-
-            // Bloquear tags que não fazem sentido salvar no banco
-            valid_elements:
-                'p,br,h1,h2,h3,h4,h5,h6,' +
-                'strong/b,em/i,u,s,strike,' +
-                'ul,ol,li,' +
-                'a[href|target|rel],' +
-                'img[src|alt|width|height|style],' +
-                'table,thead,tbody,tr,th[colspan|rowspan],td[colspan|rowspan],' +
-                'blockquote,pre,code,hr,' +
-                'sup,sub',
-
-            // Estilos de bloco disponíveis no dropdown "Blocks"
-            block_formats:
-                'Parágrafo=p; ' +
-                'Título 1=h1; ' +
-                'Título 2=h2; ' +
-                'Título 3=h3; ' +
-                'Citação=blockquote; ' +
-                'Código=pre',
-
-            // Permite upload de imagem inline (base64) – útil se o editor inserir imgs
-            // Para produção, prefira images_upload_url apontando para uma rota Laravel
-            // images_upload_handler pode ser customizado com fetch + CSRF
-
-            // Garante que o campo hidden seja atualizado antes do submit
-            setup(editor) {
-                editor.on('change', () => editor.save());
-            }
+        // Inicializa com um capítulo por padrão
+        document.addEventListener('DOMContentLoaded', () => {
+            adicionarCapitulo();
         });
 
-        // Validação no submit: impede envio com editor vazio
-        document.querySelector('form').addEventListener('submit', function (e) {
-            const html = tinymce.get('conteudo_editor').getContent();
-            if (!html || html.trim() === '') {
+        function adicionarCapitulo() {
+            contadorCapitulos++;
+            const id = contadorCapitulos;
+            const container = document.getElementById('capitulos-container');
+
+            const div = document.createElement('div');
+            div.classList.add('card', 'p-3', 'mb-4', 'capitulo-bloco');
+            div.dataset.ordem = id;
+            div.innerHTML = `
+                <div class="d-flex align-items-center gap-2 mb-3 border-bottom pb-2">
+                    <strong class="text-primary me-auto">Capítulo ${id}</strong>
+                    <button type="button" class="btn btn-sm btn-outline-info" onclick="abrirPreview(${id})">
+                        👁 Preview
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removerCapitulo(this, ${id})">
+                        Excluir
+                    </button>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Título do Capítulo</label>
+                    <input type="text"
+                           class="form-control"
+                           name="capitulos[${id}][titulo]"
+                           placeholder="Ex: Artigos Científicos / Saúde e Bem-Estar"
+                           required>
+                </div>
+
+                <div class="mb-2">
+                    <label class="form-label fw-semibold">Conteúdo</label>
+                </div>
+                <textarea id="editor_${id}" name="capitulos[${id}][conteudo_html]"></textarea>
+                <input type="hidden" name="capitulos[${id}][ordem]" class="campo-ordem" value="${id}">
+            `;
+
+            container.appendChild(div);
+            inicializarEditor(id);
+        }
+
+        function inicializarEditor(id) {
+            tinymce.init({
+                selector: `#editor_${id}`,
+                height: 450,
+                menubar: false,
+                branding: false,
+                plugins: [
+                    'advlist', 'autolink', 'lists', 'link', 'image',
+                    'charmap', 'preview', 'searchreplace', 'visualblocks',
+                    'fullscreen', 'table', 'wordcount'
+                ],
+                toolbar:
+                    'undo redo | blocks | ' +
+                    'bold italic underline strikethrough | ' +
+                    'bullist numlist | ' +
+                    'link image table | ' +
+                    'alignleft aligncenter alignright | ' +
+                    'removeformat | fullscreen',
+                paste_as_text: false,
+                paste_merge_formats: true,
+                smart_paste: true,
+                valid_elements:
+                    'p,br,h1,h2,h3,h4,h5,h6,' +
+                    'strong/b,em/i,u,s,strike,' +
+                    'ul,ol,li,' +
+                    'a[href|target|rel],' +
+                    'img[src|alt|width|height|style],' +
+                    'table,thead,tbody,tr,th[colspan|rowspan],td[colspan|rowspan],' +
+                    'blockquote,pre,code,hr,sup,sub',
+                block_formats:
+                    'Parágrafo=p; Título 1=h1; Título 2=h2; Título 3=h3; Citação=blockquote; Código=pre',
+                setup(editor) {
+                    editors[id] = editor;
+                    editor.on('change', () => editor.save());
+                }
+            });
+        }
+
+        function removerCapitulo(botao, id) {
+            if (contadorCapitulos <= 1) {
+                alert('A edição precisa ter pelo menos um capítulo.');
+                return;
+            }
+            if (!confirm('Excluir este capítulo?')) return;
+
+            const bloco = botao.closest('.capitulo-bloco');
+            tinymce.get(`editor_${id}`)?.remove();
+            delete editors[id];
+            bloco.remove();
+            contadorCapitulos--;
+            atualizarOrdens();
+        }
+
+        function atualizarOrdens() {
+            document.querySelectorAll('.capitulo-bloco').forEach((bloco, index) => {
+                bloco.querySelector('.campo-ordem').value = index + 1;
+            });
+        }
+
+        function abrirPreview(id) {
+            // Sincroniza o conteúdo do editor antes de exibir
+            const editor = tinymce.get(`editor_${id}`);
+            if (!editor) return;
+
+            const html = editor.getContent();
+            const tituloInput = document.querySelector(`[name="capitulos[${id}][titulo]"]`);
+            const titulo = tituloInput?.value || `Capítulo ${id}`;
+
+            document.getElementById('preview-titulo-capitulo').textContent = titulo;
+            document.getElementById('preview-conteudo').innerHTML = html;
+
+            const modal = new bootstrap.Modal(document.getElementById('modalPreview'));
+            modal.show();
+        }
+
+        function salvarRascunho() {
+            sincronizarTodosEditors();
+            document.getElementById('input-status').value = 'rascunho';
+
+            // Remove o required dos campos para permitir salvar incompleto
+            document.querySelectorAll('[required]').forEach(el => el.removeAttribute('required'));
+
+            document.getElementById('form-edicao').submit();
+        }
+
+        function definirStatus(status) {
+            sincronizarTodosEditors();
+            document.getElementById('input-status').value = status;
+        }
+
+        function sincronizarTodosEditors() {
+            tinymce.editors.forEach(editor => editor.save());
+        }
+
+        // Validação no submit de publicação
+        document.getElementById('form-edicao').addEventListener('submit', function (e) {
+            const status = document.getElementById('input-status').value;
+            if (status === 'rascunho') return; // rascunho já foi tratado em salvarRascunho()
+
+            sincronizarTodosEditors();
+
+            // Verifica se ao menos um capítulo tem conteúdo
+            const editores = tinymce.editors;
+            const algumComConteudo = editores.some(ed => ed.getContent().trim() !== '');
+            if (!algumComConteudo) {
                 e.preventDefault();
-                alert('O conteúdo da revista não pode estar vazio.');
-                tinymce.get('conteudo_editor').focus();
+                alert('Adicione conteúdo em pelo menos um capítulo antes de publicar.');
             }
         });
     </script>
 </body>
+
 </html><?php /**PATH /var/www/html/resources/views/revista/create.blade.php ENDPATH**/ ?>
