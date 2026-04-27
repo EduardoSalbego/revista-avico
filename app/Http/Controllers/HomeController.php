@@ -23,11 +23,15 @@ class HomeController extends Controller
      */
     public function index()
     {
-        $ultimasEdicoes = Edicao::orderBy('created_at', 'desc')->take(3)->get();
+        $ultimasEdicoes = Edicao::where('status', 'publicado')
+            ->orderBy('created_at', 'desc')
+            ->take(3)
+            ->get();
         return view('welcome', compact('ultimasEdicoes'));
     }
 
-    public function revista(){
+    public function revista()
+    {
         return view('');
     }
 

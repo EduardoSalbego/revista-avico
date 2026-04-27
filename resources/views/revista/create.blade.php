@@ -64,26 +64,31 @@
             <div class="card p-4 mb-4">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h4 class="mb-0">Capítulos</h4>
-                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="adicionarCapitulo()">
-                        + Adicionar Capítulo
-                    </button>
                 </div>
 
                 <p class="text-muted small mb-4">
-                    Cada capítulo tem seu próprio editor. Cole o conteúdo do Word diretamente em cada um.
+                    Cada capítulo tem seu próprio editor. Cole o conteúdo do Word diretamente em cada capítulo. Títulos,
+                    negrito e formatação são preservados.
                 </p>
 
                 <div id="capitulos-container">
                     {{-- Capítulos são inseridos aqui via JS --}}
                 </div>
+                <div class="d-flex justify-content-end align-items-center mb-2">
+                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="adicionarCapitulo()">
+                        + Adicionar Capítulo
+                    </button>
+                </div>
             </div>
 
             {{-- Ações --}}
             <div class="mt-4 d-flex justify-content-center gap-3">
-                <button type="button" class="btn btn-outline-secondary btn-lg px-5" onclick="salvarRascunho()">
+                <button type="submit" class="btn btn-outline-secondary btn-lg px-5"
+                    onmousedown="document.getElementById('input-status').value='rascunho'">
                     Salvar como rascunho
                 </button>
-                <button type="submit" class="btn btn-primary btn-lg px-5" onclick="definirStatus('publicado')">
+                <button type="submit" class="btn btn-primary btn-lg px-5"
+                    onmousedown="document.getElementById('input-status').value='publicado'">
                     Publicar Edição
                 </button>
             </div>
@@ -92,9 +97,7 @@
 
     @include('layouts/footer')
 
-    <script src="https://cdn.jsdelivr.net/npm/tinymce@6/tinymce.min.js" referrerpolicy="origin"></script>
-    {{-- SortableJS para drag-and-drop dos capítulos --}}
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.3/tinymce.min.js" referrerpolicy="origin"></script>
 
     <script>
         let contadorCapitulos = 0;
@@ -219,35 +222,15 @@
             modal.show();
         }
 
-        function salvarRascunho() {
-            sincronizarTodosEditors();
-            document.getElementById('input-status').value = 'rascunho';
-
-            // Remove o required dos campos para permitir salvar incompleto
-            document.querySelectorAll('[required]').forEach(el => el.removeAttribute('required'));
-
-            document.getElementById('form-edicao').submit();
-        }
-
-        function definirStatus(status) {
-            sincronizarTodosEditors();
-            document.getElementById('input-status').value = status;
-        }
-
-        function sincronizarTodosEditors() {
-            tinymce.editors.forEach(editor => editor.save());
-        }
-
         // Validação no submit de publicação
         document.getElementById('form-edicao').addEventListener('submit', function (e) {
-            const status = document.getElementById('input-status').value;
-            if (status === 'rascunho') return; // rascunho já foi tratado em salvarRascunho()
+            // Rascunho já sincronizou e submeteu diretamente — só chega aqui via botão Publicar
+            if (document.getElementById('input-status').value === 'rascunho') return;
 
-            sincronizarTodosEditors();
+            // Sincroniza para publicação
+            tinymce.editors.forEach(editor => editor.save());
 
-            // Verifica se ao menos um capítulo tem conteúdo
-            const editores = tinymce.editors;
-            const algumComConteudo = editores.some(ed => ed.getContent().trim() !== '');
+            const algumComConteudo = tinymce.editors.some(ed => ed.getContent().trim() !== '');
             if (!algumComConteudo) {
                 e.preventDefault();
                 alert('Adicione conteúdo em pelo menos um capítulo antes de publicar.');

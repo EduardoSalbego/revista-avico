@@ -10,7 +10,7 @@
         <header class="masthead" style="background-image: url('images/assets/img/home-bg.jpg')">
             <div class="container">
                 <img src="{{ asset('storage/imagens/logo_revista.png') }}" alt="Logo REVICO"
-                    style="height: 150px; margin-top: -60px; margin-bottom: 35px;">
+                    style="height: 150px; margin-bottom: 35px;">
                 <div class="masthead-subheading text-primary">Apoie nosso trabalho e ajude a manter a REVICO e a AVICO
                     ativas!</div>
                 <a class="btn btn-primary btn-xl text-uppercase mb-3" href="/assinar">Assine a REVICO</a>

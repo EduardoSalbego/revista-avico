@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Edicao;
 
 use App\Models\Edicao;
 use App\Models\Comentario;
+use App\Models\Capitulo;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -18,7 +19,7 @@ class EdicaoController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Edicao::query();
+        $query = Edicao::query()->where('status', 'publicado');
 
         if ($request->has('busca') && $request->busca != '') {
             $query->where('titulo', 'like', '%' . $request->busca . '%');
@@ -61,21 +62,18 @@ class EdicaoController extends Controller
      */
     public function store(Request $request)
     {
-        // Rascunho tem validação mais leve (campos opcionais)
-        $isRascunho = $request->input('status') === 'rascunho';
 
         $rules = [
-            'titulo' => $isRascunho ? 'nullable|string|max:255' : 'required|string|max:255',
-            'autor' => $isRascunho ? 'nullable|string|max:255' : 'required|string|max:255',
-            'imagem_capa' => $isRascunho ? 'nullable|image|max:5120' : 'required|image|max:5120',
+            'titulo' => 'required|string|max:255',
+            'autor' => 'required|string|max:255',
+            'imagem_capa' => 'required|image|max:5120',
             'status' => 'required|in:rascunho,publicado',
-            'capitulos' => $isRascunho ? 'nullable|array' : 'required|array|min:1',
-            'capitulos.*.titulo' => $isRascunho ? 'nullable|string|max:255' : 'required|string|max:255',
+            'capitulos' => 'required|array|min:1',
+            'capitulos.*.titulo' => 'required|string|max:255',
             'capitulos.*.conteudo_html' => 'nullable|string',
             'capitulos.*.ordem' => 'nullable|integer',
         ];
         $request->validate($rules);
-
 
         $arquivo = $request->file('imagem_capa');
         $nomeArquivo = time() . '_' . $arquivo->getClientOriginalName();
@@ -111,7 +109,7 @@ class EdicaoController extends Controller
     // Lista todas as edições no formato de tabela para o admin
     public function indexAdmin()
     {
-        $edicoes = Edicao::orderBy('created_at', 'desc')->paginate(10);
+        $edicoes = Edicao::orderBy('created_at', 'desc')->paginate(20);
         return view('admin.edicoes.index', compact('edicoes'));
     }
 
@@ -140,78 +138,74 @@ class EdicaoController extends Controller
         $request->validate([
             'titulo' => 'required|string|max:255',
             'autor' => 'required|string|max:255',
-            'imagem_capa' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'tipo_conteudo' => 'required|in:blocos,pdf',
-            'arquivo_pdf' => 'nullable|mimes:pdf|max:10240',
+            'imagem_capa' => 'nullable|image|max:5120',
+            'status' => 'required|in:rascunho,publicado',
+            'capitulos' => 'nullable|array',
+            'capitulos.*.id' => 'nullable|integer|exists:capitulos,id',
+            'capitulos.*.titulo' => 'nullable|string|max:255',
+            'capitulos.*.conteudo_html' => 'nullable|string',
+            'capitulos.*.ordem' => 'nullable|integer',
         ]);
 
-        $edicao->titulo = $request->titulo;
-        $edicao->autor = $request->autor;
-        $edicao->tipo_conteudo = $request->tipo_conteudo;
+        // Atualiza imagem de capa se enviada
+        $dados = [
+            'titulo' => $request->titulo ?? $edicao->titulo,
+            'autor' => $request->autor ?? $edicao->autor,
+            'status' => $request->status,
+        ];
 
         if ($request->hasFile('imagem_capa')) {
-            $arquivo = $request->file('imagem_capa');
-            $nomeArquivo = time() . '_' . $arquivo->getClientOriginalName();
-            $arquivo->move(public_path('capas'), $nomeArquivo);
-            $edicao->imagem_capa = 'capas/' . $nomeArquivo;
+            // Remove a capa antiga se existir
+            if ($edicao->imagem_capa) {
+                Storage::disk('public')->delete($edicao->imagem_capa);
+            }
+            $dados['imagem_capa'] = $request->file('imagem_capa')->store('capas', 'public');
         }
 
-        if ($request->tipo_conteudo === 'pdf') {
+        $edicao->update($dados);
 
-            if ($request->hasFile('arquivo_pdf')) {
-                $arquivo = $request->file('arquivo_pdf');
-                $nomeArquivo = time() . '_' . $arquivo->getClientOriginalName();
-                $arquivo->move(public_path('edicoes_pdfs'), $nomeArquivo);
-                $edicao->arquivo_pdf = 'edicoes_pdfs/' . $nomeArquivo;
+        // Atualiza capítulos
+        if ($request->filled('capitulos')) {
+
+            // IDs dos capítulos recebidos no form (para detectar os excluídos)
+            $idsRecebidos = collect($request->capitulos)
+                ->pluck('id')
+                ->filter()
+                ->map(fn($id) => (int) $id)
+                ->toArray();
+
+            // Remove capítulos que foram excluídos na tela
+            if (!empty($idsRecebidos)) {
+                $edicao->capitulos()
+                    ->whereNotIn('id', $idsRecebidos)
+                    ->delete();
             }
-            $edicao->conteudo_blocos = null;
+            foreach ($request->capitulos as $capituloData) {
 
-        } else {
-            $blocosFormatados = [];
+                $payload = [
+                    'titulo' => $capituloData['titulo'] ?? 'Sem título',
+                    'conteudo_html' => $capituloData['conteudo_html'],
+                    'ordem' => $capituloData['ordem'] ?? 0,
+                    'edicao_id' => $edicao->id,
+                ];
 
-            if ($request->has('tipo')) {
-                $textos = $request->input('conteudo', []);
-                $arquivos = $request->file('conteudo', []);
-                $conteudosAntigos = $request->input('conteudo_antigo', []);
-
-                $indiceTexto = 0;
-                $indiceArquivo = 0;
-
-                foreach ($request->tipo as $index => $tipo) {
-                    $conteudo = null;
-
-                    if ($tipo === 'imagem') {
-                        if (isset($arquivos[$indiceArquivo])) {
-                            $arquivo = $arquivos[$indiceArquivo];
-                            $nomeArquivo = time() . '_' . $arquivo->getClientOriginalName();
-                            $arquivo->move(public_path('blocos_imagens'), $nomeArquivo);
-                            $conteudo = 'blocos_imagens/' . $nomeArquivo;
-                        } else {
-                            $conteudo = $conteudosAntigos[$index] ?? null;
-                        }
-                        $indiceArquivo++;
-
-                    } else {
-                        if (isset($textos[$indiceTexto])) {
-                            $conteudo = $textos[$indiceTexto];
-                        }
-                        $indiceTexto++;
-                    }
-
-                    $blocosFormatados[] = [
-                        'tipo' => $tipo,
-                        'conteudo' => $conteudo,
-                        'ordem' => $index + 1
-                    ];
+                if (!empty($capituloData['id'])) {
+                    Capitulo::where('id', $capituloData['id'])
+                        ->where('edicao_id', $edicao->id)
+                        ->update($payload);
+                } else {
+                    $edicao->capitulos()->create(array_merge($payload, [
+                        'edicao_id' => $edicao->id
+                    ]));
                 }
             }
-
-            $edicao->conteudo_blocos = json_encode($blocosFormatados);
-            $edicao->arquivo_pdf = null;
         }
 
-        $edicao->save();
+        $mensagem = $request->status === 'rascunho'
+            ? 'Rascunho salvo com sucesso!'
+            : 'Edição atualizada e publicada!';
 
-        return redirect()->route('admin.edicoes.index')->with('success', 'Edição atualizada com sucesso!');
+        return redirect()->route('admin.edicoes.index')->with('success', $mensagem);
     }
+
 }

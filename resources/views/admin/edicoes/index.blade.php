@@ -24,7 +24,8 @@
                             <th>Capa</th>
                             <th>Título</th>
                             <th>Autor</th>
-                            <th>Formato</th>
+                            <th>Capítulos</th>
+                            <th>Status</th>
                             <th>Data de Publicação</th>
                             <th class="text-center">Ações</th>
                         </tr>
@@ -41,11 +42,12 @@
                                     {{ $edicao->titulo }}
                                 </td>
                                 <td>{{ $edicao->autor }}</td>
+                                <td>ㅤㅤ{{ $edicao->capitulos()->count() }}</td>
                                 <td>
-                                    @if($edicao->tipo_conteudo == 'pdf')
-                                        <span class="badge bg-danger">PDF</span>
+                                    @if($edicao->status === 'publicado')
+                                        <span class="badge bg-success">Publicado</span>
                                     @else
-                                        <span class="badge bg-primary">Blocos Dinâmicos</span>
+                                        <span class="badge bg-secondary">Rascunho</span>
                                     @endif
                                 </td>
                                 <td>{{ \Carbon\Carbon::parse($edicao->created_at)->format('d/m/Y') }}</td>
