@@ -987,7 +987,7 @@ trix-toolbar [data-trix-dialog] [data-trix-validate]:invalid {
     max-width: 1000px;
 }
 
-.artigo-duas-colunas h2 {
+.artigo-duas-colunas h1 {
     column-span: all;
     /* título ocupa toda a largura */
     text-align: center;

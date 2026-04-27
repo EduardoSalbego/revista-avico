@@ -64,10 +64,10 @@ class EdicaoController extends Controller
         $request->validate([
             'titulo' => 'required|string|max:255',
             'autor' => 'required|string|max:255',
-            'imagem_capa' => 'required|image|mimes:jpeg,png,jpg|max:2048',
-            'tipo_conteudo' => 'required|in:blocos,pdf',
-            'arquivo_pdf' => 'required_if:tipo_conteudo,pdf|mimes:pdf|max:10240', 
+            'imagem_capa' => 'required|image|mimes:jpeg,png,jpg|max:2048', 
+            'conteudo_html' => 'required|string',
         ]);
+
 
         $arquivo = $request->file('imagem_capa');
         $nomeArquivo = time() . '_' . $arquivo->getClientOriginalName();
@@ -78,66 +78,7 @@ class EdicaoController extends Controller
         $edicao->titulo = $request->titulo;
         $edicao->autor = $request->autor;
         $edicao->imagem_capa = $caminhoCapa;
-        $edicao->tipo_conteudo = $request->tipo_conteudo;
-
-        if ($request->tipo_conteudo === 'pdf') {
-
-            $arquivo = $request->file('arquivo_pdf');
-            $nomeArquivo = time() . '_' . $arquivo->getClientOriginalName();
-            $arquivo->move(public_path('edicoes_pdfs'), $nomeArquivo);
-            $caminhoPdf = 'edicoes_pdfs/' . $nomeArquivo;
-            
-            $edicao->arquivo_pdf = $caminhoPdf;
-            $edicao->conteudo_blocos = null;
-            
-        } else {
-            $blocosFormatados = [];
-            
-            if ($request->has('tipo')) {
-                // O PHP separa automaticamente o que é texto do que é arquivo.
-                // Pegamos as duas listas separadas:
-                $textos = $request->input('conteudo', []);
-                $arquivos = $request->file('conteudo', []);
-                
-                // Criamos contadores independentes para cada lista
-                $indiceTexto = 0;
-                $indiceArquivo = 0;
-
-                foreach ($request->tipo as $index => $tipo) {
-                    $conteudo = null;
-                
-                    if ($tipo === 'imagem') {
-                        // Verifica se existe um arquivo no contador atual de arquivos
-                        if (isset($arquivos[$indiceArquivo])) {
-                            $arquivo = $arquivos[$indiceArquivo];
-                            $nomeArquivo = time() . '_' . $arquivo->getClientOriginalName();
-                            
-                            // Salva direto na pasta public para evitar o erro de symlink
-                            $arquivo->move(public_path('blocos_imagens'), $nomeArquivo);
-                            $conteudo = 'blocos_imagens/' . $nomeArquivo;
-                        }
-                        $indiceArquivo++; // Avança apenas o contador de arquivos
-                        
-                    } else { 
-                        // Verifica se existe um texto no contador atual de textos
-                        if (isset($textos[$indiceTexto])) {
-                            $conteudo = $textos[$indiceTexto];
-                        }
-                        $indiceTexto++; // Avança apenas o contador de textos
-                    }
-
-                    $blocosFormatados[] = [
-                        'tipo' => $tipo,
-                        'conteudo' => $conteudo,
-                        'ordem' => $index + 1
-                    ];
-                }
-            }
-            
-            $edicao->conteudo_blocos = json_encode($blocosFormatados);
-            $edicao->arquivo_pdf = null;
-        }
-
+        $edicao->conteudo_html = $request->conteudo_html;
         $edicao->save();
 
         return redirect()->back()->with('success', 'Edição da revista criada com sucesso!');

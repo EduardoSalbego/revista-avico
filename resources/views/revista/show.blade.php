@@ -25,46 +25,13 @@
                 <span class="edicao"> {{ $edicao->autor }}</span>
             </header>
 
-            <div class="{{ $edicao->tipo_conteudo === 'pdf' ? '' : 'artigo-duas-colunas' }}">
+            <div class="artigo-duas-colunas">
                 <h1 class="mb-4">{{ $edicao->titulo }}</h1>
 
-                {{-- LÓGICA CONDICIONAL: PDF ou BLOCOS --}}
-                @if($edicao->tipo_conteudo === 'pdf')
-
-                    <div class="pdf-container my-5 text-center">
-                        <iframe src="{{ asset($edicao->arquivo_pdf) }}" width="70%" height="1000px"
-                            style="border: 1px solid #ccc; border-radius: 5px;">
-                            Seu navegador não suporta a visualização de PDFs.
-                        </iframe>
-                        <div class="mt-3">
-                            <a href="{{ asset($edicao->arquivo_pdf) }}" download class="btn btn-outline-primary">
-                                Baixar PDF da Edição
-                            </a>
-                        </div>
-                    </div>
-
-                @elseif($edicao->tipo_conteudo === 'blocos')
-
-                    @php
-                        $blocos = json_decode($edicao->conteudo_blocos, true) ?? [];
-                    @endphp
-
-                    @foreach($blocos as $bloco)
-                        @if($bloco['tipo'] === 'paragrafo')
-                            <p class="mb-3" style="text-align: justify; line-height: 1.8;">
-                                {{ $bloco['conteudo'] }}
-                            </p>
-                        @elseif($bloco['tipo'] === 'subtitulo')
-                            <h3 class="mt-4 mb-3">{{ $bloco['conteudo'] }}</h3>
-                        @elseif($bloco['tipo'] === 'imagem')
-                            <div class="text-center my-4">
-                                <img src="{{ asset($bloco['conteudo']) }}" alt="Imagem do artigo" class="img-fluid rounded"
-                                    style="max-height: 500px; object-fit: cover;">
-                            </div>
-                        @endif
-                    @endforeach
-
-                @endif
+                {{-- Conteúdo HTML salvo pelo editor --}}
+                <div class="conteudo-edicao">
+                    {!! $edicao->conteudo_html !!}
+                </div>
 
             </div>
         </div>

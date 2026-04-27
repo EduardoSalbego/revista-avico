@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-br" class="fontawesome-i2svg-active fontawesome-i2svg-complete">
+
+<?php echo $__env->make('layouts/head', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
+
+<body id="page-top">
+    <?php echo $__env->make('layouts/topbar', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
+
+    <main id="content">
+        <header class="masthead" style="background-image: url('images/assets/img/home-bg.jpg')">
+            <div class="container">
+                <img src="<?php echo e(asset('storage/imagens/logo_revista.png')); ?>" alt="Logo REVICO"
+                    style="height: 150px; margin-top: -60px; margin-bottom: 35px;">
+                <div class="masthead-subheading text-primary">Apoie nosso trabalho e ajude a manter a REVICO e a AVICO
+                    ativas!</div>
+                <a class="btn btn-primary btn-xl text-uppercase mb-3" href="/assinar">Assine a REVICO</a>
+            </div>
+        </header>
+
+        <section class="page-section" id="noticias">
+            <h2 class="section-heading text-uppercase text-center">edições recentes</h2>
+            <div class="container px-lg-5 mb-2 mt-5">
+                <div class="carousel-inner mb-2" role="listbox">
+
+                    
+                    <?php $__currentLoopData = $ultimasEdicoes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $edicao): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        
+                        <a href="/edicoes/<?php echo e($edicao->id); ?>" style="text-decoration: none; color: inherit;">
+                            <div class="card-hover col-md-4 px-3" style="float:left">
+                                <div class="card" style="width: 280px; height: 420px; margin:auto;">
+
+                                    
+                                    <img class="card-img-top d-block w-100"
+                                    src="<?php echo e(asset($edicao->imagem_capa)); ?>" alt="<?php echo e($edicao->titulo); ?>"
+                                        height="290" width="610" style="object-fit: cover;">
+
+                                    <div class="card-body">
+                                        
+                                        <p class="datanoticia">REVICO #<?php echo e($edicao->id); ?></p>
+
+                                        <p class="card-text altura-linha">
+                                            <b><?php echo e($edicao->titulo); ?></b>
+                                        </p>
+
+                                        <p class="card-text altura-linha text-muted"
+                                            style="font-size: 11px; margin-top: -15px;">
+                                            
+                                            <?php echo e(\Carbon\Carbon::parse($edicao->created_at)->format('d-m-Y')); ?>
+
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+
+                </div>
+            </div>
+        </section>
+
+        <section class="py-5 bg-light">
+            <div class="container">
+                <div class="text-center mb-5">
+                    <h2>Por que assinar a</h2>
+                    <img src="<?php echo e(asset('storage/imagens/revico_texto.png')); ?>" alt="Logo REVICO"
+                        style="height: 40px; margin-bottom: 20px;">
+                    <p class="lead">Descubra os benefícios exclusivos que você terá como assinante da nossa revista
+                        digital</p>
+                </div>
+
+                <div class="row g-4">
+                    <!-- Vantagem 1 -->
+                    <div class="col-md-4">
+                        <div class="card h-100 text-center shadow-sm">
+                            <div class="card-body">
+                                <i class="bi bi-book-half fs-1 mb-3"></i>
+                                <h5 class="card-title text-primary">Conteúdo Exclusivo</h5>
+                                <p class="card-text">Acesso a artigos inéditos, histórias inspiradoras e informações que
+                                    você não encontra em nenhum outro lugar.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Vantagem 2 -->
+                    <div class="col-md-4">
+                        <div class="card h-100 text-center shadow-sm">
+                            <div class="card-body">
+                                <i class="bi bi-clock-history fs-1 mb-3 text-primary"></i>
+                                <h5 class="card-title text-primary">Atualizações Constantes</h5>
+                                <p class="card-text">Receba novas edições e conteúdos toda semana, mantendo você
+                                    informado sobre saúde, política e ciência.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Vantagem 3 -->
+                    <div class="col-md-4">
+                        <div class="card h-100 text-center shadow-sm">
+                            <div class="card-body">
+                                <i class="bi bi-star fs-1 mb-3 text-primary"></i>
+                                <h5 class="card-title text-primary">Experiência Premium</h5>
+                                <p class="card-text">Sem anúncios, leitura fluida e interface amigável, proporcionando
+                                    uma experiência agradável em qualquer dispositivo.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Vantagem 4 -->
+                    <div class="col-md-4">
+                        <div class="card h-100 text-center shadow-sm">
+                            <div class="card-body">
+                                <i class="bi bi-people fs-1 mb-3 text-primary"></i>
+                                <h5 class="card-title text-primary">Comunidade Revico</h5>
+                                <p class="card-text">Interaja com outros assinantes, compartilhando experiências e
+                                    ideias.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Vantagem 5 -->
+                    <div class="col-md-4">
+                        <div class="card h-100 text-center shadow-sm">
+                            <div class="card-body">
+                                <i class="bi bi-gift fs-1 mb-3 text-primary"></i>
+                                <h5 class="card-title text-primary">Apoio Emocional e Inspiração</h5>
+                                <p class="card-text">Conteúdos que acolhem e inspiram, ajudando você a cuidar
+                                    da mente e do coração no dia a dia.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Vantagem 6 -->
+                    <div class="col-md-4">
+                        <div class="card h-100 text-center shadow-sm">
+                            <div class="card-body">
+                                <i class="bi bi-wallet2 fs-1 mb-3 text-primary"></i>
+                                <h5 class="card-title text-primary">Preço Acessível</h5>
+                                <p class="card-text">Planos flexíveis para todos os bolsos, garantindo acesso a conteúdo
+                                    premium sem pesar no orçamento.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <?php echo $__env->make('layouts.patrocinadores', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
+    </main>
+
+    <?php echo $__env->make('layouts/footer', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
+</body>
+
+</html><?php /**PATH /var/www/html/resources/views/welcome.blade.php ENDPATH**/ ?>

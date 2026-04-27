@@ -10,9 +10,21 @@
             Criando a edição #{{ $proximaEdicao ?? '1' }} da revista
         </h2>
 
+        @if ($errors->any())
+            <div class="alert alert-danger">
+                <h5 class="mb-2">⚠️ Erros ao salvar:</h5>
+                <ul class="mb-0">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         <form action="{{ route('edicoes.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
 
+            {{-- Informações Básicas --}}
             <div class="card p-4 mb-4">
                 <h4 class="mb-3">Informações Básicas</h4>
 
@@ -30,51 +42,25 @@
 
                 <div class="mb-3">
                     <label for="imagem_capa" class="form-label">Imagem de Capa</label>
-                    <input type="file" class="form-control" id="imagem_capa" name="imagem_capa" accept="image/*"
-                        required>
+                    <input type="file" class="form-control" id="imagem_capa" name="imagem_capa"
+                        accept="image/*" required>
                 </div>
             </div>
 
+            {{-- Editor de Conteúdo --}}
             <div class="card p-4 mb-4">
-                <h4 class="mb-3">Formato do Conteúdo</h4>
-                <p class="text-muted">Escolha como deseja inserir o conteúdo desta edição.</p>
-
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="tipo_conteudo" id="tipo_blocos" value="blocos"
-                        checked onchange="alternarFormato()">
-                    <label class="form-check-label" for="tipo_blocos">Escrever na Plataforma (Blocos)</label>
-                </div>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="tipo_conteudo" id="tipo_pdf" value="pdf"
-                        onchange="alternarFormato()">
-                    <label class="form-check-label" for="tipo_pdf">Fazer Upload de PDF</label>
-                </div>
-            </div>
-
-            <div id="sessao-blocos" class="card p-4 mb-4">
                 <h4 class="mb-3">Conteúdo da Revista</h4>
+                <p class="text-muted mb-3">
+                    Cole o conteúdo do Word diretamente abaixo. Títulos, parágrafos, negrito,
+                    itálico e listas serão preservados automaticamente.
+                </p>
 
-                <div id="blocos-container"></div>
+                {{-- Campo hidden que recebe o HTML gerado pelo TinyMCE --}}
+                <textarea id="conteudo_editor" name="conteudo_html">{{ old('conteudo_html') }}</textarea>
 
-                <div class="d-flex justify-content-center mt-3">
-                    <button type="button" class="btn btn-outline-primary me-2" onclick="adicionarBloco('paragrafo')">+
-                        Parágrafo</button>
-                    <button type="button" class="btn btn-outline-primary me-2" onclick="adicionarBloco('subtitulo')">+
-                        Subtítulo</button>
-                    <button type="button" class="btn btn-outline-primary" onclick="adicionarBloco('imagem')">+
-                        Imagem</button>
-                </div>
-            </div>
-
-            <div id="sessao-pdf" class="card p-4 mb-4" style="display: none;">
-                <h4 class="mb-3">Arquivo da Revista</h4>
-
-                <div class="mb-3">
-                    <label for="arquivo_pdf" class="form-label">Selecione o arquivo PDF</label>
-                    <input type="file" class="form-control" id="arquivo_pdf" name="arquivo_pdf"
-                        accept="application/pdf">
-                    <div class="form-text">Tamanho máximo recomendado: 10MB. Formato: .pdf</div>
-                </div>
+                @error('conteudo_html')
+                    <div class="text-danger mt-2 small">{{ $message }}</div>
+                @enderror
             </div>
 
             <div class="mt-4 text-center">
@@ -85,88 +71,80 @@
 
     @include('layouts/footer')
 
+    {{-- TinyMCE via CDN (sem API key para domínio próprio; troque pela sua key se usar cloud) --}}
+    <script src="https://cdn.jsdelivr.net/npm/tinymce@6/tinymce.min.js" referrerpolicy="origin"></script>
+
     <script>
-        function alternarFormato() {
-            const formatoEscolhido = document.querySelector('input[name="tipo_conteudo"]:checked').value;
-            const sessaoBlocos = document.getElementById('sessao-blocos');
-            const sessaoPdf = document.getElementById('sessao-pdf');
-            const inputPdf = document.getElementById('arquivo_pdf');
+        tinymce.init({
+            selector: '#conteudo_editor',
+            language: 'pt_BR',           // requer o language pack – veja observações abaixo
+            height: 600,
+            menubar: false,
+            branding: false,
 
-            if (formatoEscolhido === 'blocos') {
-                sessaoBlocos.style.display = 'block';
-                sessaoPdf.style.display = 'none';
-                inputPdf.removeAttribute('required');
-            } else {
-                sessaoBlocos.style.display = 'none';
-                sessaoPdf.style.display = 'block';
-                inputPdf.setAttribute('required', 'required');
+            // Plugins essenciais
+            plugins: [
+                'advlist', 'autolink', 'lists', 'link', 'image',
+                'charmap', 'preview', 'searchreplace', 'visualblocks',
+                'fullscreen', 'insertdatetime', 'table', 'wordcount',
+                'paste'                  // paste plugin: limpa lixo do Word
+            ],
+
+            toolbar:
+                'undo redo | blocks | ' +
+                'bold italic underline strikethrough | ' +
+                'bullist numlist | ' +
+                'link image table | ' +
+                'alignleft aligncenter alignright | ' +
+                'removeformat | fullscreen',
+
+            // Configurações de paste do Word
+            // O TinyMCE detecta automaticamente conteúdo do Word e limpa o HTML proprietário,
+            // preservando apenas a semântica (h1-h6, strong, em, ul, ol, p, table…)
+            paste_as_text: false,           // false = preserva formatação (negrito, itálico etc.)
+            paste_remove_styles_if_webkit: true,
+            paste_merge_formats: true,
+            smart_paste: true,              // TinyMCE 6+
+
+            // Bloquear tags que não fazem sentido salvar no banco
+            valid_elements:
+                'p,br,h1,h2,h3,h4,h5,h6,' +
+                'strong/b,em/i,u,s,strike,' +
+                'ul,ol,li,' +
+                'a[href|target|rel],' +
+                'img[src|alt|width|height|style],' +
+                'table,thead,tbody,tr,th[colspan|rowspan],td[colspan|rowspan],' +
+                'blockquote,pre,code,hr,' +
+                'sup,sub',
+
+            // Estilos de bloco disponíveis no dropdown "Blocks"
+            block_formats:
+                'Parágrafo=p; ' +
+                'Título 1=h1; ' +
+                'Título 2=h2; ' +
+                'Título 3=h3; ' +
+                'Citação=blockquote; ' +
+                'Código=pre',
+
+            // Permite upload de imagem inline (base64) – útil se o editor inserir imgs
+            // Para produção, prefira images_upload_url apontando para uma rota Laravel
+            // images_upload_handler pode ser customizado com fetch + CSRF
+
+            // Garante que o campo hidden seja atualizado antes do submit
+            setup(editor) {
+                editor.on('change', () => editor.save());
             }
-        }
+        });
 
-        let contador = 0;
-
-        function adicionarBloco(tipo) {
-            contador++;
-            const container = document.getElementById('blocos-container');
-            const div = document.createElement('div');
-            div.classList.add('card', 'p-3', 'mb-3', 'bloco', 'bg-light');
-            div.dataset.id = contador;
-
-            let conteudo = '';
-
-            if (tipo === 'paragrafo') {
-                conteudo = `
-                    <label class="form-label fw-bold text-muted">Parágrafo</label>
-                    <textarea name="conteudo[]" class="form-control" rows="3" required></textarea>
-                    <input type="hidden" name="tipo[]" value="paragrafo">
-                `;
-            } else if (tipo === 'subtitulo') {
-                conteudo = `
-                    <label class="form-label fw-bold text-muted">Subtítulo</label>
-                    <input type="text" name="conteudo[]" class="form-control" required>
-                    <input type="hidden" name="tipo[]" value="subtitulo">
-                `;
-            } else if (tipo === 'imagem') {
-                conteudo = `
-                    <label class="form-label fw-bold text-muted">Imagem</label>
-                    <input type="file" name="conteudo[]" class="form-control" accept="image/*" required>
-                    <small class="text-muted">Tamanho máximo: 2MB</small>
-                    <input type="hidden" name="tipo[]" value="imagem">
-                `;
+        // Validação no submit: impede envio com editor vazio
+        document.querySelector('form').addEventListener('submit', function (e) {
+            const html = tinymce.get('conteudo_editor').getContent();
+            if (!html || html.trim() === '') {
+                e.preventDefault();
+                alert('O conteúdo da revista não pode estar vazio.');
+                tinymce.get('conteudo_editor').focus();
             }
-
-            div.innerHTML = `
-                <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
-                    <strong class="text-primary">${tipo.charAt(0).toUpperCase() + tipo.slice(1)}</strong>
-                    <div>
-                        <button type="button" class="btn btn-sm btn-outline-secondary me-1" onclick="moverBloco(this, -1)" title="Mover para cima">▲</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary me-1" onclick="moverBloco(this, 1)" title="Mover para baixo">▼</button>
-                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removerBloco(this)">Excluir</button>
-                    </div>
-                </div>
-                ${conteudo}
-            `;
-
-            container.appendChild(div);
-        }
-
-        function removerBloco(botao) {
-            botao.closest('.bloco').remove();
-        }
-
-        function moverBloco(botao, direcao) {
-            const bloco = botao.closest('.bloco');
-            const container = document.getElementById('blocos-container');
-            const blocos = [...container.children];
-            const index = blocos.indexOf(bloco);
-
-            if (direcao === -1 && index > 0) {
-                container.insertBefore(bloco, blocos[index - 1]);
-            } else if (direcao === 1 && index < blocos.length - 1) {
-                container.insertBefore(bloco, blocos[index + 2]);
-            }
-        }
+        });
     </script>
 </body>
-
 </html>
