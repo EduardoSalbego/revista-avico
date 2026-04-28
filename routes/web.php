@@ -9,6 +9,8 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Assinatura\AssinaturaController;
 use App\Http\Controllers\Perfil\ProfileController;
+use App\Http\Controllers\Autor\SubmissaoController;
+use App\Http\Controllers\RevisorBuscaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,25 +26,31 @@ use App\Http\Controllers\Perfil\ProfileController;
 // 1. ROTAS PÚBLICAS (Visitantes em geral)
 // ==========================================
 Route::get('/', [HomeController::class, 'index'])->name('home');
-Route::get('/sobre_nos', function () { return view('revico/sobre_nos'); }) -> name('sobre_nos');
+Route::get('/sobre_nos', function () {
+    return view('revico/sobre_nos');
+})->name('sobre_nos');
 
 Route::prefix('edicoes')->name('edicoes.')->group(function () {
     Route::get('/', [EdicaoController::class, 'index'])->name('index');
 });
 
-Route::get('/revista2', function () { return view('revista/revista'); }) -> name('revista');
+Route::get('/revista2', function () {
+    return view('revista/revista');
+})->name('revista');
 
 // Rotas de Autenticação
 Route::get('/login', [LoginController::class, 'create'])->name('login');
 Route::post('/login', [LoginController::class, 'store']);
 Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
 Route::post('/register', [RegisterController::class, 'store']);
-Route::get('/redefinir_senha', function () { return view('auth.passwords.email'); });
+Route::get('/redefinir_senha', function () {
+    return view('auth.passwords.email');
+});
 
 // ==========================================
 // 2. Rotas de Assinantes
 // ==========================================
-Route::middleware(['auth', 'assinatura'])->group(function(){
+Route::middleware(['auth', 'assinatura'])->group(function () {
     Route::prefix('edicoes')->name('edicoes.')->group(function () {
         Route::get('/{id}', [EdicaoController::class, 'show'])->where('id', '[0-9]+')->name('show');
     });
@@ -52,12 +60,14 @@ Route::middleware(['auth', 'assinatura'])->group(function(){
 // 3. ROTAS AUTENTICADAS (Requer Login)
 // ==========================================
 Route::middleware('auth')->group(function () {
-    Route::get('/assinar', function () { return view('revico/assinatura'); }) -> name('assinar');
+    Route::get('/assinar', function () {
+        return view('revico/assinatura');
+    })->name('assinar');
     Route::post('/processar_pagamento', [AssinaturaController::class, 'processar'])->name('pagamento.processar');
 
     Route::get('/perfil', [ProfileController::class, 'index'])->name('perfil.index');
     Route::put('/perfil', [ProfileController::class, 'update'])->name('perfil.update');
-    
+
     Route::get('/logout', [LoginController::class, 'destroy'])->name('logout');
     Route::prefix('comentarios')->name('comentarios.')->group(function () {
         Route::post('/', [ComentarioController::class, 'store'])->name('store');
@@ -86,11 +96,24 @@ Route::middleware('role:admin')->prefix('admin')->as('admin.')->group(function (
 });
 
 // ==========================================
-// 5. ROTAS DE EDITORIA (Requer Colaborador)
+// 5. ROTAS DE EDITORIA (Requer Editor)
 // ==========================================
-Route::middleware('role:colaborador')->group(function () {
-    Route::get('/edicoes/create', [EdicaoController::class, 'create'])->name('edicoes.create');
-    Route::post('/edicoes/create', [EdicaoController::class, 'store'])->name('edicoes.store');
+Route::middleware('role:editor')->name('edicoes.')->group(function () {
+    Route::get('/edicoes/create', [EdicaoController::class, 'create'])->name('create');
+    Route::post('/edicoes/create', [EdicaoController::class, 'store'])->name('store');
+});
+
+// ==========================================
+// 6. ROTAS DE AUTORES (Requer Autor)
+// ==========================================
+Route::middleware('role:autor')->name('autor.')->group(function () {
+    Route::prefix('submissoes')->name('submissoes.')->group(function () {
+        Route::get('/', [SubmissaoController::class, 'index'])->name('index');
+        Route::post('/', [SubmissaoController::class, 'store'])->name('store');
+        Route::get('/criar', [SubmissaoController::class, 'create'])->name('create');
+        Route::post('/{id}/docx', [SubmissaoController::class, 'enviarDocx'])->name('docx');
+    });
+    Route::get('/revisores/buscar', [RevisorBuscaController::class, 'buscar']);
 });
 
 require __DIR__ . '/auth.php';

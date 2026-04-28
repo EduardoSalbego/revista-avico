@@ -15,7 +15,7 @@
                     <a class="nav-link" href="/sobre_nos">Sobre a Revico</a>
                 </li>
                 <?php if(auth()->guard()->check()): ?>
-                    <?php if(in_array(Auth::user()->role, ['admin', 'colaborador'])): ?>
+                    <?php if(Auth::user()->isEditor() || Auth::user()->isAdmin()): ?>
                         <li class="nav-item">
                             <a class="nav-link" href="<?php echo e(route('edicoes.create')); ?>">nova edição</a>
                         </li>
@@ -34,9 +34,15 @@
 
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                            <?php if(Auth::user()->role === 'admin'): ?>
+                            <?php if(Auth::user()->isAdmin()): ?>
                                 <li><a class="dropdown-item" href="/admin/usuarios">Gerenciar Usuários</a></li>
                                 <li><a class="dropdown-item" href="/admin/edicoes">Gerenciar Edições</a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                            <?php elseif(Auth::user()->isAutor()): ?>
+                                <li><a class="dropdown-item" href="/submissoes/criar">Submeter Trabalho</a></li>
+                                <li><a class="dropdown-item" href="/submissoes">Minhas Submissões</a></li>
                                 <li>
                                     <hr class="dropdown-divider">
                                 </li>

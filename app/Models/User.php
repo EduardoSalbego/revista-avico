@@ -90,4 +90,17 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    // Submissões que o usuário fez como autor
+    public function submissoes()
+    {
+        return $this->hasMany(Submissao::class, 'user_id');
+    }
+
+    // Submissões em que o usuário foi sugerido como revisor
+    public function submissoesComoRevisor()
+    {
+        return $this->belongsToMany(Submissao::class, 'submissao_revisor', 'revisor_id', 'submissao_id');
+    }
+
 }

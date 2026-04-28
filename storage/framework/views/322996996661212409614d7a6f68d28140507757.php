@@ -37,19 +37,7 @@
                                 <tr>
                                     <td><?php echo e($user->name); ?></td>
                                     <td><?php echo e($user->email); ?></td>
-                                    <td>
-                                        <?php if($user->isAdmin()): ?>
-                                            <span class="badge bg-danger">Admin</span>
-                                        <?php elseif($user->isEditor()): ?>
-                                            <span class="badge bg-primary">Editor</span>
-                                        <?php elseif($user->isAutor()): ?>
-                                            <span class="badge bg-success">Autor</span>
-                                        <?php elseif($user->isRevisor()): ?>
-                                            <span class="badge bg-info text-dark">Revisor</span>
-                                        <?php else: ?>
-                                            <span class="badge bg-secondary">Leitor</span>
-                                        <?php endif; ?>
-                                    </td>
+                                    <td><?php echo $user->role_badge_html; ?></td>
                                     <td><?php echo e(\Carbon\Carbon::parse($user->created_at)->format('d/m/Y')); ?></td>
                                     <td class="text-center">
                                         

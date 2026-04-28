@@ -15,7 +15,7 @@
                     <a class="nav-link" href="/sobre_nos">Sobre a Revico</a>
                 </li>
                 @auth
-                    @if (in_array(Auth::user()->role, ['admin', 'colaborador']))
+                    @if (Auth::user()->isEditor() || Auth::user()->isAdmin())
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('edicoes.create') }}">nova edição</a>
                         </li>
@@ -33,9 +33,15 @@
                             {{ Auth::user()->name }}
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                            @if(Auth::user()->role === 'admin')
+                            @if(Auth::user()->isAdmin())
                                 <li><a class="dropdown-item" href="/admin/usuarios">Gerenciar Usuários</a></li>
                                 <li><a class="dropdown-item" href="/admin/edicoes">Gerenciar Edições</a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                            @elseif(Auth::user()->isAutor())
+                                <li><a class="dropdown-item" href="/submissoes/criar">Submeter Trabalho</a></li>
+                                <li><a class="dropdown-item" href="/submissoes">Minhas Submissões</a></li>
                                 <li>
                                     <hr class="dropdown-divider">
                                 </li>
