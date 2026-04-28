@@ -46,10 +46,11 @@
                                 <label for="role" class="form-label fw-bold">Perfil de Acesso</label>
                                 <select class="form-select" id="role" name="role" required>
                                     <option value="" disabled selected>Selecione um perfil...</option>
-                                    <option value="leitor" {{ old('role') == 'leitor' ? 'selected' : '' }}>Leitor
+                                    <option value="leitor" {{ old('role') == 'leitor' ? 'selected' : '' }}>Leitor</option>
+                                    <option value="editor" {{ old('role') == 'editor' ? 'selected' : '' }}>Editor</option>
+                                    <option value="autor" {{ old('role') == 'autor' ? 'selected' : '' }}>Autor</option>
+                                    <option value="revisor" {{ old('role') == 'revisor' ? 'selected' : '' }}>Revisor
                                     </option>
-                                    <option value="colaborador" {{ old('role') == 'colaborador' ? 'selected' : '' }}>
-                                        Colaborador (Pode enviar textos)</option>
                                     <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Administrador
                                         (Acesso total)</option>
                                 </select>

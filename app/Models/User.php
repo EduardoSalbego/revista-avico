@@ -25,7 +25,29 @@ class User extends Authenticatable
         'password',
         'role',
         'assinante_ate',
+        'status',
     ];
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+    public function isEditor(): bool
+    {
+        return in_array($this->role, ['editor', 'admin']);
+    }
+    public function isRevisor(): bool
+    {
+        return $this->role === 'revisor';
+    }
+    public function isAutor(): bool
+    {
+        return $this->role === 'autor';
+    }
+    public function isPendente(): bool
+    {
+        return $this->status === 'pendente';
+    }
 
     /**
      * The attributes that should be hidden for serialization.

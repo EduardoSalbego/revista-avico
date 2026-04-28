@@ -5,8 +5,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Edicao\EdicaoController;
 use App\Http\Controllers\Edicao\ComentarioController;
-use App\Http\Controllers\Auth\AuthenticatedSessionController;
-use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Assinatura\AssinaturaController;
 use App\Http\Controllers\Perfil\ProfileController;
 
@@ -33,10 +33,10 @@ Route::prefix('edicoes')->name('edicoes.')->group(function () {
 Route::get('/revista2', function () { return view('revista/revista'); }) -> name('revista');
 
 // Rotas de Autenticação
-Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
-Route::post('/login', [AuthenticatedSessionController::class, 'store']);
-Route::get('/register', [RegisteredUserController::class, 'create'])->name('register');
-Route::post('/register', [RegisteredUserController::class, 'store']);
+Route::get('/login', [LoginController::class, 'create'])->name('login');
+Route::post('/login', [LoginController::class, 'store']);
+Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
+Route::post('/register', [RegisterController::class, 'store']);
 Route::get('/redefinir_senha', function () { return view('auth.passwords.email'); });
 
 // ==========================================
@@ -58,7 +58,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/perfil', [ProfileController::class, 'index'])->name('perfil.index');
     Route::put('/perfil', [ProfileController::class, 'update'])->name('perfil.update');
     
-    Route::get('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
+    Route::get('/logout', [LoginController::class, 'destroy'])->name('logout');
     Route::prefix('comentarios')->name('comentarios.')->group(function () {
         Route::post('/', [ComentarioController::class, 'store'])->name('store');
         Route::delete('/{id}', [ComentarioController::class, 'destroy'])->name('destroy');
@@ -82,6 +82,7 @@ Route::middleware('role:admin')->prefix('admin')->as('admin.')->group(function (
             Route::delete('/', [EdicaoController::class, 'destroy'])->name('destroy');
         });
     });
+    Route::patch('/usuarios/{id}/aprovar', [UserController::class, 'aprovar'])->name('usuarios.aprovar');
 });
 
 // ==========================================

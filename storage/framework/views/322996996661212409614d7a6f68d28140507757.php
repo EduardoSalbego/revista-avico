@@ -15,16 +15,85 @@
             <div class="alert alert-success"><?php echo e(session('success')); ?></div>
         <?php endif; ?>
 
+        
+        <?php if($pendentes->isNotEmpty()): ?>
+            <div class="card border-warning shadow-sm mb-5">
+                <div class="card-header bg-warning text-dark fw-bold">
+                    ⏳ Contas Aguardando Aprovação (<?php echo e($pendentes->count()); ?>)
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Nome</th>
+                                <th>E-mail</th>
+                                <th>Perfil</th>
+                                <th>Cadastro</th>
+                                <th class="text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php $__currentLoopData = $pendentes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $user): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <tr>
+                                    <td><?php echo e($user->name); ?></td>
+                                    <td><?php echo e($user->email); ?></td>
+                                    <td>
+                                        <?php if($user->role == 'admin'): ?>
+                                            <span class="badge bg-danger">Admin</span>
+                                        <?php elseif($user->role == 'editor'): ?>
+                                            <span class="badge bg-primary">Editor</span>
+                                        <?php elseif($user->role == 'autor'): ?>
+                                            <span class="badge bg-success">Autor</span>
+                                        <?php elseif($user->role == 'revisor'): ?>
+                                            <span class="badge bg-info text-dark">Revisor</span>
+                                        <?php else: ?>
+                                            <span class="badge bg-secondary">Leitor</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td><?php echo e(\Carbon\Carbon::parse($user->created_at)->format('d/m/Y')); ?></td>
+                                    <td class="text-center">
+                                        
+                                        <form action="<?php echo e(route('admin.usuarios.aprovar', $user->id)); ?>" method="POST"
+                                            class="d-inline">
+                                            <?php echo csrf_field(); ?>
+                                            <?php echo method_field('PATCH'); ?>
+                                            <button type="submit" class="btn btn-sm btn-success">
+                                                ✅ Aprovar
+                                            </button>
+                                        </form>
+
+                                        
+                                        <form action="<?php echo e(route('admin.usuarios.destroy', $user->id)); ?>" method="POST"
+                                            class="d-inline" onsubmit="return confirm('Rejeitar e excluir esta conta?');">
+                                            <?php echo csrf_field(); ?>
+                                            <?php echo method_field('DELETE'); ?>
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                ❌ Rejeitar
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        <?php endif; ?>
+
+        
         <div class="card shadow-sm">
-            <div class="card-body">
-                <table class="table table-hover align-middle">
+            <div class="card-header fw-bold bg-light">
+                Usuários Ativos
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
                         <tr>
                             <th>ID</th>
                             <th>Nome</th>
                             <th>E-mail</th>
-                            <th>Role</th>
-                            <th>Data de Cadastro</th>
+                            <th>Perfil</th>
+                            <th>Cadastro</th>
                             <th class="text-center">Ações</th>
                         </tr>
                     </thead>
@@ -37,8 +106,12 @@
                                 <td>
                                     <?php if($user->role == 'admin'): ?>
                                         <span class="badge bg-danger">Admin</span>
-                                    <?php elseif($user->role == 'colaborador'): ?>
-                                        <span class="badge bg-primary">Colaborador</span>
+                                    <?php elseif($user->role == 'editor'): ?>
+                                        <span class="badge bg-primary">Editor</span>
+                                    <?php elseif($user->role == 'autor'): ?>
+                                        <span class="badge bg-success">Autor</span>
+                                    <?php elseif($user->role == 'revisor'): ?>
+                                        <span class="badge bg-info text-dark">Revisor</span>
                                     <?php else: ?>
                                         <span class="badge bg-secondary">Leitor</span>
                                     <?php endif; ?>
@@ -61,7 +134,7 @@
                     </tbody>
                 </table>
 
-                <div class="mt-3">
+                <div class="p-3">
                     <?php echo e($usuarios->links()); ?>
 
                 </div>

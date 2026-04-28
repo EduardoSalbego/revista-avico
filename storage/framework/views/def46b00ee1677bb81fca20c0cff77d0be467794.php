@@ -46,10 +46,11 @@
                                 <label for="role" class="form-label fw-bold">Perfil de Acesso</label>
                                 <select class="form-select" id="role" name="role" required>
                                     <option value="" disabled selected>Selecione um perfil...</option>
-                                    <option value="leitor" <?php echo e(old('role') == 'leitor' ? 'selected' : ''); ?>>Leitor
+                                    <option value="leitor" <?php echo e(old('role') == 'leitor' ? 'selected' : ''); ?>>Leitor</option>
+                                    <option value="editor" <?php echo e(old('role') == 'editor' ? 'selected' : ''); ?>>Editor</option>
+                                    <option value="autor" <?php echo e(old('role') == 'autor' ? 'selected' : ''); ?>>Autor</option>
+                                    <option value="revisor" <?php echo e(old('role') == 'revisor' ? 'selected' : ''); ?>>Revisor
                                     </option>
-                                    <option value="colaborador" <?php echo e(old('role') == 'colaborador' ? 'selected' : ''); ?>>
-                                        Colaborador (Pode enviar textos)</option>
                                     <option value="admin" <?php echo e(old('role') == 'admin' ? 'selected' : ''); ?>>Administrador
                                         (Acesso total)</option>
                                 </select>

@@ -1089,3 +1089,29 @@ trix-toolbar [data-trix-dialog] [data-trix-validate]:invalid {
 .carousel-inner {
     overflow: visible;
 }
+
+/** register.blade.php **/
+.role-label {
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    background: #fff;
+    color: inherit;
+    min-height: 110px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    transition: border-color 0.15s;
+    cursor: pointer;
+}
+
+    .btn-check:checked + .role-label {
+    border-color: #0d6efd;
+    background: #fff !important;
+    color: inherit !important;
+    box-shadow: none;
+}
+
+.role-label:hover {
+    border-color: #0d6efd;
+    background: #fff;
+}

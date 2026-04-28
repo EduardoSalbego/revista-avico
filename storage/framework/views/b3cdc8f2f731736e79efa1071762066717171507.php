@@ -12,6 +12,11 @@
             <div class="col-md-4 col-md-offset-4 container">
                 <form action="<?php echo e(route('login')); ?>" method="POST">
                     <?php echo csrf_field(); ?>
+                    <h3 class="text-center mb-4">Entre com a sua conta</h3>
+
+                    <?php if(session('info')): ?>
+                        <div class="alert alert-info"><?php echo e(session('info')); ?></div>
+                    <?php endif; ?>
                     <div class="form-group mb-2">
                         <label class="form-label" for="emailInput">Email</label>
                         <input class="form-control" name="email" id="emailInput" type="email"

@@ -14,8 +14,17 @@ class UserController extends Controller
      */
     public function index()
     {
-        $usuarios = User::paginate(10); 
-        return view('admin.usuarios.index', compact('usuarios'));
+        // Pendentes separados (sem paginar — geralmente poucos)
+        $pendentes = User::where('status', 'pendente')
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        // Ativos paginados
+        $usuarios = User::where('status', 'ativo')
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+
+        return view('admin.usuarios.index', compact('usuarios', 'pendentes'));
     }
 
     /**
@@ -37,13 +46,13 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8',
-            'role' => 'required|in:leitor,colaborador,admin'
+            'role' => 'required|in:admin,leitor,autor,revisor,editor',
         ]);
 
         User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => Hash::make($request->password), 
+            'password' => Hash::make($request->password),
             'role' => $request->role,
         ]);
 
@@ -51,14 +60,24 @@ class UserController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
+     * Approve a pending user account.
+     * 
+     * @param mixed $id
+     * @return \Illuminate\Http\RedirectResponse
      */
-    public function show($id)
+    public function aprovar($id)
     {
-        //
+        $user = User::findOrFail($id);
+
+        if ($user->status !== 'pendente') {
+            return back()->with('success', 'Este usuário já está ativo.');
+        }
+
+        $user->update(['status' => 'ativo']);
+
+        return back()->with('success', "Conta de {$user->name} aprovada com sucesso!");
     }
+
 
     /**
      * Show the form for editing the specified resource.
@@ -84,7 +103,7 @@ class UserController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $usuario->id,
-            'role' => 'required|in:leitor,colaborador,admin'
+            'role' => 'required|in:admin,leitor,autor,revisor,editor'
         ]);
 
         $dados = [
