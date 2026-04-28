@@ -16,6 +16,8 @@
 
                     <?php if(session('info')): ?>
                         <div class="alert alert-info"><?php echo e(session('info')); ?></div>
+                    <?php elseif(session('error')): ?>
+                        <div class="alert alert-danger"><?php echo e(session('error')); ?></div>
                     <?php endif; ?>
                     <div class="form-group mb-2">
                         <label class="form-label" for="emailInput">Email</label>

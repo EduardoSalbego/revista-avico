@@ -44,12 +44,7 @@
                                 </td>
                                 <td><?php echo e($edicao->autor); ?></td>
                                 <td>ㅤㅤ<?php echo e($edicao->capitulos()->count()); ?></td>
-                                <td>
-                                    <?php if($edicao->status === 'publicado'): ?>
-                                        <span class="badge bg-success">Publicado</span>
-                                    <?php else: ?>
-                                        <span class="badge bg-secondary">Rascunho</span>
-                                    <?php endif; ?>
+                                <td><?php echo $edicao->getStatusBadgeHtmlAttribute(); ?></td>
                                 </td>
                                 <td><?php echo e(\Carbon\Carbon::parse($edicao->created_at)->format('d/m/Y')); ?></td>
                                 <td class="text-center">

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-@include('layouts.head')
+<?php echo $__env->make('layouts.head', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
 
 <body id="page-top" class="bg-light">
-    @include('layouts.topbar')
+    <?php echo $__env->make('layouts.topbar', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
 
     <main class="container py-5" style="margin-top: 80px; min-height: 80vh;">
         <div class="row">
@@ -13,46 +13,47 @@
                 <p class="text-muted">Gerencie seus dados de acesso e assinatura da plataforma.</p>
             </div>
 
-            {{-- Mensagens de Sucesso ou Erro --}}
+            
             <div class="col-12">
-                @if (session('success'))
+                <?php if(session('success')): ?>
                     <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        {{ session('success') }}
+                        <?php echo e(session('success')); ?>
+
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
-                @endif
+                <?php endif; ?>
 
-                @if ($errors->any())
+                <?php if($errors->any()): ?>
                     <div class="alert alert-danger">
                         <ul class="mb-0">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
+                            <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <li><?php echo e($error); ?></li>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </ul>
                     </div>
-                @endif
+                <?php endif; ?>
             </div>
 
-            {{-- Formulário de Edição (Coluna Esquerda) --}}
+            
             <div class="col-md-8 mb-4">
                 <div class="card shadow-sm border-0 h-100">
                     <div class="card-body p-4">
                         <h4 class="card-title mb-4">Dados Pessoais</h4>
 
-                        <form action="{{ route('perfil.update') }}" method="POST">
-                            @csrf
-                            @method('PUT')
+                        <form action="<?php echo e(route('perfil.update')); ?>" method="POST">
+                            <?php echo csrf_field(); ?>
+                            <?php echo method_field('PUT'); ?>
 
                             <div class="mb-3">
                                 <label for="name" class="form-label fw-bold">Nome Completo</label>
                                 <input type="text" class="form-control" id="name" name="name"
-                                    value="{{ old('name', $user->name) }}" required>
+                                    value="<?php echo e(old('name', $user->name)); ?>" required>
                             </div>
 
                             <div class="mb-4">
                                 <label for="email" class="form-label fw-bold">E-mail de Acesso</label>
                                 <input type="email" class="form-control" id="email" name="email"
-                                    value="{{ old('email', $user->email) }}" required>
+                                    value="<?php echo e(old('email', $user->email)); ?>" required>
                             </div>
 
                             <hr class="mb-4">
@@ -81,7 +82,7 @@
                 </div>
             </div>
 
-            {{-- Card de Assinatura e Status (Coluna Direita) --}}
+            
             <div class="col-md-4 mb-4">
                 <div class="card shadow-sm border-0 h-100 bg-primary text-white">
                     <div class="card-body p-4 d-flex flex-column">
@@ -89,29 +90,31 @@
 
                         <div class="mb-4">
                             <h6 class="text-white-50 text-uppercase mb-1">Nível de Acesso</h6>
-                            <p class="fs-5 fw-bold mb-0">{{ $user->role_label }}
+                            <p class="fs-5 fw-bold mb-0"><?php echo e($user->role_label); ?>
+
                             </p>
                         </div>
 
                         <div class="mb-4">
                             <h6 class="text-white-50 text-uppercase mb-1">Assinatura ReVICO</h6>
-                            @if($user->assinante_ate && \Carbon\Carbon::parse($user->assinante_ate)->isFuture())
+                            <?php if($user->assinante_ate && \Carbon\Carbon::parse($user->assinante_ate)->isFuture()): ?>
                                 <p class="fs-5 fw-bold text-warning mb-0">
                                     <i class="fas fa-crown me-2"></i> Ativa
                                 </p>
                                 <small class="text-light">Válida até
-                                    {{ \Carbon\Carbon::parse($user->assinante_ate)->format('d/m/Y') }}</small>
-                            @else
+                                    <?php echo e(\Carbon\Carbon::parse($user->assinante_ate)->format('d/m/Y')); ?></small>
+                            <?php else: ?>
                                 <p class="fs-5 fw-bold text-light mb-0">
                                     Inativa
                                 </p>
                                 <small class="text-light">Você não possui um plano ativo.</small>
-                            @endif
+                            <?php endif; ?>
                         </div>
 
                         <div class="mt-auto pt-4">
-                            <a href="{{ route('assinar') }}" class="btn btn-light w-100 fw-bold text-primary">
-                                {{ ($user->assinante_ate && \Carbon\Carbon::parse($user->assinante_ate)->isFuture()) ? 'Renovar / Estender Plano' : 'Assinar Agora' }}
+                            <a href="<?php echo e(route('assinar')); ?>" class="btn btn-light w-100 fw-bold text-primary">
+                                <?php echo e(($user->assinante_ate && \Carbon\Carbon::parse($user->assinante_ate)->isFuture()) ? 'Renovar / Estender Plano' : 'Assinar Agora'); ?>
+
                             </a>
                         </div>
                     </div>
@@ -121,7 +124,7 @@
         </div>
     </main>
 
-    @include('layouts.footer')
+    <?php echo $__env->make('layouts.footer', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
 </body>
 
-</html>
+</html><?php /**PATH /var/www/html/resources/views/perfil/index.blade.php ENDPATH**/ ?>

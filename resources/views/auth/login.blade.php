@@ -16,6 +16,8 @@
 
                     @if(session('info'))
                         <div class="alert alert-info">{{ session('info') }}</div>
+                    @elseif(session('error'))
+                        <div class="alert alert-danger">{{ session('error') }}</div>
                     @endif
                     <div class="form-group mb-2">
                         <label class="form-label" for="emailInput">Email</label>

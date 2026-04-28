@@ -28,13 +28,14 @@ class User extends Authenticatable
         'status',
     ];
 
+    //HELPERS
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
     }
     public function isEditor(): bool
     {
-        return in_array($this->role, ['editor', 'admin']);
+        return $this->role === 'editor';
     }
     public function isRevisor(): bool
     {
@@ -47,6 +48,28 @@ class User extends Authenticatable
     public function isPendente(): bool
     {
         return $this->status === 'pendente';
+    }
+
+    public function getRoleLabelAttribute()
+    {
+        return [
+            'admin' => 'Administrador',
+            'editor' => 'Editor',
+            'autor' => 'Autor',
+            'revisor' => 'Revisor',
+        ][$this->role] ?? 'Leitor';
+    }
+
+    public function getRoleBadgeHtmlAttribute()
+    {
+        $badges = [
+            'admin' => '<span class="badge bg-danger">Admin</span>',
+            'editor' => '<span class="badge bg-primary">Editor</span>',
+            'autor' => '<span class="badge bg-success">Autor</span>',
+            'revisor' => '<span class="badge bg-info text-dark">Revisor</span>',
+        ];
+
+        return $badges[$this->role] ?? '<span class="badge bg-secondary">Leitor</span>';
     }
 
     /**

@@ -31,6 +31,12 @@ class LoginController extends Controller
     {
         $request->authenticate();
 
+        $user = Auth::user();
+        if ($user->status === 'pendente') {
+            Auth::logout();
+            return back()->with('info', 'Sua conta está aguardando aprovação de um administrador.',);
+        }
+
         $request->session()->regenerate();
 
         return redirect()->intended('/');
@@ -51,21 +57,5 @@ class LoginController extends Controller
         $request->session()->regenerateToken();
 
         return redirect('/');
-    }
-
-    /**
-     * Block login if user is pending approval
-     * 
-     * @param Request $request
-     * @return RedirectResponse
-     */
-    protected function authenticated(Request $request, $user)
-    {
-        if ($user->status === 'pendente') {
-            Auth::logout();
-            return redirect()->route('login')->withErrors([
-                'email' => 'Sua conta está aguardando aprovação de um administrador.',
-            ]);
-        }
     }
 }

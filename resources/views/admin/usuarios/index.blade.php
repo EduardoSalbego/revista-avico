@@ -37,19 +37,7 @@
                                 <tr>
                                     <td>{{ $user->name }}</td>
                                     <td>{{ $user->email }}</td>
-                                    <td>
-                                        @if($user->role == 'admin')
-                                            <span class="badge bg-danger">Admin</span>
-                                        @elseif($user->role == 'editor')
-                                            <span class="badge bg-primary">Editor</span>
-                                        @elseif($user->role == 'autor')
-                                            <span class="badge bg-success">Autor</span>
-                                        @elseif($user->role == 'revisor')
-                                            <span class="badge bg-info text-dark">Revisor</span>
-                                        @else
-                                            <span class="badge bg-secondary">Leitor</span>
-                                        @endif
-                                    </td>
+                                    <td>{!! $user->role_badge_html !!}</td>
                                     <td>{{ \Carbon\Carbon::parse($user->created_at)->format('d/m/Y') }}</td>
                                     <td class="text-center">
                                         {{-- Aprovar --}}
@@ -103,19 +91,7 @@
                                 <td>{{ $user->id }}</td>
                                 <td>{{ $user->name }}</td>
                                 <td>{{ $user->email }}</td>
-                                <td>
-                                    @if($user->role == 'admin')
-                                        <span class="badge bg-danger">Admin</span>
-                                    @elseif($user->role == 'editor')
-                                        <span class="badge bg-primary">Editor</span>
-                                    @elseif($user->role == 'autor')
-                                        <span class="badge bg-success">Autor</span>
-                                    @elseif($user->role == 'revisor')
-                                        <span class="badge bg-info text-dark">Revisor</span>
-                                    @else
-                                        <span class="badge bg-secondary">Leitor</span>
-                                    @endif
-                                </td>
+                                <td>{!! $user->role_badge_html !!}</td>
                                 <td>{{ \Carbon\Carbon::parse($user->created_at)->format('d/m/Y') }}</td>
                                 <td class="text-center">
                                     <a href="{{ route('admin.usuarios.edit', $user->id) }}"

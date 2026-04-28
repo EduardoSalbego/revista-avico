@@ -43,12 +43,7 @@
                                 </td>
                                 <td>{{ $edicao->autor }}</td>
                                 <td>ㅤㅤ{{ $edicao->capitulos()->count() }}</td>
-                                <td>
-                                    @if($edicao->status === 'publicado')
-                                        <span class="badge bg-success">Publicado</span>
-                                    @else
-                                        <span class="badge bg-secondary">Rascunho</span>
-                                    @endif
+                                <td>{!! $edicao->getStatusBadgeHtmlAttribute() !!}</td>
                                 </td>
                                 <td>{{ \Carbon\Carbon::parse($edicao->created_at)->format('d/m/Y') }}</td>
                                 <td class="text-center">

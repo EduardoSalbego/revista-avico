@@ -108,7 +108,7 @@
                 <?php else: ?>
                     <button type="submit" class="btn btn-primary btn-lg px-5"
                         onmousedown="document.getElementById('input-status').value='publicado'">
-                        ✅ Atualizar Publicação
+                        Atualizar Publicação
                     </button>
                 <?php endif; ?>
             </div>
