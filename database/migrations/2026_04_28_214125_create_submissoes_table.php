@@ -20,12 +20,14 @@ class CreateSubmissoesTable extends Migration
             $table->text('resumo');
             $table->text('cover_letter');
             $table->string('arquivo_pdf');
+            $table->string('arquivo_pdf_revisado')->nullable()->after('arquivo_pdf');
             $table->string('arquivo_docx')->nullable();
             $table->enum('status', [
                 'submetido',
                 'em_revisao',
                 'aceito',
                 'rejeitado',
+                'major_review',
             ])->default('submetido');
             $table->text('observacoes')->nullable();
             $table->timestamps();

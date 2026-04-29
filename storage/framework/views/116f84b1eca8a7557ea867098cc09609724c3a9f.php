@@ -183,14 +183,76 @@
 
                             
                             <?php if($submissao->status === 'em_revisao'): ?>
-                                <div class="alert alert-info py-3 mt-3 mb-0 shadow-sm border-0 d-flex align-items-center">
-                                    <i class="fas fa-lock fs-4 me-3 text-info"></i>
-                                    <div>
-                                        <strong>Em processo de revisão duplo-cego.</strong><br>
-                                        <span class="small">A equipe de revisores foi definida e notificada. A plataforma está
-                                            aguardando o envio dos pareceres para liberar a decisão final.</span>
+                                <?php if(!$submissao->todosRevisoresResponderam()): ?>
+                                    <div class="alert alert-info py-3 mt-3 mb-0 shadow-sm border-0 d-flex align-items-center">
+                                        <i class="fas fa-lock fs-4 me-3 text-info"></i>
+                                        <div>
+                                            <strong>Em processo de revisão duplo-cego.</strong><br>
+                                            <span class="small">A equipe de revisores foi definida e notificada. A plataforma está
+                                                aguardando o envio dos pareceres para liberar a decisão final.</span>
+                                        </div>
                                     </div>
-                                </div>
+                                <?php else: ?>
+                                    
+                                    <div class="card p-4 mt-3 bg-white shadow-sm border-primary border-top border-3">
+                                        <h6 class="text-primary mb-3"><i class="fas fa-clipboard-list me-2"></i>Pareceres Recebidos</h6>
+                                        
+                                        
+                                        <div class="row g-3 mb-4">
+                                            
+                                            <?php $__currentLoopData = $submissao->pareceres; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $parecer): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                <div class="col-md-6">
+                                                    <div class="card bg-light border-0 shadow-sm h-100">
+                                                        <div class="card-body p-3">
+                                                            <h6 class="card-title text-dark mb-1 fs-6">
+                                                                <i class="fas fa-user-check text-success me-1"></i> <?php echo e($parecer->revisor->name); ?>
+
+                                                            </h6>
+                                                            
+                                                            <span class="badge <?php echo e($parecer->decisao === 'aceito' ? 'bg-success' : ($parecer->decisao === 'rejeitado' ? 'bg-danger' : 'bg-warning')); ?> mb-2">
+                                                                <?php echo e(ucfirst($parecer->decisao)); ?>
+
+                                                            </span>
+                                                            <p class="card-text text-muted mb-0" style="font-size: 0.85rem; text-align: justify;">
+                                                                <strong>Parecer:</strong> <?php echo e($parecer->comentario ?? 'Sem comentário fornecido.'); ?>
+
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                        </div>
+
+                                        
+                                        <div class="p-3 bg-light rounded border">
+                                            <h6 class="text-dark mb-3"><i class="fas fa-gavel me-2"></i>Decisão Final do Editor</h6>
+                                            <form action="<?php echo e(route('home')); ?>" method="POST" onsubmit="return confirm('Confirmar a decisão final para este artigo? Esta ação notificará o autor.')">
+                                                <?php echo csrf_field(); ?>
+                                                <?php echo method_field('PATCH'); ?>
+                                                
+                                                <div class="row g-2 align-items-start">
+                                                    <div class="col-md-3">
+                                                        <label class="form-label small fw-bold text-muted mb-1">Veredito</label>
+                                                        <select name="status" class="form-select shadow-sm" required>
+                                                            <option value="" disabled selected>Selecione...</option>
+                                                            <option value="aceito">Aceitar Artigo</option>
+                                                            <option value="rejeitado">Rejeitar Artigo</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-7">
+                                                        <label class="form-label small fw-bold text-muted mb-1">Feedback Consolidado ao Autor</label>
+                                                        <textarea name="observacoes" class="form-control shadow-sm" rows="2" placeholder="Sintetize os pareceres ou justifique sua decisão... (Opcional, mas recomendado)" required></textarea>
+                                                    </div>
+                                                    <div class="col-md-2 d-flex align-items-end">
+                                                        <button type="submit" class="btn btn-primary w-100 shadow-sm" style="height: 58px;">
+                                                            <i class="fas fa-check-circle me-1"></i> Concluir
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
                             <?php endif; ?>
 
                             

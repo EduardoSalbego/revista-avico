@@ -77,4 +77,35 @@ class SubmissaoController extends Controller
 
         return back()->with('success', 'Versão final enviada! O editor irá incorporá-la na próxima edição.');
     }
+
+    public function resubmeter(Request $request, $id)
+    {
+        $submissao = Submissao::where('user_id', Auth::id())->findOrFail($id);
+
+        if ($submissao->status !== 'major_review') {
+            return back()->with('error', 'Esta submissão não está aguardando resubmissão.');
+        }
+
+        $request->validate([
+            'arquivo_pdf_revisado' => 'required|file|mimes:pdf|max:20480',
+        ]);
+
+        $caminho = $request->file('arquivo_pdf_revisado')
+            ->store('submissoes/pdf_revisado', 'public');
+
+        $submissao->update([
+            'arquivo_pdf_revisado' => $caminho,
+            'status' => 'em_revisao', // volta para revisão
+        ]);
+
+        // Zera os pareceres anteriores para os revisores emitirem novamente
+        $submissao->pareceres()->update([
+            'decisao' => null,
+            'comentario' => null,
+            // mantém aceito_tarefa — quem aceitou antes não precisa aceitar de novo
+        ]);
+
+        return back()->with('success', 'PDF revisado enviado! Os revisores foram notificados.');
+    }
+
 }

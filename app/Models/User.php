@@ -50,6 +50,11 @@ class User extends Authenticatable
         return $this->status === 'pendente';
     }
 
+    public function pareceres()
+    {
+        return $this->hasMany(Parecer::class, 'revisor_id');
+    }
+
     public function submissoesAtribuidas()
     {
         return $this->belongsToMany(

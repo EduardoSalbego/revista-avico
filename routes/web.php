@@ -12,6 +12,7 @@ use App\Http\Controllers\Perfil\ProfileController;
 use App\Http\Controllers\Autor\SubmissaoController as AutorSubmissaoController;
 use App\Http\Controllers\Editor\SubmissaoController as EditorSubmissaoController;
 use App\Http\Controllers\RevisorBuscaController;
+use App\Http\Controllers\Revisor\ParecerController;
 
 /*
 |--------------------------------------------------------------------------
@@ -120,6 +121,19 @@ Route::middleware('role:autor')->prefix('/autor')->name('autor.')->group(functio
         Route::get('/criar', [AutorSubmissaoController::class, 'create'])->name('create');
         Route::post('/{id}/docx', [AutorSubmissaoController::class, 'enviarDocx'])->name('docx');
     });
+    Route::post('/submissoes/{id}/resubmeter', [AutorSubmissaoController::class, 'resubmeter'])->name('submissoes.resubmeter');
 });
+
+// ==========================================
+// 7. ROTAS DE REVISÃO (Requer Revisor)
+// ==========================================
+Route::middleware('role:revisor')->prefix('/revisor')->name('revisor.')->group(function () {
+    Route::prefix('/pareceres')->name('pareceres.')->group(function () {
+        Route::get('/', [ParecerController::class, 'index'])->name('index');
+        Route::patch('/{id}/tarefa', [ParecerController::class, 'responderTarefa'])->name('responderTarefa');
+        Route::patch('/{id}/emitir', [ParecerController::class, 'emitir'])->name('emitir');
+    });
+});
+
 
 require __DIR__ . '/auth.php';

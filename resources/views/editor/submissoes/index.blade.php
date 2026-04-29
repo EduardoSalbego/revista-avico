@@ -179,14 +179,26 @@
 
                             {{-- Se estiver Em Revisão: Mostra o painel trancado --}}
                             @if($submissao->status === 'em_revisao')
-                                <div class="alert alert-info py-3 mt-3 mb-0 shadow-sm border-0 d-flex align-items-center">
-                                    <i class="fas fa-lock fs-4 me-3 text-info"></i>
-                                    <div>
-                                        <strong>Em processo de revisão duplo-cego.</strong><br>
-                                        <span class="small">A equipe de revisores foi definida e notificada. A plataforma está
-                                            aguardando o envio dos pareceres para liberar a decisão final.</span>
+                                @if(!$submissao->todosRevisoresResponderam())
+                                    <div class="alert alert-info py-3 mt-3 mb-0 shadow-sm border-0 d-flex align-items-center">
+                                        <i class="fas fa-lock fs-4 me-3 text-info"></i>
+                                        <div>
+                                            <strong>Em processo de revisão duplo-cego.</strong><br>
+                                            <span class="small">A equipe de revisores foi definida e notificada. A plataforma está
+                                                aguardando o envio dos pareceres para liberar a decisão final.</span>
+                                        </div>
                                     </div>
-                                </div>
+                                @elseif($submissao->todosRevisoresResponderam())
+                                    {{-- Se todos os pareceres já chegaram, mostra a decisão final --}}
+                                    <div class="alert alert-success py-3 mt-3 mb-0 shadow-sm border-0 d-flex align-items-center">
+                                        <i class="fas fa-check fs-4 me-3 text-success"></i>
+                                        <div>
+                                            <strong>Revisão concluída.</strong><br>
+                                            <span class="small">Todos os pareceres foram recebidos. Você pode agora tomar a decisão final
+                                                sobre esta submissão.</span>
+                                        </div>
+                                    </div>
+                                @endif
                             @endif
 
                             {{-- DOCX enviado --}}

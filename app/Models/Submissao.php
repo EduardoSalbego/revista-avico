@@ -34,8 +34,34 @@ class Submissao extends Model
     // Revisores atribuídos (pivot)
     public function revisoresAtribuidos()
     {
-        return $this->belongsToMany(User::class, 'submissao_revisor', 'submissao_id', 'revisor_id'
+        return $this->belongsToMany(
+            User::class,
+            'submissao_revisor',
+            'submissao_id',
+            'revisor_id'
         )->withPivot('atribuido_em')->withTimestamps();
+    }
+
+    public function pareceres()
+    {
+        return $this->hasMany(Parecer::class);
+    }
+
+    public function todosRevisoresResponderam(): bool
+    {
+        $aceitaram = $this->pareceres()->where('aceito_tarefa', true)->count();
+        $responderam = $this->pareceres()
+            ->where('aceito_tarefa', true)
+            ->whereNotNull('decisao')
+            ->count();
+
+        return $aceitaram > 0 && $aceitaram === $responderam;
+    }
+
+    // Verifica se algum revisor pediu major_review
+    public function temMajorReview(): bool
+    {
+        return $this->pareceres()->where('decisao', 'major_review')->exists();
     }
 
     // Helpers de status

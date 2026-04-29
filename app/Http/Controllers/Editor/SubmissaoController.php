@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Editor;
 use App\Http\Controllers\Controller;
 use App\Models\Submissao;
 use App\Models\User;
-use App\Notifications\SubmissaoDecidida;
+use App\Models\Parecer;
 use Illuminate\Http\Request;
 
 class SubmissaoController extends Controller
@@ -54,10 +54,27 @@ class SubmissaoController extends Controller
             'revisores.*' => 'exists:users,id',
         ]);
 
-        // Sync substitui os atribuídos anteriores pelos novos
-        $submissao->revisoresAtribuidos()->sync($request->revisores ?? []);
+        $revisores = $request->revisores ?? [];
 
-        // Se ainda estava como submetido, avança para em_revisao
+        // sincroniza pivot
+        $submissao->revisoresAtribuidos()->sync($revisores);
+
+        // cria parecer para cada revisor (se ainda não existir)
+        foreach ($revisores as $revisorId) {
+            Parecer::firstOrCreate(
+                [
+                    'submissao_id' => $submissao->id,
+                    'revisor_id' => $revisorId,
+                ],
+                [
+                    'aceito_tarefa' => null,
+                    'decisao' => null,
+                    'comentario' => null,
+                ]
+            );
+        }
+
+        // atualiza status
         if ($submissao->isSubmetido() && !empty($request->revisores)) {
             $submissao->update(['status' => 'em_revisao']);
         }

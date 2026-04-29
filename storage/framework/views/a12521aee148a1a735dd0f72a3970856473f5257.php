@@ -39,9 +39,8 @@
                                 <li><a class="dropdown-item" href="<?php echo e(route('admin.edicoes.index')); ?>">ADMIN: Gerenciar Edições</a></li>
                                 <li><a class="dropdown-item" href="<?php echo e(route('autor.submissoes.create')); ?>">AUTOR: Submeter Trabalho</a></li>
                                 <li><a class="dropdown-item" href="<?php echo e(route('autor.submissoes.index')); ?>">AUTOR: Minhas Submissões</a></li>
-                                <li><a class="dropdown-item" href="<?php echo e(route('editor.submissoes.index')); ?>">EDITOR: Ver
-                                        Submissões</a>
-                                </li>
+                                <li><a class="dropdown-item" href="<?php echo e(route('editor.submissoes.index')); ?>">EDITOR: Ver Submissões</a></li>
+                                <li><a class="dropdown-item" href="<?php echo e(route('revisor.pareceres.index')); ?>">REVISOR: Minhas Tarefas</a></li>
                                 <li>
                                     <hr class="dropdown-divider">
                                 </li>
@@ -52,8 +51,12 @@
                                     <hr class="dropdown-divider">
                                 </li>
                             <?php elseif(Auth::user()->isEditor()): ?>
-                                <li><a class="dropdown-item" href="<?php echo e(route('editor.submissoes.index')); ?>">Ver Submissões</a>
+                                <li><a class="dropdown-item" href="<?php echo e(route('editor.submissoes.index')); ?>">Ver Submissões</a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
                                 </li>
+                            <?php elseif(Auth::user()->isRevisor()): ?>
+                                <li><a class="dropdown-item" href="<?php echo e(route('revisor.pareceres.index')); ?>">Minhas Tarefas</a></li>
                                 <li>
                                     <hr class="dropdown-divider">
                                 </li>
