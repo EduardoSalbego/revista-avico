@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Submissao extends Model
 {
     public $table = 'submissoes';
-    
+
     protected $fillable = [
         'user_id',
         'titulo',
@@ -28,7 +28,14 @@ class Submissao extends Model
     // Revisores sugeridos (pivot)
     public function revisoresSugeridos()
     {
-        return $this->belongsToMany(User::class, 'submissao_revisor', 'submissao_id', 'revisor_id');
+        return $this->belongsToMany(User::class, 'submissao_revisores_sugeridos', 'submissao_id', 'revisor_id');
+    }
+
+    // Revisores atribuídos (pivot)
+    public function revisoresAtribuidos()
+    {
+        return $this->belongsToMany(User::class, 'submissao_revisor', 'submissao_id', 'revisor_id'
+        )->withPivot('atribuido_em')->withTimestamps();
     }
 
     // Helpers de status

@@ -50,6 +50,16 @@ class User extends Authenticatable
         return $this->status === 'pendente';
     }
 
+    public function submissoesAtribuidas()
+    {
+        return $this->belongsToMany(
+            Submissao::class,
+            'submissao_atribuicoes',
+            'revisor_id',
+            'submissao_id'
+        )->withPivot('atribuido_em')->withTimestamps();
+    }
+
     public function getRoleLabelAttribute()
     {
         return [

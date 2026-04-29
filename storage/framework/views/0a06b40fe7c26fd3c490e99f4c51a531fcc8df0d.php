@@ -28,64 +28,64 @@
         <?php else: ?>
             <div class="d-flex flex-column gap-3">
                 <?php $__currentLoopData = $submissoes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $submissao): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                        <div class="card p-4 mb-4">
-                            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
-                                <div>
-                                    <h5 class="mb-1"><?php echo e($submissao->titulo); ?></h5>
-                                    <small class="text-muted">
-                                        Enviado em <?php echo e($submissao->created_at->format('d/m/Y')); ?>
+                    <div class="card p-4 mb-4">
+                        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                            <div>
+                                <h5 class="mb-1"><?php echo e($submissao->titulo); ?></h5>
+                                <small class="text-muted">
+                                    Enviado em <?php echo e($submissao->created_at->format('d/m/Y')); ?>
 
-                                    </small>
-                                </div>
-                                <?php echo $submissao->badgeStatus(); ?>
-
+                                </small>
                             </div>
-
-                            <p class="text-muted mt-3 mb-2" style="font-size: 0.95rem;">
-                                <?php echo e(Str::limit($submissao->resumo, 200)); ?>
-
-                            </p>
-
-                            
-                            <?php if($submissao->revisoresSugeridos->isNotEmpty()): ?>
-                                <div class="mb-2">
-                                    <small class="text-muted fw-semibold">Revisores sugeridos: </small>
-                                    <?php $__currentLoopData = $submissao->revisoresSugeridos; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $revisor): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                        <span class="badge bg-light text-dark border"><?php echo e($revisor->name); ?></span>
-                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                                </div>
-                            <?php endif; ?>
-
-                            
-                            <?php if($submissao->observacoes): ?>
-                                <div class="alert alert-info py-2 mt-3 mb-2">
-                                    <strong>Observação do editor:</strong> <?php echo e($submissao->observacoes); ?>
-
-                                </div>
-                            <?php endif; ?>
-
-                            
-                            <?php if($submissao->isAceito() && !$submissao->arquivo_docx): ?>
-                                <div class="alert alert-success mt-3 mb-0">
-                                    <strong>🎉 Artigo aceito!</strong>
-                                    Envie agora a versão final em DOCX para o editor incorporar na revista.
-                                    <form action="<?php echo e(route('autor.submissoes.docx', $submissao->id)); ?>" method="POST"
-                                        enctype="multipart/form-data" class="mt-2 d-flex gap-2">
-                                        <?php echo csrf_field(); ?>
-                                        <input type="file" class="form-control form-control-sm" name="arquivo_docx"
-                                            accept=".docx,.doc" required>
-                                        <button type="submit" class="btn btn-success btn-sm px-3">
-                                            Enviar DOCX
-                                        </button>
-                                    </form>
-                                </div>
-                            <?php elseif($submissao->isAceito() && $submissao->arquivo_docx): ?>
-                                <div class="alert alert-success py-2 mt-3 mb-0">
-                                    ✅ Versão final em DOCX enviada. Aguardando incorporação pelo editor.
-                                </div>
-                            <?php endif; ?>
+                            <?php echo $submissao->badgeStatus(); ?>
 
                         </div>
+
+                        <p class="text-muted mt-3 mb-2" style="font-size: 0.95rem;">
+                            <?php echo e(Str::limit($submissao->resumo, 200)); ?>
+
+                        </p>
+
+                        
+                        <?php if($submissao->revisoresSugeridos->isNotEmpty()): ?>
+                            <div class="mb-2">
+                                <small class="text-muted fw-semibold">Revisores sugeridos: </small>
+                                <?php $__currentLoopData = $submissao->revisoresSugeridos; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $revisor): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <span class="badge bg-light text-dark border"><?php echo e($revisor->name); ?></span>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                            </div>
+                        <?php endif; ?>
+
+                        
+                        <?php if($submissao->observacoes): ?>
+                            <div class="alert alert-info py-2 mt-3 mb-2">
+                                <strong>Observação do editor:</strong> <?php echo e($submissao->observacoes); ?>
+
+                            </div>
+                        <?php endif; ?>
+
+                        
+                        <?php if($submissao->isAceito() && !$submissao->arquivo_docx): ?>
+                            <div class="alert alert-success mt-3 mb-0">
+                                <strong>🎉 Artigo aceito!</strong>
+                                Envie agora a versão final em DOCX para o editor incorporar na revista.
+                                <form action="<?php echo e(route('autor.submissoes.docx', $submissao->id)); ?>" method="POST"
+                                    enctype="multipart/form-data" class="mt-2 d-flex gap-2">
+                                    <?php echo csrf_field(); ?>
+                                    <input type="file" class="form-control form-control-sm" name="arquivo_docx" accept=".docx,.doc"
+                                        required>
+                                    <button type="submit" class="btn btn-success btn-sm px-3">
+                                        Enviar DOCX
+                                    </button>
+                                </form>
+                            </div>
+                        <?php elseif($submissao->isAceito() && $submissao->arquivo_docx): ?>
+                            <div class="alert alert-success py-2 mt-3 mb-0">
+                                ✅ Versão final em DOCX enviada. Aguardando incorporação pelo editor.
+                            </div>
+                        <?php endif; ?>
+
+                    </div>
                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
             </div>
 

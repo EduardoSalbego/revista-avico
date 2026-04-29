@@ -9,7 +9,8 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Assinatura\AssinaturaController;
 use App\Http\Controllers\Perfil\ProfileController;
-use App\Http\Controllers\Autor\SubmissaoController;
+use App\Http\Controllers\Autor\SubmissaoController as AutorSubmissaoController;
+use App\Http\Controllers\Editor\SubmissaoController as EditorSubmissaoController;
 use App\Http\Controllers\RevisorBuscaController;
 
 /*
@@ -76,6 +77,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->middleware(['auth', 'verified'])->name('dashboard');
+    Route::get('/revisores/buscar', [RevisorBuscaController::class, 'buscar']);
 });
 
 // ==========================================
@@ -98,22 +100,26 @@ Route::middleware('role:admin')->prefix('admin')->as('admin.')->group(function (
 // ==========================================
 // 5. ROTAS DE EDITORIA (Requer Editor)
 // ==========================================
-Route::middleware('role:editor')->name('edicoes.')->group(function () {
-    Route::get('/edicoes/create', [EdicaoController::class, 'create'])->name('create');
-    Route::post('/edicoes/create', [EdicaoController::class, 'store'])->name('store');
+Route::middleware('role:editor')->prefix('/editor')->name('editor.')->group(function () {
+    Route::get('/edicoes/create', [EdicaoController::class, 'create'])->name('edicoes.create');
+    Route::post('/edicoes/create', [EdicaoController::class, 'store'])->name('edicoes.store');
+    Route::prefix('/submissoes')->name('submissoes.')->group(function () {
+        Route::get('/', [EditorSubmissaoController::class, 'index'])->name('index');
+        Route::patch('/{id}/atribuir', [EditorSubmissaoController::class, 'atribuir'])->name('atribuir');
+        Route::patch('/{id}/decidir', [EditorSubmissaoController::class, 'decidir'])->name('decidir');
+    });
 });
 
 // ==========================================
 // 6. ROTAS DE AUTORES (Requer Autor)
 // ==========================================
-Route::middleware('role:autor')->name('autor.')->group(function () {
-    Route::prefix('submissoes')->name('submissoes.')->group(function () {
-        Route::get('/', [SubmissaoController::class, 'index'])->name('index');
-        Route::post('/', [SubmissaoController::class, 'store'])->name('store');
-        Route::get('/criar', [SubmissaoController::class, 'create'])->name('create');
-        Route::post('/{id}/docx', [SubmissaoController::class, 'enviarDocx'])->name('docx');
+Route::middleware('role:autor')->prefix('/autor')->name('autor.')->group(function () {
+    Route::prefix('/submissoes')->name('submissoes.')->group(function () {
+        Route::get('/', [AutorSubmissaoController::class, 'index'])->name('index');
+        Route::post('/', [AutorSubmissaoController::class, 'store'])->name('store');
+        Route::get('/criar', [AutorSubmissaoController::class, 'create'])->name('create');
+        Route::post('/{id}/docx', [AutorSubmissaoController::class, 'enviarDocx'])->name('docx');
     });
-    Route::get('/revisores/buscar', [RevisorBuscaController::class, 'buscar']);
 });
 
 require __DIR__ . '/auth.php';

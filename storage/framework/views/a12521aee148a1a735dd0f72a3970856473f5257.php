@@ -17,7 +17,7 @@
                 <?php if(auth()->guard()->check()): ?>
                     <?php if(Auth::user()->isEditor() || Auth::user()->isAdmin()): ?>
                         <li class="nav-item">
-                            <a class="nav-link" href="<?php echo e(route('edicoes.create')); ?>">nova edição</a>
+                            <a class="nav-link" href="<?php echo e(route('editor.edicoes.create')); ?>">nova edição</a>
                         </li>
                     <?php else: ?>
                         <li class="nav-item">
@@ -35,14 +35,25 @@
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                             <?php if(Auth::user()->isAdmin()): ?>
-                                <li><a class="dropdown-item" href="/admin/usuarios">Gerenciar Usuários</a></li>
-                                <li><a class="dropdown-item" href="/admin/edicoes">Gerenciar Edições</a></li>
+                                <li><a class="dropdown-item" href="<?php echo e(route('admin.usuarios.index')); ?>">ADMIN: Gerenciar Usuários</a></li>
+                                <li><a class="dropdown-item" href="<?php echo e(route('admin.edicoes.index')); ?>">ADMIN: Gerenciar Edições</a></li>
+                                <li><a class="dropdown-item" href="<?php echo e(route('autor.submissoes.create')); ?>">AUTOR: Submeter Trabalho</a></li>
+                                <li><a class="dropdown-item" href="<?php echo e(route('autor.submissoes.index')); ?>">AUTOR: Minhas Submissões</a></li>
+                                <li><a class="dropdown-item" href="<?php echo e(route('editor.submissoes.index')); ?>">EDITOR: Ver
+                                        Submissões</a>
+                                </li>
                                 <li>
                                     <hr class="dropdown-divider">
                                 </li>
                             <?php elseif(Auth::user()->isAutor()): ?>
-                                <li><a class="dropdown-item" href="/submissoes/criar">Submeter Trabalho</a></li>
-                                <li><a class="dropdown-item" href="/submissoes">Minhas Submissões</a></li>
+                                <li><a class="dropdown-item" href="<?php echo e(route('autor.submissoes.create')); ?>">Submeter Trabalho</a></li>
+                                <li><a class="dropdown-item" href="<?php echo e(route('autor.submissoes.index')); ?>">Minhas Submissões</a></li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                            <?php elseif(Auth::user()->isEditor()): ?>
+                                <li><a class="dropdown-item" href="<?php echo e(route('editor.submissoes.index')); ?>">Ver Submissões</a>
+                                </li>
                                 <li>
                                     <hr class="dropdown-divider">
                                 </li>
