@@ -14,6 +14,7 @@ class Submissao extends Model
         'resumo',
         'cover_letter',
         'arquivo_pdf',
+        'arquivo_pdf_revisado',
         'arquivo_docx',
         'status',
         'observacoes',
@@ -87,9 +88,11 @@ class Submissao extends Model
     {
         return match ($this->status) {
             'submetido' => '<span class="badge bg-secondary">Submetido</span>',
-            'em_revisao' => '<span class="badge bg-warning text-dark">Em Revisão</span>',
+            'em_revisao' => '<span class="badge bg-info text-dark">Em Revisão</span>',
             'aceito' => '<span class="badge bg-success">Aceito</span>',
             'rejeitado' => '<span class="badge bg-danger">Rejeitado</span>',
+            'major_review' => '<span class="badge bg-warning text-dark">Major Review</span>',
+            'revisao_pontual' => '<span class="badge bg-info text-dark">Revisão Pontual</span>',
             default => '<span class="badge bg-light text-dark">–</span>',
         };
     }

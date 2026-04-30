@@ -20,6 +20,9 @@
         <?php if(session('success')): ?>
             <div class="alert alert-success"><?php echo e(session('success')); ?></div>
         <?php endif; ?>
+        <?php if(session('error')): ?>
+            <div class="alert alert-danger"><?php echo e(session('error')); ?></div>
+        <?php endif; ?>
 
         <?php if($submissoes->isEmpty()): ?>
             <div class="text-center py-5">
@@ -28,7 +31,7 @@
         <?php else: ?>
             <div class="d-flex flex-column gap-3">
                 <?php $__currentLoopData = $submissoes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $submissao): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                    <div class="card p-4 mb-4">
+                    <div class="card p-4 mb-2 <?php echo e($submissao->status === 'major_review' ? 'border-warning border-2' : ''); ?>">
                         <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
                             <div>
                                 <h5 class="mb-1"><?php echo e($submissao->titulo); ?></h5>
@@ -36,6 +39,13 @@
                                     Enviado em <?php echo e($submissao->created_at->format('d/m/Y')); ?>
 
                                 </small>
+
+                                
+                                <?php if($submissao->arquivo_pdf_revisado): ?>
+                                    <span class="badge bg-warning text-dark ms-2">
+                                        🔄 Resubmissão após Major Review
+                                    </span>
+                                <?php endif; ?>
                             </div>
                             <?php echo $submissao->badgeStatus(); ?>
 
@@ -65,18 +75,112 @@
                         <?php endif; ?>
 
                         
+                        <?php if($submissao->status === 'major_review'): ?>
+                            <div class="alert alert-warning mt-3 mb-0 border-warning">
+                                <div class="d-flex align-items-start gap-2 mb-3">
+                                    <span style="font-size: 1.4rem;">🔄</span>
+                                    <div>
+                                        <strong>Revisão Maior Solicitada</strong><br>
+                                        <span class="small">
+                                            Os revisores solicitaram correções significativas antes da aprovação.
+                                            Corrija seu artigo conforme o feedback acima e reenvie o PDF revisado.
+                                            O artigo voltará para os revisores.
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <form action="<?php echo e(route('autor.submissoes.resubmeter', $submissao->id)); ?>" method="POST"
+                                    enctype="multipart/form-data">
+                                    <?php echo csrf_field(); ?>
+                                    <div class="d-flex gap-2 align-items-start flex-wrap">
+                                        <div class="flex-grow-1">
+                                            <input type="file"
+                                                class="form-control form-control-sm <?php $__errorArgs = ['arquivo_pdf_revisado'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>"
+                                                name="arquivo_pdf_revisado" accept="application/pdf" required>
+                                            <div class="form-text">Apenas PDF. Máximo 20MB.</div>
+                                            <?php $__errorArgs = ['arquivo_pdf_revisado'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                                <div class="invalid-feedback"><?php echo e($message); ?></div>
+                                            <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
+                                        </div>
+                                        <button type="submit" class="btn btn-warning btn-sm px-4 fw-semibold"
+                                            onclick="return confirm('Enviar o PDF revisado? Os revisores serão notificados para uma nova rodada.')">
+                                            Enviar PDF Revisado
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        <?php endif; ?>
+
+                        
+                        <?php if($submissao->status === 'revisao_pontual' && !$submissao->arquivo_docx): ?>
+                            <div class="alert alert-info mt-3 mb-0">
+                                <div class="d-flex align-items-start gap-2 mb-3">
+                                    <span style="font-size: 1.4rem;">📝</span>
+                                    <div>
+                                        <strong>Revisões Pontuais Solicitadas</strong><br>
+                                        <span class="small">
+                                            Seu artigo foi aceito! Leia o feedback do editor, faça os
+                                            ajustes pontuais indicados e envie a versão final em DOCX.
+                                        </span>
+                                    </div>
+                                </div>
+                                <form action="<?php echo e(route('autor.submissoes.docx', $submissao->id)); ?>" method="POST"
+                                    enctype="multipart/form-data">
+                                    <?php echo csrf_field(); ?>
+                                    <div class="d-flex gap-2 align-items-start flex-wrap">
+                                        <div class="flex-grow-1">
+                                            <input type="file" class="form-control form-control-sm" name="arquivo_docx"
+                                                accept=".docx,.doc" required>
+                                            <div class="form-text">Formato .docx ou .doc. Máximo 20MB.</div>
+                                        </div>
+                                        <button type="submit" class="btn btn-info btn-sm px-4 fw-semibold text-dark">
+                                            Enviar DOCX Final
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        <?php endif; ?>
+
+                        
                         <?php if($submissao->isAceito() && !$submissao->arquivo_docx): ?>
                             <div class="alert alert-success mt-3 mb-0">
-                                <strong>🎉 Artigo aceito!</strong>
-                                Envie agora a versão final em DOCX para o editor incorporar na revista.
+                                <div class="d-flex align-items-start gap-2 mb-3">
+                                    <span style="font-size: 1.4rem;">🎉</span>
+                                    <div>
+                                        <strong>Artigo Aceito!</strong><br>
+                                        <span class="small">
+                                            Parabéns! Envie agora a versão final em DOCX
+                                            para o editor incorporar na próxima edição da revista.
+                                        </span>
+                                    </div>
+                                </div>
                                 <form action="<?php echo e(route('autor.submissoes.docx', $submissao->id)); ?>" method="POST"
-                                    enctype="multipart/form-data" class="mt-2 d-flex gap-2">
+                                    enctype="multipart/form-data">
                                     <?php echo csrf_field(); ?>
-                                    <input type="file" class="form-control form-control-sm" name="arquivo_docx" accept=".docx,.doc"
-                                        required>
-                                    <button type="submit" class="btn btn-success btn-sm px-3">
-                                        Enviar DOCX
-                                    </button>
+                                    <div class="d-flex gap-2 align-items-start flex-wrap">
+                                        <div class="flex-grow-1">
+                                            <input type="file" class="form-control form-control-sm" name="arquivo_docx"
+                                                accept=".docx,.doc" required>
+                                            <div class="form-text">Formato .docx ou .doc. Máximo 20MB.</div>
+                                        </div>
+                                        <button type="submit" class="btn btn-success btn-sm px-4 fw-semibold">
+                                            Enviar DOCX Final
+                                        </button>
+                                    </div>
                                 </form>
                             </div>
                         <?php elseif($submissao->isAceito() && $submissao->arquivo_docx): ?>

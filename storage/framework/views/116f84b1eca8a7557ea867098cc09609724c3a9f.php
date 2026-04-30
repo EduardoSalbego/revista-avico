@@ -193,28 +193,51 @@
                                         </div>
                                     </div>
                                 <?php else: ?>
+                                    <div class="mt-3 d-flex align-items-center justify-content-between">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-clipboard-check fs-4 me-3 text-success"></i>
+                                            <div>
+                                                <strong>Revisões concluídas</strong><br>
+                                                <span class="small text-muted">
+                                                    Todos os revisores já enviaram seus pareceres. A submissão está pronta para decisão
+                                                    editorial.
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <button type="button" class="btn btn-outline-primary btn-sm"
+                                            onclick="togglePareceres(<?php echo e($submissao->id); ?>)">
+                                            <i class="fas fa-eye me-1"></i>
+                                            <span id="btn-label-<?php echo e($submissao->id); ?>">Ver pareceres e decidir</span>
+                                        </button>
+                                    </div>
                                     
-                                    <div class="card p-4 mt-3 bg-white shadow-sm border-primary border-top border-3">
-                                        <h6 class="text-primary mb-3"><i class="fas fa-clipboard-list me-2"></i>Pareceres Recebidos</h6>
-                                        
+                                    <div id="painel-pareceres-<?php echo e($submissao->id); ?>"
+                                        class="card p-4 mt-3 bg-white shadow-sm border-primary border-top border-3" style="display: none;">
+
+                                        <h6 class="text-primary mb-3">
+                                            <i class="fas fa-clipboard-list me-2"></i>Pareceres Recebidos
+                                        </h6>
+
                                         
                                         <div class="row g-3 mb-4">
-                                            
-                                            <?php $__currentLoopData = $submissao->pareceres; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $parecer): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                            <?php $__currentLoopData = $submissao->pareceres()->where('aceito_tarefa', true)->whereNotNull('decisao')->with('revisor')->get(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $parecer): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                                 <div class="col-md-6">
                                                     <div class="card bg-light border-0 shadow-sm h-100">
                                                         <div class="card-body p-3">
                                                             <h6 class="card-title text-dark mb-1 fs-6">
-                                                                <i class="fas fa-user-check text-success me-1"></i> <?php echo e($parecer->revisor->name); ?>
+                                                                <i class="fas fa-user-check text-success me-1"></i>
+                                                                <?php echo e($parecer->revisor->name); ?>
 
                                                             </h6>
-                                                            
-                                                            <span class="badge <?php echo e($parecer->decisao === 'aceito' ? 'bg-success' : ($parecer->decisao === 'rejeitado' ? 'bg-danger' : 'bg-warning')); ?> mb-2">
-                                                                <?php echo e(ucfirst($parecer->decisao)); ?>
 
-                                                            </span>
-                                                            <p class="card-text text-muted mb-0" style="font-size: 0.85rem; text-align: justify;">
-                                                                <strong>Parecer:</strong> <?php echo e($parecer->comentario ?? 'Sem comentário fornecido.'); ?>
+                                                            <?php echo $parecer->badgeDecisao(); ?>
+
+
+                                                            <p class="card-text text-muted mb-0"
+                                                                style="font-size: 0.85rem; text-align: justify;">
+                                                                <strong>Parecer:</strong>
+                                                                <?php echo e($parecer->comentario ?? 'Sem comentário fornecido.'); ?>
 
                                                             </p>
                                                         </div>
@@ -223,36 +246,67 @@
                                             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                         </div>
 
-                                        
                                         <div class="p-3 bg-light rounded border">
-                                            <h6 class="text-dark mb-3"><i class="fas fa-gavel me-2"></i>Decisão Final do Editor</h6>
-                                            <form action="<?php echo e(route('home')); ?>" method="POST" onsubmit="return confirm('Confirmar a decisão final para este artigo? Esta ação notificará o autor.')">
+                                            <h6 class="text-dark mb-3">
+                                                <i class="fas fa-gavel me-2"></i>Decisão Final do Editor
+                                            </h6>
+
+                                            <form action="<?php echo e(route('editor.submissoes.decidir', $submissao->id)); ?>" method="POST"
+                                                onsubmit="return confirm('Confirmar a decisão final? O autor será notificado.')">
                                                 <?php echo csrf_field(); ?>
                                                 <?php echo method_field('PATCH'); ?>
-                                                
-                                                <div class="row g-2 align-items-start">
-                                                    <div class="col-md-3">
+
+                                                <div class="row g-3">
+
+                                                    
+                                                    <div class="col-12">
+                                                        <label class="form-label small fw-bold text-muted mb-1">
+                                                            Feedback ao Autor
+                                                            <span id="obrig-feedback-<?php echo e($submissao->id); ?>" class="text-danger"
+                                                                style="display:none;">*</span>
+                                                        </label>
+                                                        <textarea name="observacoes" id="feedback-<?php echo e($submissao->id); ?>"
+                                                            class="form-control shadow-sm" rows="4"
+                                                            placeholder="Sintetize os principais pontos dos pareceres e justifique a decisão editorial..."></textarea>
+                                                    </div>
+
+                                                    
+                                                    <div class="col-md-4">
                                                         <label class="form-label small fw-bold text-muted mb-1">Veredito</label>
-                                                        <select name="status" class="form-select shadow-sm" required>
+                                                        <select name="status" class="form-select shadow-sm" required
+                                                            id="veredito-<?php echo e($submissao->id); ?>"
+                                                            onchange="atualizarPlaceholder(<?php echo e($submissao->id); ?>, this.value)">
                                                             <option value="" disabled selected>Selecione...</option>
-                                                            <option value="aceito">Aceitar Artigo</option>
-                                                            <option value="rejeitado">Rejeitar Artigo</option>
+                                                            <option value="aceito">Aceitar</option>
+                                                            <option value="rejeitado">Rejeitar</option>
+                                                            <option value="major_review">Major Review</option>
+                                                            <option value="aceito">Revisão Pontual</option>
                                                         </select>
+                                                        <small id="desc-veredito-<?php echo e($submissao->id); ?>"
+                                                            class="text-muted mt-1 d-block"></small>
                                                     </div>
-                                                    <div class="col-md-7">
-                                                        <label class="form-label small fw-bold text-muted mb-1">Feedback Consolidado ao Autor</label>
-                                                        <textarea name="observacoes" class="form-control shadow-sm" rows="2" placeholder="Sintetize os pareceres ou justifique sua decisão... (Opcional, mas recomendado)" required></textarea>
-                                                    </div>
-                                                    <div class="col-md-2 d-flex align-items-end">
-                                                        <button type="submit" class="btn btn-primary w-100 shadow-sm" style="height: 58px;">
-                                                            <i class="fas fa-check-circle me-1"></i> Concluir
+
+                                                    <div class="col-md-8 d-flex align-items-end justify-content-end">
+                                                        <button type="submit" class="btn btn-primary px-5 shadow-sm">
+                                                            <i class="fas fa-check-circle me-1"></i> Concluir e Notificar Autor
                                                         </button>
                                                     </div>
+
                                                 </div>
                                             </form>
                                         </div>
                                     </div>
                                 <?php endif; ?>
+                            <?php endif; ?>
+
+
+                            
+                            <?php if($submissao->observacoes): ?>
+                                <div class="alert alert-light border py-2 mb-3">
+                                    <small class="fw-semibold text-danger"><i class="fas fa-exclamation-circle"></i> Observação
+                                        registrada:</small>
+                                    <p class="mb-0 small mt-1"><?php echo e($submissao->observacoes); ?></p>
+                                </div>
                             <?php endif; ?>
 
                             
@@ -272,15 +326,6 @@
                                     formatada.
                                 </div>
                             <?php endif; ?>
-                        <?php endif; ?>
-
-                        
-                        <?php if($submissao->observacoes): ?>
-                            <div class="alert alert-light border py-2 mb-3">
-                                <small class="fw-semibold text-danger"><i class="fas fa-exclamation-circle"></i> Observação
-                                    registrada:</small>
-                                <p class="mb-0 small mt-1"><?php echo e($submissao->observacoes); ?></p>
-                            </div>
                         <?php endif; ?>
 
                     </div>
@@ -380,6 +425,37 @@
                 <?php endif; ?>
             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
         });
+
+        function togglePareceres(id) {
+            const painel = document.getElementById(`painel-pareceres-${id}`);
+            const label = document.getElementById(`btn-label-${id}`);
+            const aberto = painel.style.display !== 'none';
+            painel.style.display = aberto ? 'none' : 'block';
+            label.textContent = aberto ? 'Ver Pareceres e Decidir' : 'Ocultar Pareceres';
+        }
+
+        const descricoes = {
+            aceito: 'O artigo será aceito para publicação.',
+            rejeitado: 'O artigo será rejeitado e o autor notificado.',
+            major_review: 'O autor deverá corrigir pontos e resubmeter o PDF para nova rodada de revisão.',
+            revisao_pontual: 'Aceito, mas o autor fará ajustes pontuais na versão final (DOCX).',
+        };
+
+        function atualizarPlaceholder(id, valor) {
+            const desc = document.getElementById(`desc-veredito-${id}`);
+            const obrig = document.getElementById(`obrig-feedback-${id}`);
+            const textarea = document.getElementById(`feedback-${id}`);
+
+            desc.textContent = descricoes[valor] ?? '';
+
+            const precisaFeedback = ['rejeitado', 'major_review', 'revisao_pontual'].includes(valor);
+            obrig.style.display = precisaFeedback ? 'inline' : 'none';
+            textarea.required = precisaFeedback;
+            textarea.placeholder = precisaFeedback
+                ? 'Obrigatório: descreva os pontos a corrigir ou o motivo da rejeição...'
+                : 'Sintetize os pareceres ou justifique sua decisão...';
+        }
+
     </script>
 </body>
 

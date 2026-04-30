@@ -88,7 +88,7 @@ class SubmissaoController extends Controller
         $submissao = Submissao::with('autor')->findOrFail($id);
 
         $request->validate([
-            'status' => 'required|in:aceito,rejeitado',
+            'status' => 'required|in:aceito,rejeitado,major_review,revisao_pontual',
             'observacoes' => 'nullable|string|max:2000',
         ]);
 
@@ -104,10 +104,6 @@ class SubmissaoController extends Controller
         // Notifica o autor por email
         // $submissao->autor->notify(new SubmissaoDecidida($submissao));
 
-        $msg = $request->status === 'aceito'
-            ? 'Submissão aceita! O autor foi notificado.'
-            : 'Submissão rejeitada. O autor foi notificado.';
-
-        return back()->with('success', $msg);
+        return back()->with('success', 'Status salvo. O autor foi notificado.');
     }
 }

@@ -95,14 +95,13 @@ class SubmissaoController extends Controller
 
         $submissao->update([
             'arquivo_pdf_revisado' => $caminho,
-            'status' => 'em_revisao', // volta para revisão
+            'status' => 'em_revisao',
         ]);
 
         // Zera os pareceres anteriores para os revisores emitirem novamente
         $submissao->pareceres()->update([
             'decisao' => null,
             'comentario' => null,
-            // mantém aceito_tarefa — quem aceitou antes não precisa aceitar de novo
         ]);
 
         return back()->with('success', 'PDF revisado enviado! Os revisores foram notificados.');
