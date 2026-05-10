@@ -14,126 +14,141 @@ use App\Http\Controllers\Editor\SubmissaoController as EditorSubmissaoController
 use App\Http\Controllers\RevisorBuscaController;
 use App\Http\Controllers\Revisor\ParecerController;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
-|
-*/
 // ==========================================
-// 1. ROTAS PÚBLICAS (Visitantes em geral)
+// 1. ROTAS PÚBLICAS
 // ==========================================
 Route::get('/', [HomeController::class, 'index'])->name('home');
-Route::get('/sobre_nos', function () {
-    return view('revico/sobre_nos');
-})->name('sobre_nos');
+Route::get('/sobre_nos', fn() => view('revico/sobre_nos'))->name('sobre_nos');
+Route::get('/revista2', fn() => view('revista/revista'))->name('revista');
 
 Route::prefix('edicoes')->name('edicoes.')->group(function () {
     Route::get('/', [EdicaoController::class, 'index'])->name('index');
 });
 
-Route::get('/revista2', function () {
-    return view('revista/revista');
-})->name('revista');
-
-// Rotas de Autenticação
-Route::get('/login', [LoginController::class, 'create'])->name('login');
-Route::post('/login', [LoginController::class, 'store']);
-Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
-Route::post('/register', [RegisterController::class, 'store']);
-Route::get('/redefinir_senha', function () {
-    return view('auth.passwords.email');
+// Autenticação
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [LoginController::class, 'create'])->name('login');
+    Route::post('/login', [LoginController::class, 'store']);
+    Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
+    Route::post('/register', [RegisterController::class, 'store']);
+    Route::get('/redefinir_senha', fn() => view('auth.passwords.email'))->name('password.request');
 });
 
 // ==========================================
-// 2. Rotas de Assinantes
+// 2. ASSINANTES
 // ==========================================
 Route::middleware(['auth', 'assinatura'])->group(function () {
     Route::prefix('edicoes')->name('edicoes.')->group(function () {
-        Route::get('/{id}', [EdicaoController::class, 'show'])->where('id', '[0-9]+')->name('show');
+        Route::get('/{id}', [EdicaoController::class, 'show'])
+            ->where('id', '[0-9]+')
+            ->name('show');
     });
 });
 
 // ==========================================
-// 3. ROTAS AUTENTICADAS (Requer Login)
+// 3. AUTENTICADAS
 // ==========================================
 Route::middleware('auth')->group(function () {
-    Route::get('/assinar', function () {
-        return view('revico/assinatura');
-    })->name('assinar');
-    Route::post('/processar_pagamento', [AssinaturaController::class, 'processar'])->name('pagamento.processar');
-
-    Route::get('/perfil', [ProfileController::class, 'index'])->name('perfil.index');
-    Route::put('/perfil', [ProfileController::class, 'update'])->name('perfil.update');
-
     Route::get('/logout', [LoginController::class, 'destroy'])->name('logout');
+
+    Route::get('/dashboard', fn() => view('dashboard'))
+        ->middleware('verified')
+        ->name('dashboard');
+
+    Route::get('/assinar', fn() => view('revico/assinatura'))->name('assinar');
+    Route::post('/processar_pagamento', [AssinaturaController::class, 'processar'])
+        ->name('pagamento.processar');
+
+    // Perfil básico do usuário
+    Route::prefix('perfil')->name('perfil.')->group(function () {
+        Route::get('/', [ProfileController::class, 'index'])->name('index');
+        Route::put('/', [ProfileController::class, 'update'])->name('update');
+        Route::post('/', [ProfileController::class, 'salvarPerfil'])->name('funcao.store');
+        Route::put('/perfil/temas/{tipo}', [ProfileController::class, 'updateTemas'])->name('temas.update');
+    });
+
     Route::prefix('comentarios')->name('comentarios.')->group(function () {
         Route::post('/', [ComentarioController::class, 'store'])->name('store');
         Route::delete('/{id}', [ComentarioController::class, 'destroy'])->name('destroy');
     });
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->middleware(['auth', 'verified'])->name('dashboard');
-    Route::get('/revisores/buscar', [RevisorBuscaController::class, 'buscar']);
+
+    // Busca de revisores (pode ser usada pelo editor)
+    Route::get('/revisores/buscar', [RevisorBuscaController::class, 'buscar'])
+        ->name('revisores.buscar');
 });
 
 // ==========================================
-// 4. ROTAS ADMINISTRATIVAS (Requer Admin)
+// 4. ADMIN
 // ==========================================
-Route::middleware('role:admin')->prefix('admin')->as('admin.')->group(function () {
-    Route::resource('usuarios', UserController::class);
+Route::middleware(['auth', 'role:admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
 
-    Route::prefix('edicoes')->name('edicoes.')->group(function () {
-        Route::get('/', [EdicaoController::class, 'indexAdmin'])->name('index');
-        Route::prefix('/{id}')->where(['id' => '[0-9]+'])->group(function () {
-            Route::get('/editar', [EdicaoController::class, 'edit'])->name('edit');
-            Route::put('/', [EdicaoController::class, 'update'])->name('update');
-            Route::delete('/', [EdicaoController::class, 'destroy'])->name('destroy');
+        Route::resource('usuarios', UserController::class);
+        Route::patch('/usuarios/{revisor}/aprovar', [UserController::class, 'aprovar'])
+            ->name('usuarios.aprovar');
+        Route::patch('/usuarios/{revisor}/rejeitar', [UserController::class, 'rejeitar'])
+            ->name('usuarios.rejeitar');
+
+        Route::prefix('edicoes')->name('edicoes.')->group(function () {
+            Route::get('/', [EdicaoController::class, 'indexAdmin'])->name('index');
+            Route::prefix('/{id}')->where(['id' => '[0-9]+'])->group(function () {
+                Route::get('/editar', [EdicaoController::class, 'edit'])->name('edit');
+                Route::put('/', [EdicaoController::class, 'update'])->name('update');
+                Route::delete('/', [EdicaoController::class, 'destroy'])->name('destroy');
+            });
         });
     });
-    Route::patch('/usuarios/{id}/aprovar', [UserController::class, 'aprovar'])->name('usuarios.aprovar');
-});
 
 // ==========================================
-// 5. ROTAS DE EDITORIA (Requer Editor)
+// 5. EDITOR
 // ==========================================
-Route::middleware('role:editor')->prefix('/editor')->name('editor.')->group(function () {
-    Route::get('/edicoes/create', [EdicaoController::class, 'create'])->name('edicoes.create');
-    Route::post('/edicoes/create', [EdicaoController::class, 'store'])->name('edicoes.store');
-    Route::prefix('/submissoes')->name('submissoes.')->group(function () {
-        Route::get('/', [EditorSubmissaoController::class, 'index'])->name('index');
-        Route::patch('/{id}/atribuir', [EditorSubmissaoController::class, 'atribuir'])->name('atribuir');
-        Route::patch('/{id}/decidir', [EditorSubmissaoController::class, 'decidir'])->name('decidir');
+Route::middleware(['auth', 'role:editor|admin'])
+    ->prefix('editor')
+    ->name('editor.')
+    ->group(function () {
+
+        Route::get('/edicoes/create', [EdicaoController::class, 'create'])->name('edicoes.create');
+        Route::post('/edicoes/create', [EdicaoController::class, 'store'])->name('edicoes.store');
+
+        Route::prefix('/submissoes')->name('submissoes.')->group(function () {
+            Route::get('/', [EditorSubmissaoController::class, 'index'])->name('index');
+            Route::patch('/{id}/atribuir', [EditorSubmissaoController::class, 'atribuir'])->name('atribuir');
+            Route::patch('/{id}/decidir', [EditorSubmissaoController::class, 'decidir'])->name('decidir');
+        });
     });
-});
 
 // ==========================================
-// 6. ROTAS DE AUTORES (Requer Autor)
+// 6. AUTOR
 // ==========================================
-Route::middleware('role:autor')->prefix('/autor')->name('autor.')->group(function () {
-    Route::prefix('/submissoes')->name('submissoes.')->group(function () {
-        Route::get('/', [AutorSubmissaoController::class, 'index'])->name('index');
-        Route::post('/', [AutorSubmissaoController::class, 'store'])->name('store');
-        Route::get('/criar', [AutorSubmissaoController::class, 'create'])->name('create');
-        Route::post('/{id}/docx', [AutorSubmissaoController::class, 'enviarDocx'])->name('docx');
+Route::middleware(['auth', 'perfil:autor'])
+    ->prefix('autor')
+    ->name('autor.')
+    ->group(function () {
+
+        Route::prefix('/submissoes')->name('submissoes.')->group(function () {
+            Route::get('/', [AutorSubmissaoController::class, 'index'])->name('index');
+            Route::get('/criar', [AutorSubmissaoController::class, 'create'])->name('create');
+            Route::post('/', [AutorSubmissaoController::class, 'store'])->name('store');
+            Route::post('/{id}/docx', [AutorSubmissaoController::class, 'enviarDocx'])->name('docx');
+            Route::post('/{id}/resubmeter', [AutorSubmissaoController::class, 'resubmeter'])->name('resubmeter');
+        });
     });
-    Route::post('/submissoes/{id}/resubmeter', [AutorSubmissaoController::class, 'resubmeter'])->name('submissoes.resubmeter');
-});
 
 // ==========================================
-// 7. ROTAS DE REVISÃO (Requer Revisor)
+// 7. REVISOR
 // ==========================================
-Route::middleware('role:revisor')->prefix('/revisor')->name('revisor.')->group(function () {
-    Route::prefix('/pareceres')->name('pareceres.')->group(function () {
-        Route::get('/', [ParecerController::class, 'index'])->name('index');
-        Route::patch('/{id}/tarefa', [ParecerController::class, 'responderTarefa'])->name('responderTarefa');
-        Route::patch('/{id}/emitir', [ParecerController::class, 'emitir'])->name('emitir');
+Route::middleware(['auth', 'perfil:revisor', 'revisor.aprovado'])
+    ->prefix('revisor')
+    ->name('revisor.')
+    ->group(function () {
+
+        Route::prefix('/pareceres')->name('pareceres.')->group(function () {
+            Route::get('/', [ParecerController::class, 'index'])->name('index');
+            Route::patch('/{id}/tarefa', [ParecerController::class, 'responderTarefa'])->name('responderTarefa');
+            Route::patch('/{id}/emitir', [ParecerController::class, 'emitir'])->name('emitir');
+        });
     });
-});
-
 
 require __DIR__ . '/auth.php';

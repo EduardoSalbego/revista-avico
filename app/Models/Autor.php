@@ -2,38 +2,27 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Traits\BelongsToUser;
+use App\Traits\HasTemas;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Autor extends Model
 {
-
-    use HasFactory;
-
-    protected $table = "autors";
-    protected $primaryKey = 'orcid';
+    public $table = 'autores';
+    
+    use HasFactory, BelongsToUser, HasTemas;
 
     protected $fillable = [
         'user_id',
+        'lattes_url',
         'orcid',
-        'area_id',
-        'instituicao'
+        'instituicao',
     ];
 
-    public function area()
+    // Relacionamentos específicos do Autor
+    public function submissoes()
     {
-        return $this->hasOne(Area::class, 'id', 'area_id');
-    }
-
-    public function submissao(){
-        return $this->belongsToMany(Submissao::class);
-    }
-
-    public function artigo(){
-        return $this->belongsToMany(ArtigoFinal::class);
-    }
-
-    public function user(){
-        return $this->hasOne(User::class, 'id', 'user_id');
+        return $this->hasMany(Submissao::class);
     }
 }

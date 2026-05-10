@@ -32,7 +32,7 @@
             Criando a edição #{{ $proximaEdicao ?? '1' }} da revista
         </h2>
 
-        <form id="form-edicao" action="{{ route('edicoes.store') }}" method="POST" enctype="multipart/form-data">
+        <form id="form-edicao" action="{{ route('editor.edicoes.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
             {{-- Campo hidden que carrega o status (rascunho ou publicado) --}}
             <input type="hidden" name="status" id="input-status" value="publicado">

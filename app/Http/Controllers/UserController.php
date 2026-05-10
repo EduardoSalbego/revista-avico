@@ -3,8 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Autor;
+use App\Models\Leitor;
+use App\Models\revisor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rules;
+use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
@@ -14,13 +20,19 @@ class UserController extends Controller
      */
     public function index()
     {
-        // Pendentes separados (sem paginar — geralmente poucos)
-        $pendentes = User::where('status', 'pendente')
-            ->orderBy('created_at', 'asc')
+        // Pendentes de aprovação (revisores)
+        $pendentes = Revisor::with('user')
+            ->where('status', 'pendente')
+            ->latest()
             ->get();
 
-        // Ativos paginados
-        $usuarios = User::where('status', 'ativo')
+        // Usuários + revires ativos paginados
+        $usuarios = User::where(function ($query) {
+            $query->whereDoesntHave('revisor')
+                ->orWhereHas('revisor', function ($q) {
+                    $q->where('status', 'ativo');
+                });
+        })
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
@@ -42,42 +54,95 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8',
-            'role' => 'required|in:admin,leitor,autor,revisor,editor',
+        $validated = $request->validate([
+            // Dados da conta
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+
+            // Perfil de domínio
+            'perfil' => ['required', 'in:autor,revisor,leitor'],
+
+            // Dados opcionais (validados condicionalmente abaixo)
+            'lattes_url' => ['nullable', 'url', 'max:255'],
+            'orcid' => ['nullable', 'string', 'max:50'],
+            'instituicao' => ['nullable', 'string', 'max:255'],
+            'titulacao' => ['nullable', 'string', 'in:Especialista,Mestre,Doutor,Pós-Doutor'],
         ]);
 
-        User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => $request->role,
-        ]);
+        // Cria usuário + perfil em uma única transação.
+        // Se qualquer parte falhar, nada é salvo no banco.
+        $user = DB::transaction(function () use ($validated) {
+            // 1. Cria o User
+            $user = User::create([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'password' => Hash::make($validated['password']),
+                'status' => 'ativo',
+            ]);
 
-        return redirect()->route('admin.usuarios.index')->with('success', 'Usuário criado com sucesso!');
+            // 2. Cria o perfil de domínio correto
+            $perfilModel = match ($validated['perfil']) {
+                'autor' => Autor::create([
+                    'user_id' => $user->id,
+                    'lattes_url' => $validated['lattes_url'] ?? null,
+                    'orcid' => $validated['orcid'] ?? null,
+                    'instituicao' => $validated['instituicao'] ?? null,
+                ]),
+
+                'revisor' => Revisor::create([
+                    'user_id' => $user->id,
+                    'lattes_url' => $validated['lattes_url'] ?? null,
+                    'orcid' => $validated['orcid'] ?? null,
+                    'titulacao' => $validated['titulacao'] ?? null,
+                    'instituicao' => $validated['instituicao'] ?? null,
+                    // Revisor começa pendente de aprovação
+                    'status' => 'pendente',
+                ]),
+
+                'leitor' => Leitor::create([
+                    'user_id' => $user->id,
+                ]),
+            };
+            return $user;
+        });
     }
 
     /**
      * Approve a pending user account.
      * 
-     * @param mixed $id
+     * @param Revisor
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function aprovar($id)
+    public function aprovar(Revisor $revisor)
     {
-        $user = User::findOrFail($id);
+        $revisor->update([
+            'status' => 'ativo'
+        ]);
 
-        if ($user->status !== 'pendente') {
-            return back()->with('success', 'Este usuário já está ativo.');
-        }
-
-        $user->update(['status' => 'ativo']);
-
-        return back()->with('success', "Conta de {$user->name} aprovada com sucesso!");
+        return back()->with(
+            'success',
+            "O revisor foi aprovado com sucesso!"
+        );
     }
 
+    /**
+     * decline a pending user account.
+     * 
+     * @param Revisor
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function rejeitar(Revisor $revisor)
+    {
+        $revisor->update([
+            'status' => 'recusado'
+        ]);
+
+        return back()->with(
+            'success',
+            "O revisor foi recusado."
+        );
+    }
 
     /**
      * Show the form for editing the specified resource.
@@ -93,33 +158,119 @@ class UserController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, User $usuario)
     {
-        $usuario = User::findOrFail($id);
+        $validated = $request->validate([
+            // USER
+            'name' => ['required', 'string', 'max:255'],
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                Rule::unique('users')->ignore($usuario->id)
+            ],
+            'password' => ['nullable', 'min:8'],
 
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $usuario->id,
-            'role' => 'required|in:admin,leitor,autor,revisor,editor'
+            // ROLES / PERFIS
+            'roles' => ['nullable', 'array'],
+            'roles.*' => ['string'],
+
+            // DADOS ACADÊMICOS
+            'instituicao' => ['nullable', 'string', 'max:255'],
+            'orcid' => ['nullable', 'string', 'max:255'],
+            'lattes_url' => ['nullable', 'url', 'max:255'],
+            'titulacao' => ['nullable', 'string', 'max:255'],
+
+            // STATUS REVISOR
+            'status_revisor' => ['nullable', 'in:pendente,ativo,recusado'],
         ]);
 
-        $dados = [
-            'name' => $request->name,
-            'email' => $request->email,
-            'role' => $request->role,
-        ];
+        DB::transaction(function () use ($validated, $usuario) {
 
-        // Só atualiza a senha se o admin digitou uma nova
-        if ($request->filled('password')) {
-            $dados['password'] = Hash::make($request->password);
-        }
+            // ROLES
+            $roles = $validated['roles'] ?? [];
 
-        $usuario->update($dados);
+            // USER
+            $usuario->update([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+            ]);
 
-        return redirect()->route('admin.usuarios.index')->with('success', 'Usuário atualizado!');
+            if (!empty($validated['password'])) {
+                $usuario->update([
+                    'password' => Hash::make($validated['password'])
+                ]);
+            }
+
+            // ROLES SPATIE
+            $rolesSpatie = collect($roles)
+                ->filter(fn($role) => in_array($role, [
+                    'admin',
+                    'editor'
+                ]))
+                ->values()
+                ->toArray();
+
+            $usuario->syncRoles($rolesSpatie);
+
+            // DADOS ACADÊMICOS
+            $dadosAcademicos = [
+                'instituicao' => $validated['instituicao'] ?? null,
+                'orcid' => $validated['orcid'] ?? null,
+                'lattes_url' => $validated['lattes_url'] ?? null,
+            ];
+
+            // AUTOR
+            if (in_array('autor', $roles)) {
+                Autor::updateOrCreate(
+                    ['user_id' => $usuario->id],
+                    $dadosAcademicos
+                );
+            } else {
+                if ($usuario->autor) {
+                    $usuario->autor()->first()->temas()->detach();
+                    $usuario->autor()->delete();
+                }
+            }
+
+            // REVISOR
+            if (in_array('revisor', $roles)) {
+                Revisor::updateOrCreate(
+                    ['user_id' => $usuario->id],
+                    [
+                        ...$dadosAcademicos,
+                        'titulacao' => $validated['titulacao'] ?? null,
+                        'status' => $validated['status_revisor']
+                            ?? 'pendente',
+                    ]
+                );
+            } else {
+                if ($usuario->revisor) {
+                    $usuario->revisor()->first()->temas()->detach();
+                    $usuario->revisor()->delete();
+                }
+            }
+
+            // LEITOR
+            if (in_array('leitor', $roles)) {
+                Leitor::firstOrCreate([
+                    'user_id' => $usuario->id
+                ]);
+            } else {
+                if ($usuario->leitor) {
+                    $usuario->leitor()->first()->temas()->detach();
+                    $usuario->leitor()->delete();
+                }
+            }
+        });
+
+        return redirect()
+            ->route('admin.usuarios.index')
+            ->with(
+                'success',
+                'Usuário atualizado com sucesso!'
+            );
     }
 
     /**

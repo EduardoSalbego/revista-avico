@@ -146,8 +146,56 @@
 
         @include('layouts.patrocinadores')
     </main>
+@if(auth()->check() && auth()->user()->revisor?->status === 'pendente')
 
+    <div class="modal fade"
+         id="revisorPendenteModal"
+         tabindex="-1"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold text-dark">
+                        <i class="fas fa-hourglass-half me-2"></i>
+                        Cadastro em análise
+                    </h5>
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal">
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-0">
+                        Seu cadastro de revisor está pendente e aguardando aprovação da equipe editorial. Até lá você não terá acesso às funcionalidades de revisor.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button"
+                            class="btn btn-primary"
+                            data-bs-dismiss="modal">
+                        Entendi
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+@endif
     @include('layouts/footer')
+    @if(auth()->check() && auth()->user()->revisor?->status === 'pendente')
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        let modal = new bootstrap.Modal(
+            document.getElementById('revisorPendenteModal')
+        );
+
+        modal.show();
+
+    });
+</script>
+
+@endif
 </body>
 
 </html>

@@ -14,12 +14,15 @@
         @if(session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
         @endif
+         @if(session('error'))
+             <div class="alert alert-danger">{{ session('error') }}</div>   
+        @endif
 
         {{-- Seção de contas pendentes (só aparece se houver) --}}
         @if($pendentes->isNotEmpty())
             <div class="card border-warning shadow-sm mb-5">
                 <div class="card-header bg-warning text-dark fw-bold">
-                    ⏳ Contas Aguardando Aprovação ({{ $pendentes->count() }})
+                    ⏳ Revisores Aguardando Aprovação ({{ $pendentes->count() }})
                 </div>
                 <div class="card-body p-0">
                     <table class="table table-hover align-middle mb-0">
@@ -33,30 +36,30 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($pendentes as $user)
+                            @foreach($pendentes as $revisor)
                                 <tr>
-                                    <td>{{ $user->name }}</td>
-                                    <td>{{ $user->email }}</td>
-                                    <td>{!! $user->role_badge_html !!}</td>
-                                    <td>{{ \Carbon\Carbon::parse($user->created_at)->format('d/m/Y') }}</td>
+                                    <td>{{ $revisor->user->name }}</td>
+                                    <td>{{ $revisor->user->email }}</td>
+                                    <td>{!! $revisor->user->role_badge_html !!}</td>
+                                    <td>{{ \Carbon\Carbon::parse($revisor->user->created_at)->format('d/m/Y') }}</td>
                                     <td class="text-center">
                                         {{-- Aprovar --}}
-                                        <form action="{{ route('admin.usuarios.aprovar', $user->id) }}" method="POST"
+                                        <form action="{{ route('admin.usuarios.aprovar', $revisor) }}" method="POST"
                                             class="d-inline">
                                             @csrf
                                             @method('PATCH')
                                             <button type="submit" class="btn btn-sm btn-success">
-                                                ✅ Aprovar
+                                                Aprovar
                                             </button>
                                         </form>
 
-                                        {{-- Rejeitar (exclui o usuário) --}}
-                                        <form action="{{ route('admin.usuarios.destroy', $user->id) }}" method="POST"
-                                            class="d-inline" onsubmit="return confirm('Rejeitar e excluir esta conta?');">
+                                        {{-- Rejeitar --}}
+                                        <form action="{{ route('admin.usuarios.rejeitar', $revisor) }}" method="POST"
+                                            class="d-inline">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-sm btn-outline-danger">
-                                                ❌ Rejeitar
+                                                Rejeitar
                                             </button>
                                         </form>
                                     </td>

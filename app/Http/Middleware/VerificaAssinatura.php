@@ -17,7 +17,7 @@ class VerificaAssinatura
             return redirect()->route('login')->with('error', 'Você precisa fazer login para acessar a revista.');
         }
 
-        if ($user->role === 'admin') {
+        if ($user->isAdmin()) {
             return $next($request);
         }
 

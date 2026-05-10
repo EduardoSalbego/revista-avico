@@ -8,7 +8,7 @@
     <main class="container py-5" style="margin-top: 80px; min-height: 80vh;">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2>Gerenciar Edições</h2>
-            <a href="{{ route('edicoes.create') }}" class="btn btn-success">+ Nova Edição</a>
+            <a href="{{ route('editor.edicoes.create') }}" class="btn btn-success">+ Nova Edição</a>
         </div>
 
         @if(session('success'))
