@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\NovaSubmissaoAutorMail;
 
 class SubmissaoController extends Controller
 {
@@ -118,6 +120,7 @@ class SubmissaoController extends Controller
             ]);
         }
 
+        Mail::to($submissao->user->email)->send(new NovaSubmissaoAutorMail($submissao));
         return redirect()->route('autor.submissoes.index')
             ->with('success', 'Artigo submetido com sucesso! Acompanhe o status aqui.');
     }

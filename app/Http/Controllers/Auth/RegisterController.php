@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\BoasVindasUsuarioMail;
 
 class RegisterController extends Controller
 {
@@ -107,6 +109,7 @@ class RegisterController extends Controller
 
         // Dispara evento de registro (envia e-mail de verificação, etc.)
         event(new Registered($user));
+        Mail::to($user->email)->send(new BoasVindasUsuarioMail($user));
 
         Auth::login($user);
 
