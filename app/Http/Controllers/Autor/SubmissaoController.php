@@ -4,9 +4,10 @@ namespace App\Http\Controllers\Autor;
 
 use App\Http\Controllers\Controller;
 use App\Models\Submissao;
-use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class SubmissaoController extends Controller
 {
@@ -32,8 +33,30 @@ class SubmissaoController extends Controller
             'resumo' => 'required|string',
             'cover_letter' => 'required|string',
             'arquivo_pdf' => 'required|file|mimes:pdf|max:20480', // 20MB
-            'revisores_sugeridos' => 'nullable|array|max:3',
-            'revisores_sugeridos.*' => 'exists:users,id',
+
+            'autor_principal' => 'required|string|max:255',
+            'coautores' => 'nullable|array',
+            'coautores.*' => 'nullable|string|max:255',
+
+            'revisores_sugeridos' => 'nullable|array|max:4',
+            'revisores_sugeridos.*.revisor_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('revisores', 'id')
+                    ->where(function ($query) {
+                        $query->where('status', 'ativo');
+                    }),
+            ],
+            'revisores_sugeridos.*.nome' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+            'revisores_sugeridos.*.email' => [
+                'nullable',
+                'email',
+                'max:255',
+            ],
         ]);
 
         $caminhoPdf = $request->file('arquivo_pdf')
@@ -48,9 +71,50 @@ class SubmissaoController extends Controller
             'status' => 'submetido',
         ]);
 
-        // Salva revisores sugeridos na pivot
-        if ($request->filled('revisores_sugeridos')) {
-            $submissao->revisoresSugeridos()->attach($request->revisores_sugeridos);
+        DB::table('submissao_autor')->insert([
+            'submissao_id' => $submissao->id,
+            'nome' => $request->autor_principal,
+            'autor_principal' => true,
+            'ordem' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        if ($request->has('coautores') && is_array($request->coautores)) {
+            $ordem = 2;
+            $coautoresData = [];
+
+            foreach ($request->coautores as $coautorNome) {
+                if (!empty(trim($coautorNome))) {
+                    $coautoresData[] = [
+                        'submissao_id' => $submissao->id,
+                        'nome' => trim($coautorNome),
+                        'autor_principal' => false,
+                        'ordem' => $ordem++,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ];
+                }
+            }
+
+            if (!empty($coautoresData)) {
+                DB::table('submissao_autor')->insert($coautoresData);
+            }
+        }
+
+        foreach ($request['revisores_sugeridos'] ?? [] as $revisor) {
+            $submissao->revisoresSugeridos()->create([
+                // REVISOR INTERNO
+                'revisor_id' => $revisor['revisor_id'] ?? null,
+
+                // REVISOR EXTERNO
+                'nome' => empty($revisor['revisor_id'])
+                    ? $revisor['nome']
+                    : null,
+                'email' => empty($revisor['revisor_id'])
+                    ? $revisor['email']
+                    : null,
+            ]);
         }
 
         return redirect()->route('autor.submissoes.index')

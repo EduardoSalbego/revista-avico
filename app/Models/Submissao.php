@@ -20,27 +20,39 @@ class Submissao extends Model
         'observacoes',
     ];
 
-    // Autor da submissão
+    /**
+     * Relacionamento que retorna o autor principal.
+     */
     public function autor()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->hasOne(SubmissaoAutor::class)
+            ->where('autor_principal', true);
+    }
+
+    /**
+     * Relacionamento para buscar todos os autores (caso precise listar em alguma view).
+     */
+    public function autores()
+    {
+        return $this->hasMany(SubmissaoAutor::class)
+            ->orderBy('ordem');
     }
 
     // Revisores sugeridos (pivot)
     public function revisoresSugeridos()
     {
-        return $this->belongsToMany(User::class, 'submissao_revisores_sugeridos', 'submissao_id', 'revisor_id');
+        return $this->hasMany(SubmissaoRevisorSugerido::class);
     }
 
     // Revisores atribuídos (pivot)
     public function revisoresAtribuidos()
     {
         return $this->belongsToMany(
-            User::class,
+            Revisor::class,
             'submissao_revisor',
             'submissao_id',
             'revisor_id'
-        )->withPivot('atribuido_em')->withTimestamps();
+        )->withPivot('atribuido_em', 'status')->withTimestamps();
     }
 
     public function pareceres()
