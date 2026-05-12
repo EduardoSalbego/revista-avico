@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateSubmissaoRevisoresSugeridosTable extends Migration
+class CreateSubmissaoAutorTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,12 +13,12 @@ class CreateSubmissaoRevisoresSugeridosTable extends Migration
      */
     public function up()
     {
-        Schema::create('submissao_revisores_sugeridos', function (Blueprint $table) {
+        Schema::create('submissao_autor', function (Blueprint $table) {
             $table->id();
             $table->foreignId('submissao_id')->constrained('submissoes')->cascadeOnDelete();
-            $table->foreignId('revisor_id')->nullable()->constrained('users')->cascadeOnDelete();
-            $table->string('nome')->nullable();
-            $table->string('email')->nullable();
+            $table->string('nome', 255);
+            $table->boolean('autor_principal')->default(false);
+            $table->integer('ordem')->nullable(); // 1º autor, 2º autor, etc.
             $table->timestamps();
         });
     }
@@ -30,6 +30,6 @@ class CreateSubmissaoRevisoresSugeridosTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('submissao_revisores_sugeridos');
+        Schema::dropIfExists('submissao_autor');
     }
 }

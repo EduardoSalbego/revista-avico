@@ -55,6 +55,7 @@ class UsersSeeder extends Seeder
 
         Revisor::create([
             'user_id' => $revisor1->id,
+            'status' => 'ativo',
         ]);
 
 
@@ -66,6 +67,7 @@ class UsersSeeder extends Seeder
 
         Revisor::create([
             'user_id' => $revisor2->id,
+            'status' => 'ativo',
         ]);
 
 
@@ -77,6 +79,7 @@ class UsersSeeder extends Seeder
 
         Revisor::create([
             'user_id' => $revisor3->id,
+            'status' => 'ativo',
         ]);
 
         /*

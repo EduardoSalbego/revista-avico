@@ -24,6 +24,34 @@ class SubmissoesSeeder extends Seeder
                 'status' => 'em_revisao',
             ]);
 
+            DB::table('submissao_autor')->insert([
+                'submissao_id' => $submissao->id,
+                'nome' => "Autor Principal do Artigo {$i}",
+                'autor_principal' => true,
+                'ordem' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            DB::table('submissao_autor')->insert([
+                [
+                    'submissao_id' => $submissao->id,
+                    'nome' => "Coautor A do Artigo {$i}",
+                    'autor_principal' => false,
+                    'ordem' => 2,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ],
+                [
+                    'submissao_id' => $submissao->id,
+                    'nome' => "Coautor B do Artigo {$i}",
+                    'autor_principal' => false,
+                    'ordem' => 3,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]
+            ]);
+
             foreach ($revisores as $index => $revisorId) {
 
                 // atribuição (pivot)

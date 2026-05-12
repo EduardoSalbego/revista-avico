@@ -16,7 +16,6 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        // 'role' → mantido temporariamente como legado
     ];
 
     protected $hidden = ['password', 'remember_token'];
