@@ -2,11 +2,83 @@
 <html lang="pt-br">
 @include('layouts.head')
 
+<style>
+    /* ── Tabs de modo de sugestão ── */
+    .revisor-tabs .nav-link {
+        color: #6c757d;
+        border-radius: 8px 8px 0 0;
+    }
+
+    .revisor-tabs .nav-link.active {
+        color: #0d6efd;
+        font-weight: 600;
+    }
+
+    /* ── Tags de revisores selecionados ── */
+    .revisor-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #e8f0fe;
+        border: 1px solid #c2d4fb;
+        color: #0d4fb8;
+        border-radius: 999px;
+        padding: 5px 12px;
+        font-size: 13px;
+    }
+
+    .revisor-tag.externo {
+        background: #fff3cd;
+        border-color: #ffc107;
+        color: #7a5800;
+    }
+
+    .revisor-tag .tag-remove {
+        background: none;
+        border: none;
+        padding: 0;
+        line-height: 1;
+        cursor: pointer;
+        font-size: 16px;
+        color: inherit;
+        opacity: .6;
+        transition: opacity .15s;
+    }
+
+    .revisor-tag .tag-remove:hover {
+        opacity: 1;
+    }
+
+    /* ── Dropdown de busca ── */
+    #resultados-revisores {
+        border: 1px solid #dee2e6;
+        border-top: none;
+        border-radius: 0 0 8px 8px;
+        max-height: 220px;
+        overflow-y: auto;
+    }
+
+    #resultados-revisores .list-group-item {
+        font-size: 14px;
+        cursor: pointer;
+    }
+
+    #resultados-revisores .list-group-item:hover {
+        background: #f0f4ff;
+    }
+
+    .revisor-label-badge {
+        font-size: 10px;
+        padding: 2px 7px;
+        border-radius: 999px;
+        font-weight: 500;
+    }
+</style>
+
 <body id="page-top">
     @include('layouts.topbar')
 
     <main class="container py-5" style="margin-top: 80px;">
-
         <div class="row justify-content-center">
             <div>
 
@@ -51,6 +123,54 @@
                             @enderror
                         </div>
                     </div>
+                    {{-- ════════════════════════════════════
+                    AUTORES E COAUTORES
+                    ════════════════════════════════════ --}}
+                    <div class="card p-4 mb-4">
+                        <h5 class="mb-1">Autores do Artigo</h5>
+                        <p class="text-muted small mb-3">
+                            Informe o autor principal obrigatoriamente. Você também pode adicionar coautores caso o
+                            trabalho tenha sido feito em equipe.
+                        </p>
+
+                        {{-- Autor Principal (Obrigatório) --}}
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Autor Principal <span
+                                    class="text-danger">*</span></label>
+                            <input type="text" class="form-control @error('autor_principal') is-invalid @enderror"
+                                name="autor_principal" value="{{ old('autor_principal') }}"
+                                placeholder="Nome completo do autor principal" required>
+                            @error('autor_principal')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        {{-- Coautores (Opcional) --}}
+                        <div class="mb-2">
+                            <label class="form-label fw-semibold">Coautores <span
+                                    class="text-muted fw-normal">(Opcional)</span></label>
+
+                            <div id="container-coautores">
+                                {{-- Recuperação de old('coautores') em caso de erro de validação --}}
+                                @if(old('coautores'))
+                                    @foreach(old('coautores') as $coautor)
+                                        <div class="input-group mb-2 coautor-row">
+                                            <input type="text" class="form-control" name="coautores[]" value="{{ $coautor }}"
+                                                placeholder="Nome completo do coautor">
+                                            <button class="btn btn-outline-danger" type="button" onclick="removerCoautor(this)">
+                                                <i class="bi bi-trash"></i> Remover
+                                            </button>
+                                        </div>
+                                    @endforeach
+                                @endif
+                            </div>
+
+                            <button type="button" class="btn btn-sm btn-outline-secondary mt-1"
+                                onclick="adicionarCoautor()">
+                                + Adicionar Coautor
+                            </button>
+                        </div>
+                    </div>
 
                     {{-- Arquivo PDF --}}
                     <div class="card p-4 mb-4">
@@ -82,33 +202,84 @@
                         @enderror
                     </div>
 
-                    {{-- Revisores Sugeridos --}}
+                    {{-- ════════════════════════════════════
+                    REVISORES SUGERIDOS (refatorado)
+                    ════════════════════════════════════ --}}
                     <div class="card p-4 mb-4">
+
                         <h5 class="mb-1">Revisores Sugeridos</h5>
                         <p class="text-muted small mb-3">
-                            Opcional. Você pode sugerir até 4 revisores cadastrados na plataforma.
-                            A designação final é de responsabilidade do editor.
+                            Opcional. Você pode sugerir até 4 revisores. A designação final
+                            é responsabilidade do editor.
                         </p>
 
-                        {{-- Campo de busca --}}
-                        <div class="mb-3 position-relative">
-                            <input type="text" id="busca-revisor" class="form-control"
-                                placeholder="Buscar revisor pelo nome...">
-                            <div id="resultados-revisores" class="list-group position-absolute w-100 shadow"
-                                style="z-index: 100; display: none; top: 100%;"></div>
+                        {{-- Tags dos revisores já adicionados ── --}}
+                        <div id="revisores-selecionados" class="d-flex flex-wrap gap-2 mb-3"></div>
+
+                        {{-- Aviso de limite ── --}}
+                        <div id="aviso-limite" class="alert alert-warning py-2 small" style="display:none;">
+                            ⚠️ Limite de 4 revisores atingido.
                         </div>
 
-                        {{-- Tags dos revisores selecionados --}}
-                        <div id="revisores-selecionados" class="d-flex flex-wrap gap-2">
-                            {{-- Tags inseridas via JS --}}
+                        {{-- Tabs: Buscar no sistema / Indicar externo ── --}}
+                        <ul class="nav nav-tabs revisor-tabs mb-3" id="tabsRevisor">
+                            <li class="nav-item">
+                                <button class="nav-link active" type="button" data-tab="busca"
+                                    onclick="switchTab('busca', this)">
+                                    🔍 Buscar no sistema
+                                </button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link" type="button" data-tab="externo"
+                                    onclick="switchTab('externo', this)">
+                                    ✉️ Indicar externo
+                                </button>
+                            </li>
+                        </ul>
+
+                        {{-- Painel: Busca ── --}}
+                        <div id="painel-busca">
+                            <div class="position-relative">
+                                <input type="text" id="busca-revisor" class="form-control"
+                                    placeholder="Digite o nome do revisor...">
+                                <div id="resultados-revisores" class="list-group position-absolute w-100 shadow"
+                                    style="z-index: 100; display: none; top: 100%;">
+                                </div>
+                            </div>
+                            <div class="form-text mt-1">
+                                Busca revisores cadastrados na plataforma.
+                            </div>
                         </div>
-                        <div id="revisores-inputs">
-                            {{-- Inputs hidden inseridos via JS --}}
+
+                        {{-- Painel: Externo ── --}}
+                        <div id="painel-externo" style="display:none;">
+                            <div class="row g-2">
+                                <div class="col-md-5">
+                                    <input type="text" id="ext-nome" class="form-control"
+                                        placeholder="Nome completo do revisor">
+                                </div>
+                                <div class="col-md-5">
+                                    <input type="email" id="ext-email" class="form-control"
+                                        placeholder="E-mail do revisor">
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="button" class="btn btn-outline-primary w-100"
+                                        onclick="adicionarExterno()">
+                                        Adicionar
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="form-text mt-1">
+                                Informe nome e e-mail de um revisor que ainda não está cadastrado.
+                            </div>
+                            <div id="ext-erro" class="text-danger small mt-1" style="display:none;"></div>
                         </div>
-                        <small id="aviso-limite" class="text-danger mt-1" style="display:none;">
-                            Limite de 4 revisores sugeridos atingido.
-                        </small>
+
+                        {{-- Inputs hidden enviados ao servidor ── --}}
+                        <div id="revisores-inputs"></div>
+
                     </div>
+                    {{-- /revisores --}}
 
                     <div class="d-flex justify-content-center gap-3">
                         <a href="{{ route('autor.submissoes.index') }}" class="btn btn-outline-danger btn-lg">
@@ -118,8 +289,8 @@
                             Enviar Submissão
                         </button>
                     </div>
-                </form>
 
+                </form>
             </div>
         </div>
     </main>
@@ -127,122 +298,254 @@
     @include('layouts.footer')
 
     <script>
-        const MAX_REVISORES = 4;
-        const selecionados = {}; // { id: nome }
+        function adicionarCoautor() {
+            const container = document.getElementById('container-coautores');
 
-        const inputBusca = document.getElementById('busca-revisor');
-        const resultadosDiv = document.getElementById('resultados-revisores');
-        const selecionadosDiv = document.getElementById('revisores-selecionados');
-        const inputsDiv = document.getElementById('revisores-inputs');
-        const avisoLimite = document.getElementById('aviso-limite');
-        inputBusca.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-            }
-        });
+            // Cria a div row
+            const div = document.createElement('div');
+            div.className = 'input-group mb-2 coautor-row';
 
-        let debounceTimer;
-        inputBusca.addEventListener('input', () => {
-            clearTimeout(debounceTimer);
-            const q = inputBusca.value.trim();
-
-            if (q.length < 2) {
-                resultadosDiv.style.display = 'none';
-                return;
-            }
-
-            // Espera 300ms depois que o usuário parar de digitar para não travar o banco
-            debounceTimer = setTimeout(() => buscarRevisores(q), 300);
-        });
-
-        // Fecha a caixinha de resultados se clicar fora dela
-        document.addEventListener('click', (e) => {
-            if (!inputBusca.contains(e.target) && !resultadosDiv.contains(e.target)) {
-                resultadosDiv.style.display = 'none';
-            }
-        });
-
-        // COMUNICAÇÃO COM O SERVIDOR (AJAX)
-        async function buscarRevisores(q) {
-            try {
-                const res = await fetch(`/revisores/buscar?q=${encodeURIComponent(q)}`);
-                const data = await res.json(); // Retorna array: [{ id, name }]
-
-                resultadosDiv.innerHTML = '';
-
-                if (!data.length) {
-                    resultadosDiv.innerHTML = '<div class="list-group-item text-muted">Nenhum revisor encontrado.</div>';
-                    resultadosDiv.style.display = 'block';
-                    return;
-                }
-
-                data.forEach(revisor => {
-                    if (selecionados[revisor.id]) return; // Ignora se já estiver selecionado
-
-                    const btn = document.createElement('button');
-                    btn.type = 'button';
-                    btn.className = 'list-group-item list-group-item-action';
-                    btn.textContent = revisor.name;
-                    btn.addEventListener('click', () => adicionarRevisor(revisor.id, revisor.name));
-                    resultadosDiv.appendChild(btn);
-                });
-
-                resultadosDiv.style.display = 'block';
-            } catch (error) {
-                console.error("Erro ao buscar revisores:", error);
-            }
-        }
-
-        // ADICIONA A TAG NA TELA
-        function adicionarRevisor(id, nome) {
-            if (Object.keys(selecionados).length >= MAX_REVISORES) return;
-            if (selecionados[id]) return;
-
-            selecionados[id] = nome;
-
-            const tag = document.createElement('span');
-            tag.className = 'badge bg-primary d-flex align-items-center gap-1 px-3 py-2 shadow-sm';
-            tag.style.fontSize = '0.85rem';
-            tag.innerHTML = `
-                ${nome}
-                <button type="button" class="btn-close btn-close-white ms-1"
-                    style="font-size:0.6rem;"
-                    onclick="removerRevisor(${id}, this.closest('span'))">
+            // Cria o input e o botão de remover
+            div.innerHTML = `
+                <input type="text" class="form-control" name="coautores[]" placeholder="Nome completo do coautor" required>
+                <button class="btn btn-outline-danger" type="button" onclick="removerCoautor(this)">
+                    Remover
                 </button>
             `;
-            selecionadosDiv.appendChild(tag);
 
-            // Cria o Input hidden invisível para enviar no POST do formulário
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = 'revisores_sugeridos[]';
-            input.value = id;
-            input.id = `revisor_input_${id}`;
-            inputsDiv.appendChild(input);
+            container.appendChild(div);
 
-            // Limpa a barra de busca
-            inputBusca.value = '';
-            resultadosDiv.style.display = 'none';
+            // Opcional: focar automaticamente no novo campo criado
+            div.querySelector('input').focus();
+        }
 
-            // Verifica se bateu o limite
-            avisoLimite.style.display = Object.keys(selecionados).length >= MAX_REVISORES ? 'block' : 'none';
-            if (Object.keys(selecionados).length >= MAX_REVISORES) {
-                inputBusca.disabled = true;
-                inputBusca.placeholder = 'Limite de 4 revisores atingido.';
+        function removerCoautor(botao) {
+            botao.closest('.coautor-row').remove();
+        }
+        (() => {
+            const MAX = 4;
+
+            // Estado: lista de revisores adicionados
+            // Cada item: { tipo: 'sistema'|'externo', revisor_id, nome, email }
+            const lista = [];
+
+            // ── Referências DOM ──
+            const tagsDiv = document.getElementById('revisores-selecionados');
+            const inputsDiv = document.getElementById('revisores-inputs');
+            const avisoLimite = document.getElementById('aviso-limite');
+            const inputBusca = document.getElementById('busca-revisor');
+            const resultados = document.getElementById('resultados-revisores');
+            const extNome = document.getElementById('ext-nome');
+            const extEmail = document.getElementById('ext-email');
+            const extErro = document.getElementById('ext-erro');
+
+            // ────────────────────────────────────────
+            // Tabs
+            // ────────────────────────────────────────
+            window.switchTab = function (tab, btn) {
+                document.querySelectorAll('.revisor-tabs .nav-link')
+                    .forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                document.getElementById('painel-busca').style.display = tab === 'busca' ? 'block' : 'none';
+                document.getElementById('painel-externo').style.display = tab === 'externo' ? 'block' : 'none';
+
+                resultados.style.display = 'none';
+            };
+
+            // ────────────────────────────────────────
+            // Busca no sistema (revisores cadastrados)
+            // ────────────────────────────────────────
+            let debounce;
+            inputBusca.addEventListener('input', () => {
+                clearTimeout(debounce);
+                const q = inputBusca.value.trim();
+                if (q.length < 2) { resultados.style.display = 'none'; return; }
+                debounce = setTimeout(() => buscar(q), 300);
+            });
+
+            inputBusca.addEventListener('keydown', e => {
+                if (e.key === 'Enter') e.preventDefault();
+            });
+
+            document.addEventListener('click', e => {
+                if (!inputBusca.contains(e.target) && !resultados.contains(e.target)) {
+                    resultados.style.display = 'none';
+                }
+            });
+
+            async function buscar(q) {
+                try {
+                    const res = await fetch(`/revisores/buscar?q=${encodeURIComponent(q)}`);
+                    const data = await res.json(); // [{ id, nome, email }]
+
+                    resultados.innerHTML = '';
+
+                    const idsJaSelecionados = lista
+                        .filter(r => r.tipo === 'sistema')
+                        .map(r => r.revisor_id);
+
+                    const disponiveis = data.filter(r => !idsJaSelecionados.includes(r.id));
+
+                    if (!disponiveis.length) {
+                        resultados.innerHTML =
+                            '<div class="list-group-item text-muted py-2">Nenhum revisor encontrado.</div>';
+                        resultados.style.display = 'block';
+                        return;
+                    }
+
+                    disponiveis.forEach(r => {
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.className = 'list-group-item list-group-item-action d-flex justify-content-between align-items-center';
+                        btn.innerHTML = `
+                        <span>${r.nome ?? r.name}</span>
+                        <span class="revisor-label-badge bg-primary text-white">Cadastrado</span>
+                    `;
+                        btn.addEventListener('click', () => {
+                            adicionarDeSistema(r.id, r.nome ?? r.name, r.email);
+                        });
+                        resultados.appendChild(btn);
+                    });
+
+                    resultados.style.display = 'block';
+                } catch (err) {
+                    console.error('Erro ao buscar revisores:', err);
+                }
             }
-        }
 
-        // 5. REMOVE A TAG
-        function removerRevisor(id, tag) {
-            delete selecionados[id];
-            tag.remove(); // Remove o visual
-            document.getElementById(`revisor_input_${id}`)?.remove(); // Remove o hidden
+            function adicionarDeSistema(id, nome, email) {
+                if (lista.length >= MAX) return;
+                if (lista.some(r => r.tipo === 'sistema' && r.revisor_id === id)) return;
 
-            avisoLimite.style.display = 'none';
-            inputBusca.disabled = false;
-            inputBusca.placeholder = 'Buscar revisor pelo nome...';
-        }
+                lista.push({ tipo: 'sistema', revisor_id: id, nome, email });
+                renderTags();
+                renderInputs();
+
+                inputBusca.value = '';
+                resultados.style.display = 'none';
+                atualizarLimite();
+            }
+
+            // ────────────────────────────────────────
+            // Revisor externo (não cadastrado)
+            // ────────────────────────────────────────
+            window.adicionarExterno = function () {
+                extErro.style.display = 'none';
+                const nome = extNome.value.trim();
+                const email = extEmail.value.trim();
+
+                if (!nome) {
+                    mostrarErroExt('Informe o nome do revisor.');
+                    return;
+                }
+                if (!email || !email.includes('@')) {
+                    mostrarErroExt('Informe um e-mail válido.');
+                    return;
+                }
+                if (lista.some(r => r.tipo === 'externo' && r.email === email)) {
+                    mostrarErroExt('Este e-mail já foi adicionado.');
+                    return;
+                }
+                if (lista.length >= MAX) return;
+
+                lista.push({ tipo: 'externo', revisor_id: null, nome, email });
+                renderTags();
+                renderInputs();
+
+                extNome.value = '';
+                extEmail.value = '';
+                atualizarLimite();
+            };
+
+            function mostrarErroExt(msg) {
+                extErro.textContent = msg;
+                extErro.style.display = 'block';
+            }
+
+            // ────────────────────────────────────────
+            // Remover
+            // ────────────────────────────────────────
+            function remover(idx) {
+                lista.splice(idx, 1);
+                renderTags();
+                renderInputs();
+                atualizarLimite();
+            }
+
+            // ────────────────────────────────────────
+            // Render tags visuais
+            // ────────────────────────────────────────
+            function renderTags() {
+                tagsDiv.innerHTML = '';
+                lista.forEach((r, i) => {
+                    const tag = document.createElement('span');
+                    tag.className = `revisor-tag ${r.tipo === 'externo' ? 'externo' : ''}`;
+                    tag.innerHTML = `
+                    <span>
+                        ${r.nome}
+                        ${r.tipo === 'externo'
+                            ? `<small class="opacity-75 ms-1">(externo)</small>`
+                            : ''
+                        }
+                    </span>
+                    <button type="button" class="tag-remove" onclick="window._remover(${i})" title="Remover">
+                        &times;
+                    </button>
+                `;
+                    tagsDiv.appendChild(tag);
+                });
+            }
+
+            // Expõe remover globalmente para o onclick inline
+            window._remover = remover;
+
+            // ────────────────────────────────────────
+            // Render inputs hidden para o POST
+            // ────────────────────────────────────────
+            function renderInputs() {
+                inputsDiv.innerHTML = '';
+                lista.forEach((r, i) => {
+                    // revisor_id (null se externo)
+                    const inputId = document.createElement('input');
+                    inputId.type = 'hidden';
+                    inputId.name = `revisores_sugeridos[${i}][revisor_id]`;
+                    inputId.value = r.revisor_id ?? '';
+                    inputsDiv.appendChild(inputId);
+
+                    // nome
+                    const inputNome = document.createElement('input');
+                    inputNome.type = 'hidden';
+                    inputNome.name = `revisores_sugeridos[${i}][nome]`;
+                    inputNome.value = r.nome;
+                    inputsDiv.appendChild(inputNome);
+
+                    // email
+                    const inputEmail = document.createElement('input');
+                    inputEmail.type = 'hidden';
+                    inputEmail.name = `revisores_sugeridos[${i}][email]`;
+                    inputEmail.value = r.email ?? '';
+                    inputsDiv.appendChild(inputEmail);
+                });
+            }
+
+            // ────────────────────────────────────────
+            // Controle do limite
+            // ────────────────────────────────────────
+            function atualizarLimite() {
+                const cheio = lista.length >= MAX;
+                avisoLimite.style.display = cheio ? 'block' : 'none';
+                inputBusca.disabled = cheio;
+                extNome.disabled = cheio;
+                extEmail.disabled = cheio;
+                inputBusca.placeholder = cheio
+                    ? 'Limite de 4 revisores atingido.'
+                    : 'Digite o nome do revisor...';
+            }
+
+        })();
     </script>
+
 </body>
 
 </html>

@@ -17,6 +17,7 @@ class CreateSubmissaoRevisorTable extends Migration
             $table->id();
             $table->foreignId('submissao_id')->constrained('submissoes')->cascadeOnDelete();
             $table->foreignId('revisor_id')->constrained('users')->cascadeOnDelete();
+            $table->string('status')->default('pendente');
             $table->timestamp('atribuido_em')->useCurrent();
             $table->unique(['submissao_id', 'revisor_id']);
             $table->timestamps();

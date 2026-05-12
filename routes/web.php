@@ -116,6 +116,7 @@ Route::middleware(['auth', 'role:editor|admin'])
             Route::get('/', [EditorSubmissaoController::class, 'index'])->name('index');
             Route::patch('/{id}/atribuir', [EditorSubmissaoController::class, 'atribuir'])->name('atribuir');
             Route::patch('/{id}/decidir', [EditorSubmissaoController::class, 'decidir'])->name('decidir');
+            Route::patch('/{submissao}/substituir-revisor', [EditorSubmissaoController::class, 'substituirRevisor'])->name('substituirRevisor');
         });
     });
 

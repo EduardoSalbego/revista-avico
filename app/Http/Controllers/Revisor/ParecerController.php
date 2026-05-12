@@ -23,29 +23,28 @@ class ParecerController extends Controller
     }
 
     // Revisor aceita ou declina a tarefa
-    public function responderTarefa(Request $request, $id)
+    public function responderTarefa(Request $request, $submissaoId)
     {
-        $parecer = Parecer::where('revisor_id', Auth::id())->findOrFail($id);
+        $submissao = Submissao::findOrFail($submissaoId);
+        $parecer = $submissao->pareceres->where('revisor_id', Auth::user()->revisor->id)->firstOrFail();
 
         $request->validate([
             'aceito_tarefa' => 'required|boolean',
         ]);
+        $resposta = $request->boolean('aceito_tarefa') ? 'aceito' : 'recusado';
 
         $parecer->update(['aceito_tarefa' => $request->boolean('aceito_tarefa')]);
 
-        if (!$request->boolean('aceito_tarefa')) {
-            // Notifica o editor que o revisor declinou
-            // (notifica todos os editores/admins do sistema)
-            //\App\Models\User::whereIn('role', ['editor', 'admin'])
-            //    ->where('status', 'ativo')
-            //    ->each(fn($editor) => $editor->notify(
-            //        new RevisorDeclinouTarefa($submissao, Auth::user())
-            //    ));
+        $submissao->revisoresAtribuidos()->updateExistingPivot(Auth::user()->revisor->id, [
+            'status' => $resposta,
+            'atribuido_em' => now(),
+        ]);
 
-            return back()->with('success', 'Tarefa declinada. O editor foi notificado.');
-        }
+        $mensagem = $resposta === 'aceito' 
+        ? 'Tarefa aceita! Baixe o PDF e emita seu parecer.' 
+        : 'Convite recusado. O editor será notificado.';
 
-        return back()->with('success', 'Tarefa aceita! Baixe o PDF e emita seu parecer.');
+        return back()->with('success', $mensagem);
     }
 
     // Revisor emite o parecer

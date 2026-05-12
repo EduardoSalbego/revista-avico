@@ -30,7 +30,7 @@ class Parecer extends Model
 
     public function revisor()
     {
-        return $this->belongsTo(User::class, 'revisor_id');
+        return $this->belongsTo(Revisor::class, 'revisor_id');
     }
 
     public function badgeDecisao(): string

@@ -2,6 +2,39 @@
 <html lang="pt-br">
 @include('layouts.head')
 
+<style>
+.substituto-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border: 1.5px solid #dee2e6;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: border-color .18s, background .18s;
+    background: #fff;
+}
+.substituto-item:hover { border-color: #0d6efd; background: #f0f4ff; }
+.substituto-item.selecionado { border-color: #0d6efd; background: #e8f0fe; }
+.substituto-item input[type="radio"] { display: none; }
+.sub-check {
+    width: 18px; height: 18px;
+    border: 2px solid #dee2e6; border-radius: 50%;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .18s;
+}
+.substituto-item.selecionado .sub-check {
+    background: #0d6efd; border-color: #0d6efd;
+}
+.substituto-item.selecionado .sub-check::after {
+    content: ''; width: 8px; height: 8px;
+    background: #fff; border-radius: 50%; display: block;
+}
+.sub-nome { font-size: 14px; font-weight: 500; color: #1a1a2e; }
+.sub-inst { font-size: 12px; color: #6c757d; }
+</style>
+
 <body id="page-top" class="bg-light">
     @include('layouts.topbar')
 
@@ -10,12 +43,10 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h2 class="mb-0">Mesa do Editor</h2>
-                <p class="text-muted mb-0">Triagem e atribuição de revisores</p>
+                <p class="text-muted mb-0">Triagem e atribuicao de revisores</p>
             </div>
-
-            {{-- Filtro de status --}}
             <div class="d-flex gap-2">
-                @foreach(['todos' => 'Todos', 'submetido' => 'Submetidos', 'em_revisao' => 'Em Revisão', 'aceito' => 'Aceitos', 'rejeitado' => 'Rejeitados'] as $valor => $label)
+                @foreach(['todos' => 'Todos', 'submetido' => 'Submetidos', 'em_revisao' => 'Em Revisao', 'aceito' => 'Aceitos', 'rejeitado' => 'Rejeitados'] as $valor => $label)
                     <a href="{{ route('editor.submissoes.index', ['status' => $valor]) }}"
                         class="btn btn-sm {{ request('status', 'todos') === $valor ? 'btn-primary' : 'btn-outline-secondary' }}">
                         {{ $label }}
@@ -36,19 +67,28 @@
 
         @if($submissoes->isEmpty())
             <div class="text-center py-5 text-muted bg-white shadow-sm rounded">
-                <p class="fs-5 mb-0">Nenhuma submissão encontrada.</p>
+                <p class="fs-5 mb-0">Nenhuma submissao encontrada.</p>
             </div>
         @else
+
             <div class="d-flex flex-column gap-3">
                 @foreach($submissoes as $submissao)
+                    @php
+                        $pareceres = $submissao->pareceres;
+                        $bloqueados = $pareceres->filter(fn($p) => !is_null($p->decisao))->pluck('revisor_id')->toArray();
+                        $recusados  = $pareceres->filter(fn($p) => $p->aceito_tarefa === false)->pluck('revisor_id')->toArray();
+                        $recusas    = $submissao->revisoresAtribuidos->filter(fn($r) => in_array($r->id, $recusados));
+                        $todosResponderam = $submissao->todosRevisoresResponderam();
+                    @endphp
+
                     <div class="card p-4 mb-2 shadow-sm border-0">
 
-                        {{-- Cabeçalho --}}
+                        {{-- Cabecalho --}}
                         <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3 border-bottom pb-3">
                             <div>
-                                <h5 class="mb-1 text-primary">Título: {{ $submissao->titulo }}</h5>
+                                <h5 class="mb-1 text-primary">{{ $submissao->titulo }}</h5>
                                 <small class="text-muted">
-                                    Por <strong>{{ $submissao->autor->name }}</strong>
+                                    Por <strong>{{ $submissao->autor->nome }}</strong>
                                     · {{ $submissao->created_at->format('d/m/Y') }}
                                 </small>
                             </div>
@@ -62,176 +102,187 @@
                         </div>
 
                         {{-- Resumo --}}
-                        <p class="text-muted mb-3" style="font-size:0.95rem; text-align: justify;">
+                        <p class="text-muted mb-3" style="font-size:.95rem; text-align:justify;">
                             <strong>Resumo: </strong>{{ Str::limit($submissao->resumo, 320) }}
                         </p>
 
                         @if(!$submissao->isRejeitado())
-                            {{-- Revisores sugeridos pelo autor --}}
+
+                            {{-- ── Revisores sugeridos ── --}}
                             @if($submissao->revisoresSugeridos->isNotEmpty())
                                 <div class="mb-3">
-                                    <small class="fw-semibold text-muted">Revisores sugeridos pelo autor:</small>
+                                    <small class="fw-semibold text-muted">Revisores sugeridos:</small>
                                     <div class="d-flex flex-wrap gap-1 mt-1">
-                                        @foreach($submissao->revisoresSugeridos as $r)
-                                            <span class="badge bg-light text-dark border">{{ $r->name }}</span>
+                                        @foreach($submissao->revisoresSugeridos as $sugerido)
+                                            @if($sugerido->revisor)
+                                                <span class="badge bg-primary shadow-sm">
+                                                    {{ $sugerido->revisor->user->name }}
+                                                </span>
+                                            @else
+                                                <span class="badge bg-warning text-dark shadow-sm">
+                                                    {{ $sugerido->nome }}
+                                                    @if($sugerido->email) · {{ $sugerido->email }} @endif
+                                                </span>
+                                            @endif
                                         @endforeach
                                     </div>
                                 </div>
                             @endif
 
-                            {{-- Revisores atribuídos --}}
+                            {{-- ── Revisores designados ── --}}
                             @if($submissao->revisoresAtribuidos->isNotEmpty())
                                 <div class="mb-3">
-                                    <small class="fw-semibold text-muted">Revisores atribuídos:</small>
-                                    <div class="d-flex flex-wrap gap-1 mt-1">
+                                    <small class="fw-semibold text-muted d-block mb-2">Revisores designados:</small>
+                                    <div class="d-flex flex-wrap gap-2">
                                         @foreach($submissao->revisoresAtribuidos as $r)
-                                            <span class="badge bg-info text-dark shadow-sm">{{ $r->name }}</span>
+                                            @php
+                                                $p          = $pareceres->firstWhere('revisor_id', $r->id);
+                                                $jaRevisou  = $p && !is_null($p->decisao);
+                                                $recusou    = $p && $p->aceito_tarefa === false;
+                                                $aguardando = !$p || is_null($p->aceito_tarefa);
+                                                $revisando  = $p && $p->aceito_tarefa === true && is_null($p->decisao);
+                                                $podeSubst  = $submissao->status === 'em_revisao' && !$jaRevisou;
+                                            @endphp
+                                            <div class="d-inline-flex align-items-center gap-1">
+
+                                                @if($jaRevisou)
+                                                    <span class="badge bg-success shadow-sm" title="Revisao concluida">
+                                                        <i class="fas fa-check me-1"></i>{{ $r->user->name }}
+                                                    </span>
+                                                @elseif($recusou)
+                                                    <span class="badge bg-danger shadow-sm" title="Recusou a tarefa">
+                                                        <i class="fas fa-times me-1"></i>{{ $r->user->name }}
+                                                    </span>
+                                                @elseif($aguardando)
+                                                    <span class="badge bg-warning text-dark shadow-sm" title="Aguardando aceite">
+                                                        <i class="fas fa-clock me-1"></i>{{ $r->user->name }}
+                                                    </span>
+                                                @else
+                                                    <span class="badge bg-info text-dark shadow-sm" title="Em revisao">
+                                                        <i class="fas fa-pen me-1"></i>{{ $r->user->name }}
+                                                    </span>
+                                                @endif
+
+                                                @if($podeSubst)
+                                                    <button type="button"
+                                                        class="btn btn-sm py-0 px-2 {{ $recusou ? 'btn-danger' : 'btn-outline-secondary' }}"
+                                                        style="font-size:11px;"
+                                                        onclick="abrirModalSubstituicao({{ $submissao->id }}, {{ $r->id }}, '{{ addslashes($r->user->name) }}')">
+                                                        <i class="fas fa-user-edit"></i> Substituir
+                                                    </button>
+                                                @endif
+
+                                            </div>
                                         @endforeach
                                     </div>
                                 </div>
                             @endif
 
-                            {{-- AÇÕES DO EDITOR (SÓ APARECEM NA TRIAGEM) --}}
+                            {{-- ── Alerta de recusas pendentes ── --}}
+                            @if($recusas->isNotEmpty() && $submissao->status === 'em_revisao')
+                                <div class="alert alert-danger d-flex align-items-center gap-3 mt-2 mb-3 shadow-sm border-0">
+                                    <i class="fas fa-user-times fs-4 text-danger flex-shrink-0"></i>
+                                    <div>
+                                        <strong>
+                                            {{ $recusas->count() === 1 ? '1 revisor recusou' : $recusas->count().' revisores recusaram' }} a tarefa.
+                                        </strong>
+                                        <p class="mb-0 small mt-1">
+                                            Clique em <strong>"Substituir"</strong> ao lado do nome para designar um substituto.
+                                        </p>
+                                    </div>
+                                </div>
+                            @endif
+
+                            {{-- ════════════════════════════
+                                 TRIAGEM: primeira atribuicao
+                            ════════════════════════════ --}}
                             @if($submissao->status === 'submetido')
                                 <div class="card p-3 mt-2 bg-light border-0">
                                     <div class="row g-3">
-
-                                        {{-- Painel de Atribuição de Revisores com UI de + e - --}}
                                         <div class="col-md-8">
-                                            <form action="{{ route('editor.submissoes.atribuir', $submissao->id) }}" method="POST"
-                                                id="form-atribuir-{{ $submissao->id }}"
-                                                onsubmit="return validarEnvioRevisao({{ $submissao->id }})">
-                                                @csrf
-                                                @method('PATCH')
-
-                                                <label class="form-label fw-bold small text-primary mb-2">
-                                                    Formar Equipe de Revisão
-                                                    <span class="text-muted fw-normal">(Selecione de 3 a 4)</span>
-                                                </label>
-
-                                                <div class="row g-2">
-                                                    {{-- Coluna 1: Disponíveis --}}
-                                                    <div class="col-sm-6">
-                                                        <div class="border rounded bg-white p-2 shadow-sm"
-                                                            style="height: 160px; overflow-y: auto;">
-                                                            <small
-                                                                class="d-block text-muted mb-2 fw-bold border-bottom pb-1">Disponíveis</small>
-                                                            <div id="lista-disp-{{ $submissao->id }}" class="d-flex flex-column gap-1">
-                                                                @foreach($revisores as $revisor)
-                                                                    <div class="d-flex justify-content-between align-items-center bg-light border rounded px-2 py-1"
-                                                                        id="item-disp-{{ $submissao->id }}-{{ $revisor->id }}">
-                                                                        <span class="small text-truncate" style="max-width: 130px;"
-                                                                            title="{{ $revisor->name }}">{{ $revisor->name }}</span>
-                                                                        <button type="button"
-                                                                            class="btn btn-sm btn-outline-success border-0 py-0 px-2"
-                                                                            onclick="adicionarRevisor({{ $submissao->id }}, {{ $revisor->id }}, '{{ addslashes($revisor->name) }}')"
-                                                                            title="Adicionar">
-                                                                            <i class="fas fa-plus"></i>
-                                                                        </button>
-                                                                    </div>
-                                                                @endforeach
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    {{-- Coluna 2: Selecionados --}}
-                                                    <div class="col-sm-6">
-                                                        <div class="border rounded bg-white p-2 shadow-sm"
-                                                            style="height: 160px; overflow-y: auto;">
-                                                            <small
-                                                                class="d-block text-muted mb-2 fw-bold border-bottom pb-1">Selecionados</small>
-                                                            <div id="lista-sel-{{ $submissao->id }}" class="d-flex flex-column gap-1">
-                                                                {{-- JS vai popular os revisores escolhidos aqui --}}
-                                                            </div>
-                                                            {{-- Inputs ocultos para enviar o POST --}}
-                                                            <div id="inputs-ocultos-{{ $submissao->id }}"></div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <div class="d-flex justify-content-end mt-3">
-                                                    <button type="submit" class="btn btn-primary px-4 shadow-sm">
-                                                        <i class="fas fa-paper-plane me-1"></i> Confirmar e Enviar para Revisão
-                                                    </button>
-                                                </div>
-                                            </form>
+                                            @include('editor.submissoes._painel_atribuicao', [
+                                                'submissao'     => $submissao,
+                                                'revisores'     => $revisores,
+                                                'bloqueados'    => [],
+                                                'recusados'     => [],
+                                                'rotaForm'      => route('editor.submissoes.atribuir', $submissao->id),
+                                                'labelBtn'      => 'Confirmar e Enviar para Revisao',
+                                                'preCarregados' => [],
+                                            ])
                                         </div>
-
-                                        {{-- Rejeitar de cara na Triagem --}}
                                         <div class="col-md-4 border-start">
                                             <label class="form-label fw-bold small text-danger">Rejeitar na Triagem</label>
                                             <form action="{{ route('editor.submissoes.decidir', $submissao->id) }}" method="POST"
-                                                onsubmit="return confirm('Tem certeza que deseja rejeitar esta submissão direto da triagem? O autor será notificado.')">
+                                                onsubmit="return confirm('Rejeitar esta submissao direto da triagem?')">
                                                 @csrf
                                                 @method('PATCH')
                                                 <input type="hidden" name="status" value="rejeitado">
                                                 <textarea name="observacoes" class="form-control form-control-sm mb-3 shadow-sm"
-                                                    rows="5" placeholder="Motivo da rejeição (obrigatório)..." required></textarea>
+                                                    rows="5" placeholder="Motivo da rejeicao (obrigatorio)..." required></textarea>
                                                 <button type="submit" class="btn btn-outline-danger w-100 shadow-sm">
                                                     <i class="fas fa-times me-1"></i> Rejeitar Artigo
                                                 </button>
                                             </form>
                                         </div>
-
                                     </div>
                                 </div>
                             @endif
 
-                            {{-- Se estiver Em Revisão: Mostra o painel trancado --}}
+                            {{-- ════════════════════════════
+                                 EM REVISAO
+                            ════════════════════════════ --}}
                             @if($submissao->status === 'em_revisao')
-                                @if(!$submissao->todosRevisoresResponderam())
+
+                                {{-- Aguardando pareceres --}}
+                                @if(!$todosResponderam && $recusas->isEmpty())
                                     <div class="alert alert-info py-3 mt-3 mb-0 shadow-sm border-0 d-flex align-items-center">
                                         <i class="fas fa-lock fs-4 me-3 text-info"></i>
                                         <div>
-                                            <strong>Em processo de revisão duplo-cego.</strong><br>
-                                            <span class="small">A equipe de revisores foi definida e notificada. A plataforma está
-                                                aguardando o envio dos pareceres para liberar a decisão final.</span>
+                                            <strong>Em processo de revisao duplo-cego.</strong><br>
+                                            <span class="small">A equipe foi notificada. Aguardando envio dos pareceres.</span>
                                         </div>
                                     </div>
-                                @else
+                                @endif
+
+                                {{-- Todos responderam: decisao editorial --}}
+                                @if($todosResponderam)
                                     <div class="mt-3 d-flex align-items-center justify-content-between">
                                         <div class="d-flex align-items-center">
                                             <i class="fas fa-clipboard-check fs-4 me-3 text-success"></i>
                                             <div>
-                                                <strong>Revisões concluídas</strong><br>
-                                                <span class="small text-muted">
-                                                    Todos os revisores já enviaram seus pareceres. A submissão está pronta para decisão
-                                                    editorial.
-                                                </span>
+                                                <strong>Revisoes concluidas</strong><br>
+                                                <span class="small text-muted">Todos os revisores enviaram seus pareceres.</span>
                                             </div>
                                         </div>
-
                                         <button type="button" class="btn btn-outline-primary btn-sm"
                                             onclick="togglePareceres({{ $submissao->id }})">
                                             <i class="fas fa-eye me-1"></i>
                                             <span id="btn-label-{{ $submissao->id }}">Ver pareceres e decidir</span>
                                         </button>
                                     </div>
-                                    {{-- Painel oculto por padrão --}}
+
                                     <div id="painel-pareceres-{{ $submissao->id }}"
-                                        class="card p-4 mt-3 bg-white shadow-sm border-primary border-top border-3" style="display: none;">
+                                        class="card p-4 mt-3 bg-white shadow-sm border-primary border-top border-3"
+                                        style="display:none;">
 
                                         <h6 class="text-primary mb-3">
                                             <i class="fas fa-clipboard-list me-2"></i>Pareceres Recebidos
                                         </h6>
 
-                                        {{-- Lista de Pareceres --}}
                                         <div class="row g-3 mb-4">
-                                            @foreach($submissao->pareceres()->where('aceito_tarefa', true)->whereNotNull('decisao')->with('revisor')->get() as $parecer)
+                                            @foreach($submissao->pareceres()->where('aceito_tarefa', true)->whereNotNull('decisao')->with('revisor.user')->get() as $parecer)
                                                 <div class="col-md-6">
                                                     <div class="card bg-light border-0 shadow-sm h-100">
                                                         <div class="card-body p-3">
                                                             <h6 class="card-title text-dark mb-1 fs-6">
                                                                 <i class="fas fa-user-check text-success me-1"></i>
-                                                                {{ $parecer->revisor->name }}
+                                                                {{ $parecer->revisor->user->name }}
                                                             </h6>
-
                                                             {!! $parecer->badgeDecisao() !!}
-
-                                                            <p class="card-text text-muted mb-0"
-                                                                style="font-size: 0.85rem; text-align: justify;">
+                                                            <p class="card-text text-muted mb-0 mt-2"
+                                                                style="font-size:.85rem; text-align:justify;">
                                                                 <strong>Parecer:</strong>
-                                                                {{ $parecer->comentario ?? 'Sem comentário fornecido.' }}
+                                                                {{ $parecer->comentario ?? 'Sem comentario fornecido.' }}
                                                             </p>
                                                         </div>
                                                     </div>
@@ -241,84 +292,65 @@
 
                                         <div class="p-3 bg-light rounded border">
                                             <h6 class="text-dark mb-3">
-                                                <i class="fas fa-gavel me-2"></i>Decisão Final do Editor
+                                                <i class="fas fa-gavel me-2"></i>Decisao Final do Editor
                                             </h6>
-
                                             <form action="{{ route('editor.submissoes.decidir', $submissao->id) }}" method="POST"
-                                                onsubmit="return confirm('Confirmar a decisão final? O autor será notificado.')">
+                                                onsubmit="return confirm('Confirmar a decisao final? O autor sera notificado.')">
                                                 @csrf
                                                 @method('PATCH')
-
                                                 <div class="row g-3">
-
-                                                    {{-- Feedback (full width) --}}
                                                     <div class="col-12">
-                                                        <label class="form-label small fw-bold text-muted mb-1">
-                                                            Feedback ao Autor
-                                                            <span id="obrig-feedback-{{ $submissao->id }}" class="text-danger"
-                                                                style="display:none;">*</span>
-                                                        </label>
-                                                        <textarea name="observacoes" id="feedback-{{ $submissao->id }}"
-                                                            class="form-control shadow-sm" rows="4"
-                                                            placeholder="Sintetize os principais pontos dos pareceres e justifique a decisão editorial..."></textarea>
+                                                        <label class="form-label small fw-bold text-muted mb-1">Feedback ao Autor</label>
+                                                        <textarea name="observacoes" class="form-control shadow-sm" rows="4"
+                                                            placeholder="Sintetize os pareceres e justifique a decisao editorial..."></textarea>
                                                     </div>
-
-                                                    {{-- Linha de baixo: Veredito + Botão --}}
                                                     <div class="col-md-4">
                                                         <label class="form-label small fw-bold text-muted mb-1">Veredito</label>
-                                                        <select name="status" class="form-select shadow-sm" required
-                                                            id="veredito-{{ $submissao->id }}"
-                                                            onchange="atualizarPlaceholder({{ $submissao->id }}, this.value)">
+                                                        <select name="status" class="form-select shadow-sm" required>
                                                             <option value="" disabled selected>Selecione...</option>
                                                             <option value="aceito">Aceitar</option>
                                                             <option value="rejeitado">Rejeitar</option>
                                                             <option value="major_review">Major Review</option>
-                                                            <option value="aceito">Revisão Pontual</option>
+                                                            <option value="minor_review">Revisao Pontual</option>
                                                         </select>
-                                                        <small id="desc-veredito-{{ $submissao->id }}"
-                                                            class="text-muted mt-1 d-block"></small>
                                                     </div>
-
                                                     <div class="col-md-8 d-flex align-items-end justify-content-end">
                                                         <button type="submit" class="btn btn-primary px-5 shadow-sm">
                                                             <i class="fas fa-check-circle me-1"></i> Concluir e Notificar Autor
                                                         </button>
                                                     </div>
-
                                                 </div>
                                             </form>
                                         </div>
                                     </div>
                                 @endif
+
                             @endif
 
-
-                            {{-- Observações salvas --}}
+                            {{-- Observacoes salvas --}}
                             @if($submissao->observacoes)
-                                <div class="alert alert-light border py-2 mb-3">
-                                    <small class="fw-semibold text-danger"><i class="fas fa-exclamation-circle"></i> Observação
-                                        registrada:</small>
+                                <div class="alert alert-light border py-2 mb-0 mt-3">
+                                    <small class="fw-semibold text-danger">
+                                        <i class="fas fa-exclamation-circle"></i> Observacao registrada:
+                                    </small>
                                     <p class="mb-0 small mt-1">{{ $submissao->observacoes }}</p>
                                 </div>
                             @endif
 
-                            {{-- DOCX enviado --}}
+                            {{-- DOCX --}}
                             @if($submissao->isAceito() && $submissao->arquivo_docx)
-                                <div
-                                    class="alert alert-success py-3 mt-3 mb-0 d-flex justify-content-between align-items-center shadow-sm border-0">
-                                    <span><i class="fas fa-file-word fs-5 me-2"></i> <strong>Versão final em DOCX
-                                            disponível</strong></span>
-                                    <a href="{{ asset('storage/' . $submissao->arquivo_docx) }}" download
-                                        class="btn btn-success px-4 shadow-sm">
+                                <div class="alert alert-success py-3 mt-3 mb-0 d-flex justify-content-between align-items-center shadow-sm border-0">
+                                    <span><i class="fas fa-file-word fs-5 me-2"></i><strong>Versao final em DOCX disponivel</strong></span>
+                                    <a href="{{ asset('storage/' . $submissao->arquivo_docx) }}" download class="btn btn-success px-4 shadow-sm">
                                         Baixar Arquivo Final
                                     </a>
                                 </div>
                             @elseif($submissao->isAceito())
                                 <div class="alert alert-warning py-3 mt-3 mb-0 shadow-sm border-0">
-                                    <i class="fas fa-hourglass-half me-2"></i> ⏳ Aguardando o autor enviar a versão final em DOCX
-                                    formatada.
+                                    <i class="fas fa-hourglass-half me-2"></i> Aguardando o autor enviar a versao final em DOCX.
                                 </div>
                             @endif
+
                         @endif
 
                     </div>
@@ -328,127 +360,232 @@
             <div class="mt-5 d-flex justify-content-center">
                 {{ $submissoes->links() }}
             </div>
+
         @endif
 
     </main>
 
+    {{-- ════════════════════════════════════════════
+         MODAL DE SUBSTITUICAO (renderizado uma vez)
+    ════════════════════════════════════════════ --}}
+    <div class="modal fade" id="modalSubstituicao" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header border-0 pb-0">
+                    <div>
+                        <h5 class="modal-title">Substituir Revisor</h5>
+                        <p class="text-muted small mb-0" id="modal-sub-descricao"></p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="form-substituicao" action="" method="POST">
+                    @csrf
+                    @method('PATCH')
+                    <input type="hidden" name="revisor_antigo_id" id="modal-sub-substituir-id">
+                    <input type="hidden" name="novo_revisor_id" id="modal-sub-substituto-id">
+                    <div class="modal-body pt-3">
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold small text-muted text-uppercase">
+                                Revisor sendo substituido
+                            </label>
+                            <div class="d-flex align-items-center gap-2 p-2
+                                        bg-danger bg-opacity-10 border border-danger rounded">
+                                <i class="fas fa-user-times text-danger"></i>
+                                <span id="modal-sub-nome-antigo" class="fw-semibold text-danger"></span>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="form-label fw-bold small text-muted text-uppercase">
+                                Escolha o substituto
+                            </label>
+                            <div id="modal-lista-substitutos" class="d-flex flex-column gap-2"></div>
+                            <div id="modal-sem-substitutos" class="alert alert-warning small py-2 mt-2" style="display:none;">
+                                Nenhum revisor disponivel para substituicao no momento.
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary" id="modal-sub-btn-confirmar" disabled>
+                            <i class="fas fa-check me-1"></i> Confirmar Substituicao
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     @include('layouts.footer')
 
-    {{-- LÓGICA DE SELEÇÃO DOS REVISORES (+ / -) --}}
     <script>
-        // Dicionário para rastrear os revisores selecionados de cada submissão na tela
-        const selecoesPorSubmissao = {};
+    // ════════════════════════════════════════════════════════
+    // DADOS INJETADOS PELO BLADE
+    // ════════════════════════════════════════════════════════
+    const estadoSubmissoes = @json($estadoSubmissoes);
+    const todosRevisores   = @json($todosRevisores);
+    const _recusadosPorSid = {};
 
-        function inicializarSubmissao(subId) {
-            if (!selecoesPorSubmissao[subId]) {
-                selecoesPorSubmissao[subId] = [];
-            }
+    function registrarRecusados(sid, ids) {
+        _recusadosPorSid[sid] = ids;
+    }
+
+    const _equipes = {};
+
+    function _getEquipe(sid) {
+        if (!_equipes[sid]) _equipes[sid] = {};
+        return _equipes[sid];
+    }
+
+    function adicionarRevisor(sid, id, nome, silencioso = false) {
+        if ((_recusadosPorSid[sid] ?? []).includes(id)) {
+            if (!silencioso) alert('Este revisor recusou esta submissao e nao pode ser designado novamente.');
+            return;
         }
-
-        // Adiciona um revisor (+)
-        function adicionarRevisor(subId, revisorId, revisorNome) {
-            inicializarSubmissao(subId);
-
-            // Verifica os limites
-            if (selecoesPorSubmissao[subId].includes(revisorId)) return;
-            if (selecoesPorSubmissao[subId].length >= 4) {
-                alert('Você já selecionou o limite máximo de 4 revisores para este artigo.');
-                return;
-            }
-
-            // Registra a seleção
-            selecoesPorSubmissao[subId].push(revisorId);
-
-            // 1. Oculta o revisor da lista de "Disponíveis"
-            document.getElementById(`item-disp-${subId}-${revisorId}`).style.display = 'none';
-
-            // 2. Cria o elemento na lista de "Selecionados" (cor azul para dar destaque)
-            const listaSel = document.getElementById(`lista-sel-${subId}`);
-            const itemHTML = `
-                <div class="d-flex justify-content-between align-items-center bg-primary text-white border border-primary rounded px-2 py-1" id="item-sel-${subId}-${revisorId}">
-                    <span class="small text-truncate" style="max-width: 130px;" title="${revisorNome}">${revisorNome}</span>
-                    <button type="button" class="btn btn-sm btn-primary text-white border-0 py-0 px-2" onclick="removerRevisor(${subId}, ${revisorId})" title="Remover">
-                        <i class="fas fa-minus"></i>
-                    </button>
-                </div>
-            `;
-            listaSel.insertAdjacentHTML('beforeend', itemHTML);
-
-            // 3. Cria o input oculto para o <form> enviar o dado no formato array: name="revisores[]"
-            const containerInputs = document.getElementById(`inputs-ocultos-${subId}`);
-            const inputHTML = `<input type="hidden" name="revisores[]" value="${revisorId}" id="input-oculto-${subId}-${revisorId}">`;
-            containerInputs.insertAdjacentHTML('beforeend', inputHTML);
+        const equipe = _getEquipe(sid);
+        if (equipe[id]) return;
+        if (Object.keys(equipe).length >= 4) {
+            if (!silencioso) alert('Limite de 4 revisores por submissao.');
+            return;
         }
+        equipe[id] = nome;
+        _renderEquipe(sid);
+        const el = document.getElementById(`item-disp-${sid}-${id}`);
+        if (el) el.style.display = 'none';
+    }
 
-        // Remove um revisor (-)
-        function removerRevisor(subId, revisorId) {
-            // Remove do array de rastreamento
-            selecoesPorSubmissao[subId] = selecoesPorSubmissao[subId].filter(id => id !== revisorId);
+    function removerRevisor(sid, id) {
+        const equipe = _getEquipe(sid);
+        delete equipe[id];
+        _renderEquipe(sid);
+        const el = document.getElementById(`item-disp-${sid}-${id}`);
+        if (el) el.style.display = 'flex';
+    }
 
-            // 1. Mostra de novo na lista de "Disponíveis"
-            document.getElementById(`item-disp-${subId}-${revisorId}`).style.display = 'flex';
+    function _renderEquipe(sid) {
+        const equipe    = _getEquipe(sid);
+        const listaSel  = document.getElementById(`lista-sel-${sid}`);
+        const inputsDiv = document.getElementById(`inputs-ocultos-${sid}`);
+        if (!listaSel) return;
 
-            // 2. Remove o item visual da lista de "Selecionados"
-            document.getElementById(`item-sel-${subId}-${revisorId}`).remove();
+        listaSel.innerHTML  = '';
+        inputsDiv.innerHTML = '';
 
-            // 3. Remove o input oculto
-            document.getElementById(`input-oculto-${subId}-${revisorId}`).remove();
-        }
+        Object.entries(equipe).forEach(([id, nome]) => {
+            const div = document.createElement('div');
+            div.className = 'd-flex justify-content-between align-items-center bg-light border rounded px-2 py-1';
+            div.innerHTML = `
+                <span class="small text-truncate" style="max-width:130px;" title="${nome}">${nome}</span>
+                <button type="button" class="btn btn-sm btn-outline-danger border-0 py-0 px-2"
+                    onclick="removerRevisor(${sid}, ${id})" title="Remover">
+                    <i class="fas fa-minus"></i>
+                </button>`;
+            listaSel.appendChild(div);
 
-        // Validação final ao clicar em "Enviar para Revisão"
-        function validarEnvioRevisao(subId) {
-            const quantidadeSelecionada = selecoesPorSubmissao[subId] ? selecoesPorSubmissao[subId].length : 0;
-
-            if (quantidadeSelecionada < 3) {
-                alert(`Atenção: Você precisa selecionar pelo menos 3 revisores. Você selecionou apenas ${quantidadeSelecionada}.`);
-                return false; // Impede o envio do form
-            }
-
-            return confirm('Tem certeza que deseja fechar a equipe e enviar este artigo para revisão? Esta ação não pode ser desfeita.');
-        }
-
-        // Executa assim que a página carrega: Se já houver revisores salvos no banco, move eles pro lado direito automaticamente
-        document.addEventListener('DOMContentLoaded', function () {
-            @foreach($submissoes as $submissao)
-                @if($submissao->status === 'submetido')
-                    @foreach($submissao->revisoresAtribuidos as $r)
-                        adicionarRevisor({{ $submissao->id }}, {{ $r->id }}, '{{ addslashes($r->name) }}');
-                    @endforeach
-                @endif
-            @endforeach
+            const input = document.createElement('input');
+            input.type  = 'hidden';
+            input.name  = 'revisores[]';
+            input.value = id;
+            inputsDiv.appendChild(input);
         });
+    }
 
-        function togglePareceres(id) {
-            const painel = document.getElementById(`painel-pareceres-${id}`);
-            const label = document.getElementById(`btn-label-${id}`);
-            const aberto = painel.style.display !== 'none';
-            painel.style.display = aberto ? 'none' : 'block';
-            label.textContent = aberto ? 'Ver Pareceres e Decidir' : 'Ocultar Pareceres';
+    function validarEnvioRevisao(sid) {
+        // Conta selecionados via JS + bloqueados fixos (inputs hidden ja no form)
+        const jsCount   = Object.keys(_getEquipe(sid)).length;
+        const fixos     = document.querySelectorAll(
+            `#form-atribuir-${sid} .bg-success input[name="revisores[]"]`
+        ).length;
+        const total = jsCount + fixos;
+        if (total < 3 || total > 4) {
+            alert(`Selecione entre 3 e 4 revisores. Atualmente: ${total}.`);
+            return false;
+        }
+        return true;
+    }
+
+    // ════════════════════════════════════════════════════════
+    // MODAL DE SUBSTITUICAO (um revisor por vez)
+    // ════════════════════════════════════════════════════════
+
+    window.abrirModalSubstituicao = function(submissaoId, substituirId, nomeAntigo) {
+        // Preenche cabecalho
+        document.getElementById('modal-sub-descricao').textContent  = `Submissao #${submissaoId}`;
+        document.getElementById('modal-sub-nome-antigo').textContent = nomeAntigo;
+        document.getElementById('modal-sub-substituir-id').value     = substituirId;
+        document.getElementById('modal-sub-substituto-id').value     = '';
+        document.getElementById('modal-sub-btn-confirmar').disabled  = true;
+
+        // Quem nao pode ser escolhido:
+        // - o proprio revisor sendo substituido
+        // - demais ja atribuidos a esta submissao (exceto o que esta saindo)
+        // - quem ja recusou esta submissao
+        const estado    = estadoSubmissoes[submissaoId] ?? { atribuidos: [], recusados: [] };
+        const excluidos = new Set([
+            substituirId,
+            ...estado.atribuidos.filter(id => id !== substituirId),
+            ...estado.recusados,
+        ]);
+
+        const form = document.getElementById('form-substituicao');
+        form.action = `/editor/submissoes/${submissaoId}/substituir-revisor`;
+
+        const disponiveis = todosRevisores.filter(r => !excluidos.has(r.id));
+
+        const lista = document.getElementById('modal-lista-substitutos');
+        const aviso = document.getElementById('modal-sem-substitutos');
+        lista.innerHTML = '';
+
+        if (!disponiveis.length) {
+            aviso.style.display = 'block';
+        } else {
+            aviso.style.display = 'none';
+            disponiveis.forEach(r => {
+                const label = document.createElement('label');
+                label.className = 'substituto-item';
+                label.innerHTML = `
+                    <input type="radio" name="__sub_visual" value="${r.id}">
+                    <div class="sub-check"></div>
+                    <div class="flex-grow-1">
+                        <div class="sub-nome">${r.nome}</div>
+                        ${r.instituicao ? `<div class="sub-inst"><i class="fas fa-university me-1"></i>${r.instituicao}</div>` : ''}
+                    </div>`;
+                label.addEventListener('click', () => _selecionarSubstituto(r.id, label));
+                lista.appendChild(label);
+            });
         }
 
-        const descricoes = {
-            aceito: 'O artigo será aceito para publicação.',
-            rejeitado: 'O artigo será rejeitado e o autor notificado.',
-            major_review: 'O autor deverá corrigir pontos e resubmeter o PDF para nova rodada de revisão.',
-            revisao_pontual: 'Aceito, mas o autor fará ajustes pontuais na versão final (DOCX).',
-        };
+        bootstrap.Modal.getOrCreateInstance(
+            document.getElementById('modalSubstituicao')
+        ).show();
+    };
 
-        function atualizarPlaceholder(id, valor) {
-            const desc = document.getElementById(`desc-veredito-${id}`);
-            const obrig = document.getElementById(`obrig-feedback-${id}`);
-            const textarea = document.getElementById(`feedback-${id}`);
+    function _selecionarSubstituto(id, el) {
+        document.querySelectorAll('.substituto-item').forEach(i => i.classList.remove('selecionado'));
+        el.classList.add('selecionado');
+        document.getElementById('modal-sub-substituto-id').value    = id;
+        document.getElementById('modal-sub-btn-confirmar').disabled = false;
+    }
 
-            desc.textContent = descricoes[valor] ?? '';
+    document.getElementById('modalSubstituicao').addEventListener('hidden.bs.modal', () => {
+        document.getElementById('modal-lista-substitutos').innerHTML = '';
+        document.getElementById('modal-sub-btn-confirmar').disabled  = true;
+    });
 
-            const precisaFeedback = ['rejeitado', 'major_review', 'revisao_pontual'].includes(valor);
-            obrig.style.display = precisaFeedback ? 'inline' : 'none';
-            textarea.required = precisaFeedback;
-            textarea.placeholder = precisaFeedback
-                ? 'Obrigatório: descreva os pontos a corrigir ou o motivo da rejeição...'
-                : 'Sintetize os pareceres ou justifique sua decisão...';
-        }
+    // ════════════════════════════════════════════════════════
+    // UTILITARIOS
+    // ════════════════════════════════════════════════════════
 
+    function togglePareceres(id) {
+        const painel = document.getElementById(`painel-pareceres-${id}`);
+        const label  = document.getElementById(`btn-label-${id}`);
+        const aberto = painel.style.display !== 'none';
+        painel.style.display = aberto ? 'none' : 'block';
+        if (label) label.textContent = aberto ? 'Ver pareceres e decidir' : 'Ocultar pareceres';
+    }
     </script>
-</body>
 
+</body>
 </html>

@@ -27,14 +27,4 @@ class Revisor extends Model
     {
         return $this->hasMany(Parecer::class);
     }
-
-    public function pareceresAtivos()
-    {
-        return $this->pareceres()->whereNull('concluido_em');
-    }
-
-    public function atingiuLimite(): bool
-    {
-        return $this->pareceresAtivos()->count() >= $this->max_pareceres_simultaneos;
-    }
 }
