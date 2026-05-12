@@ -17,6 +17,8 @@ class Parecer extends Model
         'aceito_tarefa',
         'decisao',
         'comentario',
+        'substituto_sugerido_nome',
+        'substituto_sugerido_email',
     ];
 
     protected $casts = [

@@ -18,18 +18,16 @@ class CreatePareceresTable extends Migration
             $table->foreignId('submissao_id')->constrained('submissoes')->cascadeOnDelete();
             $table->foreignId('revisor_id')->constrained('users')->cascadeOnDelete();
             $table->boolean('aceito_tarefa')->nullable()->default(null);
-
             $table->enum('decisao', [
                 'aceito',
                 'rejeitado',
                 'major_review',
                 'revisao_pontual',
             ])->nullable();
-
             $table->text('comentario')->nullable();
-
+            $table->string('substituto_sugerido_nome')->nullable();
+            $table->string('substituto_sugerido_email')->nullable();
             $table->unique(['submissao_id', 'revisor_id']);
-
             $table->timestamps();
         });
     }

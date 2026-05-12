@@ -15,7 +15,7 @@
                     <a class="nav-link" href="/sobre_nos">Sobre a Revico</a>
                 </li>
                 @auth
-                    @if(Auth::user()->hasRole('editor') || Auth::user()->hasRole('admin'))
+                    @if (Auth::user()->hasRole('editor') || Auth::user()->hasRole('admin'))
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('editor.edicoes.create') }}">nova edição</a>
                         </li>
@@ -34,33 +34,35 @@
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                             {{-- ADMIN --}}
                             @role('admin')
-                            <li><a class="dropdown-item" href="{{ route('admin.usuarios.index') }}">ADMIN: Gerenciar
-                                    Usuários</a></li>
-                            <li><a class="dropdown-item" href="{{ route('admin.edicoes.index') }}">ADMIN: Gerenciar
-                                    Edições</a></li>
+                                <li><a class="dropdown-item" href="{{ route('admin.usuarios.index') }}">ADMIN: Gerenciar
+                                        Usuários</a></li>
+                                <li><a class="dropdown-item" href="{{ route('admin.edicoes.index') }}">ADMIN: Gerenciar
+                                        Edições</a></li>
 
-                            <li><a class="dropdown-item" href="{{ route('autor.submissoes.create') }}">AUTOR: Submeter
-                                    Trabalho</a>
-                            </li>
-                            <li><a class="dropdown-item" href="{{ route('autor.submissoes.index') }}">AUTOR: Minhas
-                                    Submissões</a>
-                            </li>
-                            <li><a class="dropdown-item" href="{{ route('editor.submissoes.index') }}">EDITOR: Ver
-                                    Submissões</a>
-                            </li>
-                            <li><a class="dropdown-item" href="{{ route('revisor.pareceres.index') }}">REVISOR: Minhas
-                                    Tarefas</a>
-                            </li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
+                                <li><a class="dropdown-item" href="{{ route('autor.submissoes.create') }}">AUTOR: Submeter
+                                        Trabalho</a>
+                                </li>
+                                <li><a class="dropdown-item" href="{{ route('autor.submissoes.index') }}">AUTOR: Minhas
+                                        Submissões</a>
+                                </li>
+                                <li><a class="dropdown-item" href="{{ route('editor.submissoes.index') }}">EDITOR: Ver
+                                        Submissões</a>
+                                </li>
+                                <li><a class="dropdown-item" href="{{ route('revisor.pareceres.index') }}">REVISOR: Minhas
+                                        Tarefas</a>
+                                </li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
                             @endrole
 
                             {{-- AUTOR --}}
-                            @if(Auth::user()->autor)
-                                <li><a class="dropdown-item" href="{{ route('autor.submissoes.create') }}">Submeter Trabalho</a>
+                            @if (Auth::user()->autor)
+                                <li><a class="dropdown-item" href="{{ route('autor.submissoes.create') }}">Submeter
+                                        Trabalho</a>
                                 </li>
-                                <li><a class="dropdown-item" href="{{ route('autor.submissoes.index') }}">Minhas Submissões</a>
+                                <li><a class="dropdown-item" href="{{ route('autor.submissoes.index') }}">Minhas
+                                        Submissões</a>
                                 </li>
                                 <li>
                                     <hr class="dropdown-divider">
@@ -69,33 +71,32 @@
 
                             {{-- EDITOR --}}
                             @role('editor')
-                            <li><a class="dropdown-item" href="{{ route('editor.submissoes.index') }}">Ver Submissões</a>
-                            </li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
+                                <li><a class="dropdown-item" href="{{ route('editor.submissoes.index') }}">Ver Submissões</a>
+                                </li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
                             @endrole
 
                             {{-- REVISOR --}}
-                            @if(Auth::user()->revisor)
-                                            <li>
-                                                <a class="dropdown-item
+                            @if (Auth::user()->revisor)
+                                <li>
+                                    <a class="dropdown-item
                                                           {{ !Auth::user()->revisorAprovado() ? 'disabled text-muted' : '' }}"
-                                                    href="{{ Auth::user()->revisorAprovado()
-                                ? route('revisor.pareceres.index')
-                                : '#' }}" @if(!Auth::user()->revisorAprovado()) onclick="return false;"
+                                        href="{{ Auth::user()->revisorAprovado() ? route('revisor.pareceres.index') : '#' }}"
+                                        @if (!Auth::user()->revisorAprovado()) onclick="return false;"
                                 aria-disabled="true" @endif>
 
-                                                    @if(!Auth::user()->revisorAprovado())
-                                                        <i class="fas fa-lock me-1"></i>
-                                                    @endif
-                                                    Minhas Tarefas
-                                                </a>
-                                            </li>
+                                        @if (!Auth::user()->revisorAprovado())
+                                            <i class="fas fa-lock me-1"></i>
+                                        @endif
+                                        Minhas Tarefas
+                                    </a>
+                                </li>
 
-                                            <li>
-                                                <hr class="dropdown-divider">
-                                            </li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
                             @endif
 
                             {{-- GERAL --}}

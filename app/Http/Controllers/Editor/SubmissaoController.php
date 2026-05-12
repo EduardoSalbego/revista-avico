@@ -156,14 +156,21 @@ class SubmissaoController extends Controller
         ]);
 
         // 2. Adiciona o Novo Revisor
-        // Faz o UPDATE direto na tabela pivot, substituindo o usuário antigo pelo novo
-        // 1. Remove o revisor que recusou da tabela pivot
-        $submissao->revisoresAtribuidos()->detach($request->revisor_antigo_id);
+        $submissao->revisoresAtribuidos()->updateExistingPivot($request->revisor_antigo_id, [
+            'status' => 'substituido',
+            'updated_at' => now(),
+        ]);
 
         // 2. Adiciona o novo revisor na tabela pivot
         $submissao->revisoresAtribuidos()->attach($request->novo_revisor_id, [
             'status' => 'pendente',
             'atribuido_em' => now(),
+        ]);
+
+        // 3. CRIA O PARECER PENDENTE PARA O NOVO REVISOR
+        Parecer::firstOrCreate([
+            'submissao_id' => $submissao->id,
+            'revisor_id' => $request->novo_revisor_id,
         ]);
 
         return redirect()->back()->with('success', 'Revisor substituído com sucesso! O novo revisor foi notificado.');

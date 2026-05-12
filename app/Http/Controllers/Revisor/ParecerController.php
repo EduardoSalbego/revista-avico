@@ -5,8 +5,6 @@ namespace App\Http\Controllers\Revisor;
 use App\Http\Controllers\Controller;
 use App\Models\Parecer;
 use App\Models\Submissao;
-use App\Notifications\RevisorDeclinouTarefa;
-use App\Notifications\SubmissaoMajorReview;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -15,7 +13,7 @@ class ParecerController extends Controller
     public function index()
     {
         $pareceres = Parecer::with(['submissao.autor', 'submissao.pareceres'])
-            ->where('revisor_id', Auth::id())
+            ->where('revisor_id', Auth::user()->revisor->id)
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
@@ -30,19 +28,25 @@ class ParecerController extends Controller
 
         $request->validate([
             'aceito_tarefa' => 'required|boolean',
+            'substituto_sugerido_nome' => 'nullable|string|max:255',
+            'substituto_sugerido_email' => 'nullable|email|max:255',
         ]);
         $resposta = $request->boolean('aceito_tarefa') ? 'aceito' : 'recusado';
 
-        $parecer->update(['aceito_tarefa' => $request->boolean('aceito_tarefa')]);
+        $parecer->update([
+            'aceito_tarefa' => $request->boolean('aceito_tarefa'),
+            'substituto_sugerido_nome' => $request->substituto_sugerido_nome,
+            'substituto_sugerido_email' => $request->substituto_sugerido_email,
+        ]);
 
         $submissao->revisoresAtribuidos()->updateExistingPivot(Auth::user()->revisor->id, [
             'status' => $resposta,
             'atribuido_em' => now(),
         ]);
 
-        $mensagem = $resposta === 'aceito' 
-        ? 'Tarefa aceita! Baixe o PDF e emita seu parecer.' 
-        : 'Convite recusado. O editor será notificado.';
+        $mensagem = $resposta === 'aceito'
+            ? 'Tarefa aceita! Baixe o PDF e emita seu parecer.'
+            : 'Convite recusado. O editor será notificado.';
 
         return back()->with('success', $mensagem);
     }
