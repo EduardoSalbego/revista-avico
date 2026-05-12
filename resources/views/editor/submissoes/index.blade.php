@@ -183,9 +183,19 @@
                                                 $revisando = $statusPiv === 'aceito' && !$jaRevisou;
 
                                                 $podeSubst = $submissao->status === 'em_revisao' && !$jaRevisou;
+
+                                                $atrasado = $submissao->deadline->isPast();
+
+                                                // Verifica se já enviou notificação e se já passaram 24h
+                                                $ultimaNotif = $r->pivot->ultima_notificacao_em
+                                                    ? \Carbon\Carbon::parse($r->pivot->ultima_notificacao_em)
+                                                    : null;
+                                                $podeNotificar =
+                                                    !$ultimaNotif || $ultimaNotif->diffInHours(now()) >= 24;
                                             @endphp
 
                                             <div class="d-inline-flex align-items-center gap-1 mb-1">
+                                                {{-- Badge de Status --}}
                                                 @if ($jaRevisou)
                                                     <span class="badge bg-success shadow-sm" title="Revisao concluida">
                                                         <i class="fas fa-check me-1"></i>{{ $r->user->name }}
@@ -205,13 +215,56 @@
                                                     </span>
                                                 @endif
 
-                                                @if ($podeSubst)
-                                                    <button type="button"
-                                                        class="btn btn-sm py-0 px-2 {{ $recusou ? 'btn-danger' : 'btn-outline-secondary' }}"
-                                                        style="font-size:11px;"
-                                                        onclick="abrirModalSubstituicao({{ $submissao->id }}, {{ $r->id }}, '{{ addslashes($r->user->name) }}')">
-                                                        <i class="fas fa-user-edit"></i> Substituir
-                                                    </button>
+                                                @if ((!$jaRevisou && !$recusou) || $podeSubst)
+                                                    {{-- Dropdown de Ações --}}
+                                                    <div class="dropdown d-inline">
+                                                        <button class="btn btn-light btn-sm py-0 px-1 border-0"
+                                                            type="button" data-bs-toggle="dropdown"
+                                                            aria-expanded="false">
+                                                            <i class="fas fa-chevron-down"></i>
+                                                        </button>
+                                                        <ul class="dropdown-menu shadow-sm" style="font-size: 13px;">
+
+                                                            {{-- Opção de Notificar/Lembrar --}}
+                                                            @if (!$jaRevisou && !$recusou)
+                                                                <li>
+                                                                    @if ($podeNotificar)
+                                                                        <form
+                                                                            action="{{ route('editor.submissoes.notificar', [$submissao->id, $r->id]) }}"
+                                                                            method="POST"
+                                                                            id="form-notificar-{{ $r->id }}">
+                                                                            @csrf
+                                                                            <button type="submit" class="dropdown-item"
+                                                                                onclick="return confirm('Deseja notificar este revisor sobre o prazo?')">
+                                                                                <i
+                                                                                    class="fas fa-bell me-2 text-warning"></i>
+                                                                                Lembrar
+                                                                                {{ Str::before($r->user->name, ' ') }}
+                                                                            </button>
+                                                                        </form>
+                                                                    @else
+                                                                        <span class="dropdown-item text-muted">
+                                                                            <i class="fas fa-bell-slash me-2"></i>
+                                                                            Aguarde
+                                                                            24h para novo lembrete
+                                                                        </span>
+                                                                    @endif
+                                                                </li>
+                                                            @endif
+
+                                                            {{-- Opção de Substituir --}}
+                                                            @if ($podeSubst)
+                                                                <li>
+                                                                    <button type="button"
+                                                                        class="dropdown-item {{ $recusou ? 'text-danger' : '' }}"
+                                                                        onclick="abrirModalSubstituicao({{ $submissao->id }}, {{ $r->id }}, '{{ addslashes($r->user->name) }}')">
+                                                                        <i class="fas fa-user-edit me-2"></i>Substituir
+                                                                        {{ Str::before($r->user->name, ' ') }}
+                                                                    </button>
+                                                                </li>
+                                                            @endif
+                                                        </ul>
+                                                    </div>
                                                 @endif
                                             </div>
                                         @endforeach
@@ -310,7 +363,8 @@
                                         <div>
                                             <strong>Em processo de revisao duplo-cego.</strong><br>
                                             <span class="small">A equipe foi notificada. Aguardando envio dos
-                                                pareceres.</span>
+                                                pareceres. Prazo para revisão:
+                                                {{ $submissao->deadline->format('d/m/Y') }}.</span>
                                         </div>
                                     </div>
                                 @endif

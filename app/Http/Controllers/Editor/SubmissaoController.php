@@ -9,7 +9,11 @@ use App\Models\Parecer;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
+use App\Mail\LembreteRevisaoMail;
+use App\Mail\NovaAtribuicaoRevisorMail;
+use App\Mail\StatusSubmissaoAutorMail;
 
 class SubmissaoController extends Controller
 {
@@ -110,9 +114,12 @@ class SubmissaoController extends Controller
                 $submissao->revisoresAtribuidos()->detach($remover->toArray());
             }
 
-            // Adiciona novos revisores e cria parecer inicial
+            // Adiciona novos revisores, notifica e cria parecer inicial
             foreach ($adicionar as $revisorId) {
                 $submissao->revisoresAtribuidos()->attach($revisorId);
+
+                $revisor = Revisor::find($revisorId);
+                Mail::to($revisor->user->email)->send(new NovaAtribuicaoRevisorMail($revisor->user, $submissao));
 
                 Parecer::firstOrCreate(
                     [
@@ -173,6 +180,9 @@ class SubmissaoController extends Controller
             'revisor_id' => $request->novo_revisor_id,
         ]);
 
+        $novoRevisor = Revisor::find($request->novo_revisor_id);
+        Mail::to($novoRevisor->user->email)->send(new NovaAtribuicaoRevisorMail($novoRevisor->user, $submissao));
+
         return redirect()->back()->with('success', 'Revisor substituído com sucesso! O novo revisor foi notificado.');
     }
 
@@ -195,9 +205,31 @@ class SubmissaoController extends Controller
             'observacoes' => $request->observacoes,
         ]);
 
-        // Notifica o autor por email
-        // $submissao->autor->notify(new SubmissaoDecidida($submissao));
+        Mail::to($submissao->user->email)->send(new StatusSubmissaoAutorMail($submissao));
 
         return back()->with('success', 'Status salvo. O autor foi notificado.');
+    }
+
+    public function notificarDeadline(Request $request, Submissao $submissao, $revisorId)
+    {
+        // Busca os dados desse revisor na pivot
+        $revisor = $submissao->revisoresAtribuidos()->where('revisor_id', $revisorId)->firstOrFail();
+        $ultimaNotificacao = $revisor->pivot->ultima_notificacao_em;
+
+        // Trava de segurança no Back-end: Exige intervalo de 24 horas entre envios
+        if ($ultimaNotificacao && \Carbon\Carbon::parse($ultimaNotificacao)->diffInHours(now()) < 24) {
+            return redirect()->back()->with('error', 'Aguarde pelo menos 24 horas para enviar um novo lembrete a este revisor.');
+        }
+
+        // 1. Enviar o E-mail
+        Mail::to($revisor->user->email)->send(new LembreteRevisaoMail($revisor->user, $submissao));
+
+        // 2. Atualiza a flag na pivot com o horário exato do envio
+        $submissao->revisoresAtribuidos()->updateExistingPivot($revisorId, [
+            'ultima_notificacao_em' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return redirect()->back()->with('success', "Lembrete enviado com sucesso para {$revisor->user->name}!");
     }
 }

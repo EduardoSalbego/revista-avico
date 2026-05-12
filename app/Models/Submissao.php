@@ -18,7 +18,20 @@ class Submissao extends Model
         'arquivo_docx',
         'status',
         'observacoes',
+        'deadline',
     ];
+
+    protected $casts = [
+        'deadline' => 'datetime',
+    ];
+
+    /**
+     * Relacionamento que retorna o usuário dono da submissão
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     /**
      * Relacionamento que retorna o autor principal.
@@ -52,7 +65,7 @@ class Submissao extends Model
             'submissao_revisor',
             'submissao_id',
             'revisor_id'
-        )->withPivot('atribuido_em', 'status')->withTimestamps();
+        )->withPivot('atribuido_em', 'status', 'ultima_notificacao_em')->withTimestamps();
     }
 
     public function pareceres()

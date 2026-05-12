@@ -22,6 +22,7 @@ class SubmissoesSeeder extends Seeder
                 'arquivo_pdf' => 'storage/artigos/exemplo.pdf',
                 'arquivo_docx' => null,
                 'status' => 'em_revisao',
+                'deadline' => now()->addDays(60),
             ]);
 
             DB::table('submissao_autor')->insert([

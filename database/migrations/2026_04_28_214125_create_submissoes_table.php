@@ -30,6 +30,7 @@ class CreateSubmissoesTable extends Migration
                 'major_review',
             ])->default('submetido');
             $table->text('observacoes')->nullable();
+            $table->timestamp('deadline')->nullable();
             $table->timestamps();
         });
 

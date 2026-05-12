@@ -69,6 +69,7 @@ class SubmissaoController extends Controller
             'cover_letter' => $request->cover_letter,
             'arquivo_pdf' => $caminhoPdf,
             'status' => 'submetido',
+            'deadline' => now()->addDays(60),
         ]);
 
         DB::table('submissao_autor')->insert([
