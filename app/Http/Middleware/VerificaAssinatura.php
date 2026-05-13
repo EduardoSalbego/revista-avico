@@ -14,7 +14,7 @@ class VerificaAssinatura
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (Auth::user()->isAdmin() || Auth::user()->isEditor()) {
+        if (Auth::check() && (Auth::user()->isAdmin() || Auth::user()->isEditor())) {
             return $next($request);
         }
         // Pega o id da edição pela rota (/edicoes/{id})
