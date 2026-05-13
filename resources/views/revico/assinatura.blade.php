@@ -181,7 +181,7 @@
             setTimeout(function () {
                 btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processando...';
                 btn.classList.add('disabled');
-            }, 50);
+            }, 300);
         }
     </script>
 </body>

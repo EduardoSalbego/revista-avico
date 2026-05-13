@@ -31,12 +31,15 @@ class AssinaturaController extends Controller
             ? Carbon::parse($user->assinante_ate)
             : now();
 
+        $novaData = $dataBase->copy()->addMonths($meses);
+
         $user->update([
-            'assinante_ate' => $dataBase->addMonths($meses)
+            'assinante_ate' => $novaData
         ]);
+        
         $detalhes = [
             'plano' => $request->plano,
-            'validade' => $user->assinante_ate->format('d/m/Y'),
+            'validade' => $novaData->format('d/m/Y'),
         ];
 
         // Dispara o e-mail de pagamento aprovado

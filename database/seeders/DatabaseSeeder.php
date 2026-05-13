@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
             TemasSeeder::class,
             EdicoesSeeder::class,
             SubmissoesSeeder::class,
+            ArtigosSeeder::class,
         ]);
     }
 }

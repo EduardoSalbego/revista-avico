@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Autor;
 
 use App\Http\Controllers\Controller;
+use App\Models\Artigo;
+use App\Models\Autor;
 use App\Models\Submissao;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
@@ -37,8 +39,13 @@ class SubmissaoController extends Controller
             'arquivo_pdf' => 'required|file|mimes:pdf|max:20480', // 20MB
 
             'autor_principal' => 'required|string|max:255',
-            'coautores' => 'nullable|array',
-            'coautores.*' => 'nullable|string|max:255',
+            'instituicao_principal' => 'required|string|max:255',
+
+            // Dados dos Coautores
+            'coautores_nomes' => 'nullable|array',
+            'coautores_nomes.*' => 'nullable|string|max:255',
+            'coautores_instituicoes' => 'nullable|array',
+            'coautores_instituicoes.*' => 'nullable|string|max:255',
 
             'revisores_sugeridos' => 'nullable|array|max:4',
             'revisores_sugeridos.*.revisor_id' => [
@@ -77,21 +84,26 @@ class SubmissaoController extends Controller
         DB::table('submissao_autor')->insert([
             'submissao_id' => $submissao->id,
             'nome' => $request->autor_principal,
+            'instituicao' => $request->instituicao_principal,
             'autor_principal' => true,
             'ordem' => 1,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
-        if ($request->has('coautores') && is_array($request->coautores)) {
+        if ($request->has('coautores_nomes') && is_array($request->coautores_nomes)) {
             $ordem = 2;
             $coautoresData = [];
 
-            foreach ($request->coautores as $coautorNome) {
+            foreach ($request->coautores_nomes as $index => $coautorNome) {
                 if (!empty(trim($coautorNome))) {
+                    $instituicaoCoautor = isset($request->coautores_instituicoes[$index])
+                        ? trim($request->coautores_instituicoes[$index])
+                        : null;
                     $coautoresData[] = [
                         'submissao_id' => $submissao->id,
                         'nome' => trim($coautorNome),
+                        'instituicao' => $instituicaoCoautor,
                         'autor_principal' => false,
                         'ordem' => $ordem++,
                         'created_at' => now(),
@@ -125,23 +137,47 @@ class SubmissaoController extends Controller
             ->with('success', 'Artigo submetido com sucesso! Acompanhe o status aqui.');
     }
 
-    // Upload do DOCX final (só disponível quando status = aceito)
-    public function enviarDocx(Request $request, $id)
+    // Upload do PDF final
+    public function enviarPublicacao(Request $request, $id)
     {
-        $submissao = Submissao::where('user_id', Auth::id())->findOrFail($id);
+        $submissao = Submissao::where('id', $id)->first();
 
-        if (!$submissao->isAceito()) {
-            return back()->withErrors(['arquivo_docx' => 'Esta submissão não está apta para envio de versão final.']);
+        if ($submissao->artigoEnviado()) {
+            return back()->withErrors(['arquivo_pdf' => 'Esta submissão não está apta para envio de versão final.']);
         }
 
         $request->validate([
-            'arquivo_docx' => 'required|file|mimes:docx,doc|max:20480',
+            'arquivo_pdf' => 'required|file|mimes:pdf|max:20480',
+            'doi' => ['nullable', 'string', 'max:255'],
+            'palavras_chave' => ['required', 'array', 'size:5'],
+            'palavras_chave.*' => ['required', 'string', 'max:100'],
+            'referencias' => ['required', 'array', 'min:1'],
+            'referencias.*' => ['required', 'string', 'max:1000'],
+
         ]);
 
-        $caminhoDocx = $request->file('arquivo_docx')
-            ->store('submissoes/docx', 'public');
+        $caminhoPdf = $request->file('arquivo_pdf')
+            ->store('submissoes/pdf', 'public');
 
-        $submissao->update(['arquivo_docx' => $caminhoDocx]);
+        $autor = Autor::firstOrCreate(['user_id' => $submissao->user_id]);
+        Artigo::create([
+            'edicao_id' => null,
+            'submissao_id' => $id,
+            'titulo' => $submissao->titulo,
+            'autor_id' => $autor->id,
+            'resumo' => $submissao->resumo,
+            'arquivo_pdf' => $caminhoPdf,
+            'doi' => $request['doi'] ?? null,
+            'palavras_chave' => $request['palavras_chave'],
+            'referencias' => array_values(
+                array_filter(
+                    $request['referencias'],
+                    fn($r) => strlen(trim($r)) > 0
+                )
+            ),
+
+
+        ]);
 
         return back()->with('success', 'Versão final enviada! O editor irá incorporá-la na próxima edição.');
     }

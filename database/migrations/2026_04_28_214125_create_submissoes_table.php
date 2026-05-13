@@ -28,6 +28,7 @@ class CreateSubmissoesTable extends Migration
                 'aceito',
                 'rejeitado',
                 'major_review',
+                'revisao_pontual',
             ])->default('submetido');
             $table->text('observacoes')->nullable();
             $table->timestamp('deadline')->nullable();

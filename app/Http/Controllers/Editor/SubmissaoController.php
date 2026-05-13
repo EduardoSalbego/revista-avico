@@ -67,77 +67,41 @@ class SubmissaoController extends Controller
     // Atribuir revisores à submissão
     public function atribuir(Request $request, int $id): RedirectResponse
     {
-        $submissao = Submissao::with(['pareceres', 'revisoresAtribuidos'])->findOrFail($id);
-
-        // IDs de revisores que já concluíram parecer — não podem ser alterados
-        $bloqueados = $submissao->pareceres
-            ->filter(fn($p) => !is_null($p->decisao))
-            ->pluck('revisor_id')
-            ->toArray();
+        $submissao = Submissao::findOrFail($id);
 
         $request->validate([
             'revisores' => ['required', 'array', 'min:3', 'max:4'],
             'revisores.*' => ['integer', 'exists:revisores,id'],
         ]);
 
-        $novaEquipe = collect($request->revisores)->map(fn($i) => (int) $i);
+        $revisores = $request->revisores ?? [];
 
-        // Garante que os bloqueados estão sempre presentes
-        foreach ($bloqueados as $bid) {
-            if (!$novaEquipe->contains($bid)) {
-                return back()->withErrors([
-                    'revisores' => "O revisor #$bid já concluiu o parecer e não pode ser removido.",
-                ]);
-            }
+        // cria parecer para cada revisor (se ainda não existir)
+        foreach ($revisores as $revisorId) {
+            $submissao->revisoresAtribuidos()->attach($revisorId);
+
+            $revisor = Revisor::find($revisorId);
+            Mail::to($revisor->user->email)->send(new NovaAtribuicaoRevisorMail($revisor->user, $submissao));
+
+            Parecer::firstOrCreate(
+                [
+                    'submissao_id' => $submissao->id,
+                    'revisor_id' => $revisorId,
+                ],
+                [
+                    'aceito_tarefa' => null,
+                    'decisao' => null,
+                    'comentario' => null,
+                ]
+            );
         }
 
-        DB::transaction(function () use ($submissao, $novaEquipe, $bloqueados) {
+        // atualiza status
+        if ($submissao->isSubmetido() && !empty($request->revisores)) {
+            $submissao->update(['status' => 'em_revisao']);
+        }
 
-            $equipeAtual = $submissao->revisoresAtribuidos->pluck('id');
-
-            // Revisores a adicionar (não estavam antes)
-            $adicionar = $novaEquipe->diff($equipeAtual);
-
-            // Revisores a remover (estavam antes, não estão mais e NÃO são bloqueados)
-            $remover = $equipeAtual
-                ->diff($novaEquipe)
-                ->reject(fn($rid) => in_array($rid, $bloqueados));
-
-            // Remove pareceres pendentes dos removidos (que ainda não responderam)
-            if ($remover->isNotEmpty()) {
-                $submissao->pareceres()
-                    ->whereIn('revisor_id', $remover)
-                    ->whereNull('decisao') // só pendentes
-                    ->delete();
-
-                // Desvincula da tabela pivot
-                $submissao->revisoresAtribuidos()->detach($remover->toArray());
-            }
-
-            // Adiciona novos revisores, notifica e cria parecer inicial
-            foreach ($adicionar as $revisorId) {
-                $submissao->revisoresAtribuidos()->attach($revisorId);
-
-                $revisor = Revisor::find($revisorId);
-                Mail::to($revisor->user->email)->send(new NovaAtribuicaoRevisorMail($revisor->user, $submissao));
-
-                Parecer::firstOrCreate(
-                    [
-                        'submissao_id' => $submissao->id,
-                        'revisor_id' => $revisorId,
-                    ],
-                    [
-                        'aceito_tarefa' => null,
-                        'decisao' => null,
-                    ]
-                );
-            }
-
-            // Se a submissão ainda estava em 'submetido', avança o status
-            if ($submissao->status === 'submetido') {
-                $submissao->update(['status' => 'em_revisao']);
-            }
-        });
+        Mail::to($submissao->user->email)->send(new StatusSubmissaoAutorMail($submissao));
 
         return back()->with('success', 'Equipe de revisão atribuída com sucesso.');
     }

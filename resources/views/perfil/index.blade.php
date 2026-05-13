@@ -84,7 +84,7 @@
                             @php
                                 $perfilAcademico = $user->revisor ?? $user->autor;
                             @endphp
-                            @if($perfilAcademico)
+                            @if ($perfilAcademico)
                                 <hr class="mb-4">
                                 <h4 class="card-title mb-4">Dados Acadêmicos</h4>
 
@@ -93,14 +93,9 @@
                                     <label for="instituicao" class="form-label fw-bold">
                                         Instituição
                                     </label>
-                                    <input
-                                        type="text"
-                                        class="form-control"
-                                        id="instituicao"
-                                        name="instituicao"
+                                    <input type="text" class="form-control" id="instituicao" name="instituicao"
                                         placeholder="Universidade ou instituição de vínculo"
-                                        value="{{ old('instituicao', $perfilAcademico->instituicao) }}"
-                                    >
+                                        value="{{ old('instituicao', $perfilAcademico->instituicao) }}">
                                 </div>
 
                                 {{-- ORCID --}}
@@ -108,14 +103,9 @@
                                     <label for="orcid" class="form-label fw-bold">
                                         ORCID
                                     </label>
-                                    <input
-                                        type="text"
-                                        class="form-control"
-                                        id="orcid"
-                                        name="orcid"
+                                    <input type="text" class="form-control" id="orcid" name="orcid"
                                         placeholder="0000-0000-0000-0000"
-                                        value="{{ old('orcid', $perfilAcademico->orcid) }}"
-                                    >
+                                        value="{{ old('orcid', $perfilAcademico->orcid) }}">
                                 </div>
 
                                 {{-- Lattes --}}
@@ -123,30 +113,20 @@
                                     <label for="lattes_url" class="form-label fw-bold">
                                         URL do Currículo Lattes
                                     </label>
-                                    <input
-                                        type="url"
-                                        class="form-control"
-                                        id="lattes_url"
-                                        name="lattes_url"
+                                    <input type="url" class="form-control" id="lattes_url" name="lattes_url"
                                         placeholder="https://lattes.cnpq.br/..."
-                                        value="{{ old('lattes_url', $perfilAcademico->lattes_url) }}"
-                                    >
+                                        value="{{ old('lattes_url', $perfilAcademico->lattes_url) }}">
                                 </div>
 
                                 {{-- Titulação apenas para revisor --}}
-                                @if($user->revisor)
+                                @if ($user->revisor)
                                     <div class="mb-4">
                                         <label for="titulacao" class="form-label fw-bold">
                                             Titulação
                                         </label>
-                                        <input
-                                            type="text"
-                                            class="form-control"
-                                            id="titulacao"
-                                            name="titulacao"
+                                        <input type="text" class="form-control" id="titulacao" name="titulacao"
                                             placeholder="Doutor em Saúde Pública"
-                                            value="{{ old('titulacao', $user->revisor->titulacao) }}"
-                                        >
+                                            value="{{ old('titulacao', $user->revisor->titulacao) }}">
                                     </div>
                                 @endif
                             @endif
@@ -168,7 +148,7 @@
                         <div class="mb-4">
                             <h6 class="text-white-50 text-uppercase mb-2">Funções no Sistema</h6>
                             <div class="d-flex flex-wrap gap-2">
-                                @foreach($user->funcoes as $funcao)
+                                @foreach ($user->funcoes as $funcao)
                                     <span class="badge {{ $funcao['classe'] }} fs-6">
                                         <i class="{{ $funcao['icone'] }} me-1"></i>
                                         {{ $funcao['nome'] }}
@@ -177,43 +157,45 @@
                             </div>
                             @php
                                 $funcoesDisponiveis = array_filter([
-                                    'autor'   => !$user->autor,
+                                    'autor' => !$user->autor,
                                     'revisor' => !$user->revisor,
-                                    'leitor'  => !$user->leitor,
+                                    'leitor' => !$user->leitor,
                                 ]);
                             @endphp
                             {{-- BOTÃO ADICIONAR FUNÇÃO --}}
-                            @if(!empty($funcoesDisponiveis))
-                                <button
-                                    type="button"
-                                    class="btn btn-light w-100 fw-bold text-primary mt-3"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#modalAdicionarFuncao"
-                                >
+                            @if (!empty($funcoesDisponiveis))
+                                <button type="button" class="btn btn-light w-100 fw-bold text-primary mt-3"
+                                    data-bs-toggle="modal" data-bs-target="#modalAdicionarFuncao">
                                     <i class="fas fa-plus-circle me-2"></i>
                                     Adicionar Nova Função
                                 </button>
                             @endif
                         </div>
 
-                        <div class="mb-4">
+                        <div
+                            class="mb-4 text-center d-flex flex-column justify-content-center align-items-center h-100">
                             <h6 class="text-white-50 text-uppercase mb-1">Assinatura ReVICO</h6>
-                            @if($user->assinante_ate && \Carbon\Carbon::parse($user->assinante_ate)->isFuture())
-                                <p class="fs-5 fw-bold text-warning mb-0">
+
+                            @if ($user->isAssinante())
+                                <p class="fs-5 fw-bold mb-0">
                                     <i class="fas fa-crown me-2"></i> Ativa
                                 </p>
+
                                 <small class="text-light">
                                     Válida até {{ \Carbon\Carbon::parse($user->assinante_ate)->format('d/m/Y') }}
                                 </small>
                             @else
                                 <p class="fs-5 fw-bold text-light mb-0">Inativa</p>
-                                <small class="text-light">Você não possui um plano ativo.</small>
+
+                                <small class="text-light">
+                                    Você não possui um plano ativo.
+                                </small>
                             @endif
                         </div>
 
                         <div class="mt-auto pt-4">
                             <a href="{{ route('assinar') }}" class="btn btn-light w-100 fw-bold text-primary">
-                                {{ ($user->assinante_ate && \Carbon\Carbon::parse($user->assinante_ate)->isFuture())
+                                {{ $user->assinante_ate && \Carbon\Carbon::parse($user->assinante_ate)->isFuture()
                                     ? 'Renovar / Estender Plano'
                                     : 'Assinar Agora' }}
                             </a>
@@ -228,40 +210,40 @@
                 <p class="text-muted mb-4">Edite seus temas de interesse para cada função.</p>
 
                 {{-- ── Autor ── --}}
-                @if($user->autor)
+                @if ($user->autor)
                     @include('perfil._funcao_card', [
-                        'tipo'      => 'autor',
-                        'titulo'    => 'Autor',
-                        'icone'     => 'fas fa-pen-nib',
-                        'badge'     => 'bg-success',
-                        'modelo'    => $user->autor,
-                        'temas'     => $temas,
+                        'tipo' => 'autor',
+                        'titulo' => 'Autor',
+                        'icone' => 'fas fa-pen-nib',
+                        'badge' => 'bg-success',
+                        'modelo' => $user->autor,
+                        'temas' => $temas,
                         'temasSelecionados' => $user->autor->temas->pluck('id')->toArray(),
                     ])
                 @endif
 
                 {{-- ── Revisor ── --}}
-                @if($user->revisor)
+                @if ($user->revisor)
                     @include('perfil._funcao_card', [
-                        'tipo'      => 'revisor',
-                        'titulo'    => 'Revisor',
-                        'icone'     => 'fas fa-search',
-                        'badge'     => 'bg-info text-dark',
-                        'modelo'    => $user->revisor,
-                        'temas'     => $temas,
+                        'tipo' => 'revisor',
+                        'titulo' => 'Revisor',
+                        'icone' => 'fas fa-search',
+                        'badge' => 'bg-info text-dark',
+                        'modelo' => $user->revisor,
+                        'temas' => $temas,
                         'temasSelecionados' => $user->revisor->temas->pluck('id')->toArray(),
                     ])
                 @endif
 
                 {{-- ── Leitor ── --}}
-                @if($user->leitor)
+                @if ($user->leitor)
                     @include('perfil._funcao_card', [
-                        'tipo'      => 'leitor',
-                        'titulo'    => 'Leitor',
-                        'icone'     => 'fas fa-book-open',
-                        'badge'     => 'bg-secondary',
-                        'modelo'    => $user->leitor,
-                        'temas'     => $temas,
+                        'tipo' => 'leitor',
+                        'titulo' => 'Leitor',
+                        'icone' => 'fas fa-book-open',
+                        'badge' => 'bg-secondary',
+                        'modelo' => $user->leitor,
+                        'temas' => $temas,
                         'temasSelecionados' => $user->leitor->temas->pluck('id')->toArray(),
                     ])
                 @endif
@@ -286,10 +268,10 @@
                         {{-- Seleção de função ── --}}
                         <p class="section-divider">Escolha a função</p>
                         <div class="row g-2 mb-3">
-                            @if(!$user->leitor)
+                            @if (!$user->leitor)
                                 <div class="col-4">
-                                    <input type="radio" class="btn-check" name="perfil"
-                                        id="m-leitor" value="leitor">
+                                    <input type="radio" class="btn-check" name="perfil" id="m-leitor"
+                                        value="leitor">
                                     <label class="role-label w-100 text-start p-2" for="m-leitor">
                                         <div class="fw-bold mb-1">📖 Leitor</div>
                                         <small class="text-muted">Acesse e comente as edições.</small>
@@ -297,10 +279,10 @@
                                 </div>
                             @endif
 
-                            @if(!$user->autor)
+                            @if (!$user->autor)
                                 <div class="col-4">
-                                    <input type="radio" class="btn-check" name="perfil"
-                                        id="m-autor" value="autor">
+                                    <input type="radio" class="btn-check" name="perfil" id="m-autor"
+                                        value="autor">
                                     <label class="role-label w-100 text-start p-2" for="m-autor">
                                         <div class="fw-bold mb-1">✍️ Autor</div>
                                         <small class="text-muted">Submeta artigos para publicação.</small>
@@ -308,10 +290,10 @@
                                 </div>
                             @endif
 
-                            @if(!$user->revisor)
+                            @if (!$user->revisor)
                                 <div class="col-4">
-                                    <input type="radio" class="btn-check" name="perfil"
-                                        id="m-revisor" value="revisor">
+                                    <input type="radio" class="btn-check" name="perfil" id="m-revisor"
+                                        value="revisor">
                                     <label class="role-label w-100 text-start p-2" for="m-revisor">
                                         <div class="fw-bold mb-1">🔍 Revisor</div>
                                         <small class="text-muted">Avalie artigos submetidos.</small>
@@ -385,15 +367,13 @@
                         </div>
 
                         {{-- Temas ── --}}
-                        @if($temas->isNotEmpty())
+                        @if ($temas->isNotEmpty())
                             <hr>
                             <p class="section-divider">Temas de interesse</p>
                             <div>
-                                @foreach($temas as $tema)
-                                    <input type="checkbox" class="tema-checkbox"
-                                        name="temas[]"
-                                        id="m-tema-{{ $tema->id }}"
-                                        value="{{ $tema->id }}">
+                                @foreach ($temas as $tema)
+                                    <input type="checkbox" class="tema-checkbox" name="temas[]"
+                                        id="m-tema-{{ $tema->id }}" value="{{ $tema->id }}">
                                     <label for="m-tema-{{ $tema->id }}" class="tema-pill">
                                         {{ $tema->nome }}
                                     </label>
@@ -418,41 +398,42 @@
     @include('layouts.footer')
 
     <script>
-    (() => {
-        // ── Modal: campos dinâmicos por função selecionada ──
-        const mFieldsAutor   = document.getElementById('m-fields-autor');
-        const mFieldsRevisor = document.getElementById('m-fields-revisor');
-        const mAvisoRevisor  = document.getElementById('m-aviso-revisor');
+        (() => {
+            // ── Modal: campos dinâmicos por função selecionada ──
+            const mFieldsAutor = document.getElementById('m-fields-autor');
+            const mFieldsRevisor = document.getElementById('m-fields-revisor');
+            const mAvisoRevisor = document.getElementById('m-aviso-revisor');
 
-        function updateModalFields() {
-            const val = document.querySelector('input[name="perfil"]:checked')?.value;
+            function updateModalFields() {
+                const val = document.querySelector('input[name="perfil"]:checked')?.value;
 
-            mFieldsAutor?.classList.remove('visible');
-            mFieldsRevisor?.classList.remove('visible');
-            if (mAvisoRevisor) mAvisoRevisor.style.display = 'none';
+                mFieldsAutor?.classList.remove('visible');
+                mFieldsRevisor?.classList.remove('visible');
+                if (mAvisoRevisor) mAvisoRevisor.style.display = 'none';
 
-            if (val === 'autor')   mFieldsAutor?.classList.add('visible');
-            if (val === 'revisor') {
-                mFieldsRevisor?.classList.add('visible');
-                if (mAvisoRevisor) mAvisoRevisor.style.display = 'block';
+                if (val === 'autor') mFieldsAutor?.classList.add('visible');
+                if (val === 'revisor') {
+                    mFieldsRevisor?.classList.add('visible');
+                    if (mAvisoRevisor) mAvisoRevisor.style.display = 'block';
+                }
             }
-        }
 
-        document.querySelectorAll('input[name="perfil"]').forEach(r => {
-            r.addEventListener('change', updateModalFields);
-        });
+            document.querySelectorAll('input[name="perfil"]').forEach(r => {
+                r.addEventListener('change', updateModalFields);
+            });
 
-        // Reset modal ao fechar
-        document.getElementById('modalAdicionarFuncao')?.addEventListener('hidden.bs.modal', () => {
-            document.querySelectorAll('input[name="perfil"]').forEach(r => r.checked = false);
-            document.querySelectorAll('.tema-checkbox').forEach(c => c.checked = false);
-            mFieldsAutor?.classList.remove('visible');
-            mFieldsRevisor?.classList.remove('visible');
-            if (mAvisoRevisor) mAvisoRevisor.style.display = 'none';
-        });
+            // Reset modal ao fechar
+            document.getElementById('modalAdicionarFuncao')?.addEventListener('hidden.bs.modal', () => {
+                document.querySelectorAll('input[name="perfil"]').forEach(r => r.checked = false);
+                document.querySelectorAll('.tema-checkbox').forEach(c => c.checked = false);
+                mFieldsAutor?.classList.remove('visible');
+                mFieldsRevisor?.classList.remove('visible');
+                if (mAvisoRevisor) mAvisoRevisor.style.display = 'none';
+            });
 
-    })();
+        })();
     </script>
 
 </body>
+
 </html>

@@ -17,6 +17,7 @@ class CreateSubmissaoAutorTable extends Migration
             $table->id();
             $table->foreignId('submissao_id')->constrained('submissoes')->cascadeOnDelete();
             $table->string('nome', 255);
+            $table->string('instituicao')->nullable();
             $table->boolean('autor_principal')->default(false);
             $table->integer('ordem')->nullable(); // 1º autor, 2º autor, etc.
             $table->timestamps();

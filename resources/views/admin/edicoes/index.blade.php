@@ -23,9 +23,11 @@
                             <th>ID</th>
                             <th>Capa</th>
                             <th>Título</th>
-                            <th>Autor</th>
-                            <th>Capítulos</th>
+                            <th>Organizador</th>
+                            <th>Artigos</th>
                             <th>Status</th>
+                            <th>Acesso</th>
+                            <th>Comentários</th>
                             <th>Data de Publicação</th>
                             <th class="text-center">Ações</th>
                         </tr>
@@ -42,8 +44,15 @@
                                     {{ $edicao->titulo }}
                                 </td>
                                 <td>{{ $edicao->autor }}</td>
-                                <td>ㅤㅤ{{ $edicao->capitulos()->count() }}</td>
-                                <td>{!! $edicao->getStatusBadgeHtmlAttribute() !!}</td>
+                                <td>{{ $edicao->capitulos()->count() }}</td>
+                                <td>{!! $edicao->status_badge_html !!}</td>
+                                <td>{!! $edicao->tipo_acesso_badge_html !!}</td>
+                                <td>
+                                    @if($edicao->permitir_comentarios)
+                                        <span class="badge bg-success">Liberados</span>
+                                    @else
+                                        <span class="badge bg-secondary">Bloqueados</span>
+                                    @endif
                                 </td>
                                 <td>{{ \Carbon\Carbon::parse($edicao->created_at)->format('d/m/Y') }}</td>
                                 <td class="text-center">
@@ -69,7 +78,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="text-center py-4 text-muted">
+                                <td colspan="10" class="text-center py-4 text-muted">
                                     Nenhuma edição publicada ainda.
                                 </td>
                             </tr>

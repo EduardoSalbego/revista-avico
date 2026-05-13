@@ -12,37 +12,32 @@ class EdicoesSeeder extends Seeder
     {
         Edicao::create([
             'titulo' => 'Edição 1',
-            'autor' => 'Eduardo Salbego',
+            'organizador' => 'Eduardo Salbego',
             'imagem_capa' => 'capas/1777319486_Mínimo Montanhas Viagem Revista.jpg',
+            'resumo' => 'A Revista Científica Online REVICO reúne artigos científicos selecionados e publicados em fluxo contínuo, contemplando pesquisas, relatos de experiência e trabalhos acadêmicos desenvolvidos em diferentes áreas do conhecimento. A revista tem como objetivo promover a divulgação científica, incentivar a produção acadêmica e ampliar o acesso ao conhecimento por meio de uma plataforma digital acessível e colaborativa.
+
+Os trabalhos publicados na REVICO passam por um processo de avaliação por pares, garantindo a qualidade, relevância e contribuição científica das produções aprovadas. A revista busca integrar pesquisadores, estudantes, docentes e profissionais, fortalecendo o intercâmbio de ideias e a construção coletiva do conhecimento científico.
+
+Esta edição reúne artigos desenvolvidos por autores de diferentes instituições de ensino e pesquisa, abordando temas contemporâneos e multidisciplinares. Os manuscritos publicados foram submetidos, avaliados e revisados conforme as diretrizes editoriais da revista, incluindo etapas de revisão técnica e científica antes da publicação final.',
+            'tipo_acesso' => 'publica',
+            'permitir_comentarios' => true,
             'status' => 'publicado',
+            'data_publicacao'=> now()->subDays(30),
         ]);
 
-        Capitulo::create([
-            'edicao_id' => 1,
-            'titulo' => 'Capítulo 1',
-            'ordem' => 1,
-            'conteudo_html' => '<h2>Edi&ccedil;&atilde;o Especial: Sa&uacute;de em Tempos de COVID-19</h2>
-<h3>Cuidar de si nunca foi t&atilde;o essencial</h3>
-<p>A pandemia de COVID-19 transformou profundamente a maneira como lidamos com a sa&uacute;de, o trabalho e as rela&ccedil;&otilde;es humanas. Mais do que uma crise sanit&aacute;ria, esse per&iacute;odo evidenciou a import&acirc;ncia de h&aacute;bitos saud&aacute;veis, do cuidado emocional e do acesso &agrave; informa&ccedil;&atilde;o confi&aacute;vel. Nesta edi&ccedil;&atilde;o, reunimos reflex&otilde;es e orienta&ccedil;&otilde;es para atravessar esse cen&aacute;rio com mais consci&ecirc;ncia e equil&iacute;brio.</p>
-<h3>Entendendo a COVID-19 hoje</h3>
-<p>Desde os primeiros casos registrados, muita coisa mudou. O avan&ccedil;o das vacinas, a adapta&ccedil;&atilde;o dos sistemas de sa&uacute;de e o maior conhecimento sobre o v&iacute;rus trouxeram mais seguran&ccedil;a para a popula&ccedil;&atilde;o. Ainda assim, a COVID-19 continua sendo uma doen&ccedil;a relevante, especialmente para grupos de risco, como idosos e pessoas com comorbidades.</p>
-<p>Mesmo em um cen&aacute;rio mais controlado, medidas simples como higienizar as m&atilde;os, manter ambientes ventilados e respeitar o isolamento em caso de sintomas continuam sendo fundamentais para evitar a propaga&ccedil;&atilde;o.</p>
-<h3>Sa&uacute;de mental: o impacto silencioso da pandemia</h3>
-<p>Se por um lado o v&iacute;rus afetou o corpo, por outro, a pandemia deixou marcas profundas na sa&uacute;de mental. Ansiedade, estresse e sensa&ccedil;&atilde;o de isolamento tornaram-se comuns durante per&iacute;odos de distanciamento social.</p>
-<p>Cuidar da mente &eacute; t&atilde;o importante quanto cuidar do corpo. Manter uma rotina equilibrada, buscar momentos de lazer e, quando necess&aacute;rio, procurar ajuda profissional s&atilde;o atitudes essenciais para preservar o bem-estar emocional.</p>
-<h3>A import&acirc;ncia da vacina&ccedil;&atilde;o</h3>
-<p>A vacina&ccedil;&atilde;o foi um dos maiores marcos no combate &agrave; COVID-19. Ela n&atilde;o apenas reduz a gravidade da doen&ccedil;a, como tamb&eacute;m contribui para a prote&ccedil;&atilde;o coletiva.</p>
-<p>Manter o calend&aacute;rio vacinal atualizado &eacute; uma forma de cuidado individual e tamb&eacute;m um ato de responsabilidade social. Quanto maior a cobertura vacinal, menores s&atilde;o as chances de surgirem novas variantes preocupantes.</p>
-<h3>H&aacute;bitos saud&aacute;veis para fortalecer a imunidade</h3>
-<p>Durante a pandemia, ficou ainda mais evidente o papel do estilo de vida na sa&uacute;de. Alimenta&ccedil;&atilde;o equilibrada, pr&aacute;tica regular de exerc&iacute;cios f&iacute;sicos e boas noites de sono s&atilde;o pilares que ajudam o organismo a se manter forte.</p>
-<p>Al&eacute;m disso, reduzir o consumo de &aacute;lcool, evitar o tabagismo e manter-se hidratado s&atilde;o atitudes que fazem diferen&ccedil;a tanto na preven&ccedil;&atilde;o quanto na recupera&ccedil;&atilde;o de doen&ccedil;as.</p>
-<h3>O futuro da sa&uacute;de p&oacute;s-pandemia</h3>
-<p>A pandemia acelerou mudan&ccedil;as importantes, como o uso da telemedicina e a valoriza&ccedil;&atilde;o da ci&ecirc;ncia. O aprendizado adquirido nesse per&iacute;odo pode contribuir para um sistema de sa&uacute;de mais preparado e acess&iacute;vel.</p>
-<p>O desafio agora &eacute; transformar as li&ccedil;&otilde;es vividas em a&ccedil;&otilde;es permanentes, promovendo uma cultura de preven&ccedil;&atilde;o e cuidado cont&iacute;nuo com a sa&uacute;de.</p>
-<h3>Conclus&atilde;o: um novo olhar para o cuidado</h3>
-<p>A COVID-19 deixou um legado que vai al&eacute;m da doen&ccedil;a. Ela nos ensinou sobre responsabilidade coletiva, a import&acirc;ncia da informa&ccedil;&atilde;o e o valor de cuidar de si e dos outros.</p>
-<p>Mais do que nunca, sa&uacute;de &eacute; um conceito amplo &mdash; que envolve corpo, mente e sociedade. E esse cuidado come&ccedil;a nas pequenas atitudes do dia a dia.</p>',
-        ]);
+        Edicao::create([
+            'titulo' => 'Edição 2',
+            'organizador' => 'Eduardo Salbego',
+            'imagem_capa' => 'capas/1777319486_Mínimo Montanhas Viagem Revista.jpg',
+            'resumo' => 'A Revista Científica Online REVICO reúne artigos científicos selecionados e publicados em fluxo contínuo, contemplando pesquisas, relatos de experiência e trabalhos acadêmicos desenvolvidos em diferentes áreas do conhecimento. A revista tem como objetivo promover a divulgação científica, incentivar a produção acadêmica e ampliar o acesso ao conhecimento por meio de uma plataforma digital acessível e colaborativa.
 
+Os trabalhos publicados na REVICO passam por um processo de avaliação por pares, garantindo a qualidade, relevância e contribuição científica das produções aprovadas. A revista busca integrar pesquisadores, estudantes, docentes e profissionais, fortalecendo o intercâmbio de ideias e a construção coletiva do conhecimento científico.
+
+Esta edição reúne artigos desenvolvidos por autores de diferentes instituições de ensino e pesquisa, abordando temas contemporâneos e multidisciplinares. Os manuscritos publicados foram submetidos, avaliados e revisados conforme as diretrizes editoriais da revista, incluindo etapas de revisão técnica e científica antes da publicação final.',
+            'tipo_acesso' => 'exclusiva',
+            'permitir_comentarios' => false,
+            'status' => 'publicado',
+            'data_publicacao' => now(),
+        ]);
     }
 }

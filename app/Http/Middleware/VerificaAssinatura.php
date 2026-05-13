@@ -1,29 +1,50 @@
 <?php
 
+// app/Http/Middleware/VerificaAssinatura.php
+
 namespace App\Http\Middleware;
 
+use App\Models\Edicao;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
+use Symfony\Component\HttpFoundation\Response;
 
 class VerificaAssinatura
 {
-    public function handle(Request $request, Closure $next)
+    public function handle(Request $request, Closure $next): Response
     {
-        $user = Auth::user();
-
-        if (!$user) {
-            return redirect()->route('login')->with('error', 'Você precisa fazer login para acessar a revista.');
-        }
-
-        if ($user->isAdmin()) {
+        if (Auth::user()->isAdmin() || Auth::user()->isEditor()) {
             return $next($request);
         }
+        // Pega o id da edição pela rota (/edicoes/{id})
+        $edicaoId = $request->route('id');
 
-        if (is_null($user->assinante_ate) || Carbon::parse($user->assinante_ate)->isPast()) {
-            
-            return redirect()->route('assinar')->with('warning', 'Acesso exclusivo para assinantes! Escolha um plano para apoiar a AVICO e continuar lendo.');
+        if ($edicaoId) {
+            $edicao = Edicao::findOrFail($edicaoId);
+
+            if ($edicao->tipo_acesso === 'publica') {
+                return $next($request);
+            }
+        }
+
+        // Edição exclusiva (ou id não resolvido): exige assinatura ativa
+        $user = $request->user();
+
+        $assinanteAtivo = $user
+            && $user->assinante_ate
+            && \Carbon\Carbon::parse($user->assinante_ate)->isFuture();
+
+        if (!$assinanteAtivo) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Esta edição é exclusiva para assinantes.'
+                ], 403);
+            }
+
+            return redirect()
+                ->route('assinar')
+                ->with('info', 'Esta edição é exclusiva para assinantes. Assine para ter acesso completo.');
         }
 
         return $next($request);

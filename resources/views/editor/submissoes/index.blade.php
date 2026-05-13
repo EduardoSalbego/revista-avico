@@ -122,12 +122,17 @@
                             <div>
                                 <h5 class="mb-1 text-primary">{{ $submissao->titulo }}</h5>
                                 <small class="text-muted">
-                                    Por <strong>{{ $submissao->autor->nome }}</strong>
+                                    Por <strong>{{ \App\Models\User::find($submissao->user_id)->name }}</strong>
                                     · {{ $submissao->created_at->format('d/m/Y') }}
                                 </small>
                             </div>
                             <div class="d-flex align-items-center gap-2">
-                                {!! $submissao->badgeStatus() !!}
+                                @if ($submissao->status === 'revisao_pontual')
+                                    <span class="badge bg-success">Aceito com Ressalvas</span>
+                                @else
+                                    {!! $submissao->badgeStatus() !!}
+                                @endif
+
                                 <a href="{{ asset('storage/' . $submissao->arquivo_pdf) }}" download
                                     class="btn btn-sm btn-outline-secondary">
                                     <i class="fas fa-download"></i> Baixar PDF
@@ -375,7 +380,7 @@
                                         <div class="d-flex align-items-center">
                                             <i class="fas fa-clipboard-check fs-4 me-3 text-success"></i>
                                             <div>
-                                                <strong>Revisoes concluidas</strong><br>
+                                                <strong>Revisões concluídas</strong><br>
                                                 <span class="small text-muted">Todos os revisores enviaram seus
                                                     pareceres.</span>
                                             </div>
@@ -431,7 +436,7 @@
                                                             class="form-label small fw-bold text-muted mb-1">Feedback
                                                             ao Autor</label>
                                                         <textarea name="observacoes" class="form-control shadow-sm" rows="4"
-                                                            placeholder="Sintetize os pareceres e justifique a decisao editorial..."></textarea>
+                                                            placeholder="Sintetize os pareceres e justifique a decisao editorial..." required></textarea>
                                                     </div>
                                                     <div class="col-md-4">
                                                         <label
@@ -442,7 +447,7 @@
                                                             <option value="aceito">Aceitar</option>
                                                             <option value="rejeitado">Rejeitar</option>
                                                             <option value="major_review">Major Review</option>
-                                                            <option value="minor_review">Revisao Pontual</option>
+                                                            <option value="revisao_pontual">Revisao Pontual</option>
                                                         </select>
                                                     </div>
                                                     <div class="col-md-8 d-flex align-items-end justify-content-end">
@@ -458,31 +463,26 @@
                                 @endif
                             @endif
 
-                            {{-- Observacoes salvas --}}
+                            {{-- Observações salvas --}}
                             @if ($submissao->observacoes)
-                                <div class="alert alert-light border py-2 mb-0 mt-3">
-                                    <small class="fw-semibold text-danger">
-                                        <i class="fas fa-exclamation-circle"></i> Observacao registrada:
-                                    </small>
-                                    <p class="mb-0 small mt-1">{{ $submissao->observacoes }}</p>
-                                </div>
-                            @endif
+                                <div class="mt-3">
+                                    <button class="btn btn-sm btn-outline-secondary" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#observacao{{ $submissao->id }}"
+                                        aria-expanded="false" aria-controls="observacao{{ $submissao->id }}">
+                                        <i class="bi bi-chat-left-text"></i>
+                                        Ver observação
+                                    </button>
 
-                            {{-- DOCX --}}
-                            @if ($submissao->isAceito() && $submissao->arquivo_docx)
-                                <div
-                                    class="alert alert-success py-3 mt-3 mb-0 d-flex justify-content-between align-items-center shadow-sm border-0">
-                                    <span><i class="fas fa-file-word fs-5 me-2"></i><strong>Versao final em DOCX
-                                            disponivel</strong></span>
-                                    <a href="{{ asset('storage/' . $submissao->arquivo_docx) }}" download
-                                        class="btn btn-success px-4 shadow-sm">
-                                        Baixar Arquivo Final
-                                    </a>
-                                </div>
-                            @elseif($submissao->isAceito())
-                                <div class="alert alert-warning py-3 mt-3 mb-0 shadow-sm border-0">
-                                    <i class="fas fa-hourglass-half me-2"></i> Aguardando o autor enviar a versao final
-                                    em DOCX.
+                                    <div class="collapse mt-2" id="observacao{{ $submissao->id }}">
+                                        <div class="alert alert-light border py-2 mb-0">
+                                            <small class="fw-semibold text-black">
+                                                Observação registrada:
+                                            </small>
+                                            <p class="mb-0 small mt-1">
+                                                {{ $submissao->observacoes }}
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
                             @endif
                         @endif

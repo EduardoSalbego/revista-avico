@@ -12,6 +12,7 @@ class SubmissaoAutor extends Model
     protected $fillable = [
         'submissao_id',
         'nome',
+        'instituicao',
         'autor_principal',
         'ordem',
     ];

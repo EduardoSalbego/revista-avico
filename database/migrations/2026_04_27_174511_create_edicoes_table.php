@@ -16,9 +16,13 @@ class CreateEdicoesTable extends Migration
         Schema::create('edicoes', function (Blueprint $table) {
             $table->id();
             $table->string('titulo');
-            $table->string('autor');
+            $table->string('organizador');
             $table->string('imagem_capa');
+            $table->text('resumo')->nullable();
+            $table->enum('tipo_acesso', ['publica', 'exclusiva'])->default('publica');
+            $table->boolean('permitir_comentarios')->default(true);
             $table->enum('status', ['rascunho', 'publicado'])->default('rascunho');
+            $table->timestamp('data_publicacao')->nullable();
             $table->timestamps();
         });
     }

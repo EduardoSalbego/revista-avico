@@ -10,9 +10,17 @@ class Edicao extends Model
 
     protected $fillable = [
         'titulo',
-        'autor',
+        'organizador',
         'imagem_capa',
+        'resumo',
+        'tipo_acesso',
+        'permitir_comentarios',
         'status',
+        'data_publicacao',
+    ];
+
+    protected $casts = [
+        'permitir_comentarios' => 'boolean',
     ];
 
     //HAS MANY
@@ -38,6 +46,24 @@ class Edicao extends Model
         ];
 
         return $badges[$this->status] ?? '<span class="badge bg-secondary">Desconhecido</span>';
+    }
+
+    public function getTipoAcessoLabelAttribute()
+    {
+        return [
+            'publica' => 'Pública',
+            'exclusiva' => 'Exclusiva',
+        ][$this->tipo_acesso] ?? 'Pública';
+    }
+
+    public function getTipoAcessoBadgeHtmlAttribute()
+    {
+        $badges = [
+            'publica' => '<span class="badge bg-success">Pública</span>',
+            'exclusiva' => '<span class="badge bg-warning text-dark">Exclusiva</span>',
+        ];
+
+        return $badges[$this->tipo_acesso] ?? '<span class="badge bg-success">Pública</span>';
     }
 }
 ?>

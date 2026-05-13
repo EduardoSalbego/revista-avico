@@ -107,8 +107,9 @@
 
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Título do Artigo</label>
-                            <input type="text" class="form-control @error('titulo') is-invalid @enderror" name="titulo"
-                                value="{{ old('titulo') }}" placeholder="Título completo do artigo" required>
+                            <input type="text" class="form-control @error('titulo') is-invalid @enderror"
+                                name="titulo" value="{{ old('titulo') }}" placeholder="Título completo do artigo"
+                                required>
                             @error('titulo')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -124,50 +125,75 @@
                         </div>
                     </div>
                     {{-- ════════════════════════════════════
-                    AUTORES E COAUTORES
-                    ════════════════════════════════════ --}}
-                    <div class="card p-4 mb-4">
-                        <h5 class="mb-1">Autores do Artigo</h5>
-                        <p class="text-muted small mb-3">
-                            Informe o autor principal obrigatoriamente. Você também pode adicionar coautores caso o
-                            trabalho tenha sido feito em equipe.
+     AUTORES E COAUTORES
+     ════════════════════════════════════ --}}
+                    <div class="card p-4 mb-4 shadow-sm border-0">
+                        <h5 class="mb-1 text-primary"><i class="fas fa-users me-2"></i>Autores do Artigo</h5>
+                        <p class="text-muted small mb-4">
+                            Informe o autor principal obrigatoriamente. Você também pode adicionar coautores e suas
+                            respectivas instituições caso o trabalho tenha sido feito em equipe.
                         </p>
 
                         {{-- Autor Principal (Obrigatório) --}}
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold">Autor Principal <span
-                                    class="text-danger">*</span></label>
-                            <input type="text" class="form-control @error('autor_principal') is-invalid @enderror"
-                                name="autor_principal" value="{{ old('autor_principal') }}"
-                                placeholder="Nome completo do autor principal" required>
-                            @error('autor_principal')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                        <div class="row g-3 mb-4 border-bottom pb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Autor Principal <span
+                                        class="text-danger">*</span></label>
+                                <input type="text"
+                                    class="form-control @error('autor_principal') is-invalid @enderror"
+                                    name="autor_principal" value="{{ old('autor_principal') }}"
+                                    placeholder="Nome completo" required>
+                                @error('autor_principal')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Instituição <span
+                                        class="text-danger">*</span></label>
+                                <input type="text"
+                                    class="form-control @error('instituicao_principal') is-invalid @enderror"
+                                    name="instituicao_principal" value="{{ old('instituicao_principal') }}"
+                                    placeholder="Ex: Universidade Federal do Pampa (UNIPAMPA)" required>
+                                @error('instituicao_principal')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
                         </div>
 
                         {{-- Coautores (Opcional) --}}
                         <div class="mb-2">
-                            <label class="form-label fw-semibold">Coautores <span
+                            <label class="form-label fw-semibold mb-3">Coautores <span
                                     class="text-muted fw-normal">(Opcional)</span></label>
 
                             <div id="container-coautores">
-                                {{-- Recuperação de old('coautores') em caso de erro de validação --}}
-                                @if(old('coautores'))
-                                    @foreach(old('coautores') as $coautor)
-                                        <div class="input-group mb-2 coautor-row">
-                                            <input type="text" class="form-control" name="coautores[]" value="{{ $coautor }}"
-                                                placeholder="Nome completo do coautor">
-                                            <button class="btn btn-outline-danger" type="button" onclick="removerCoautor(this)">
-                                                <i class="bi bi-trash"></i> Remover
-                                            </button>
+                                {{-- Recuperação de old() em caso de erro de validação --}}
+                                @if (old('coautores_nomes'))
+                                    @foreach (old('coautores_nomes') as $index => $coautorNome)
+                                        <div class="row g-2 mb-2 coautor-row align-items-center">
+                                            <div class="col-md-5">
+                                                <input type="text" class="form-control" name="coautores_nomes[]"
+                                                    value="{{ $coautorNome }}" placeholder="Nome do coautor">
+                                            </div>
+                                            <div class="col-md-5">
+                                                <input type="text" class="form-control"
+                                                    name="coautores_instituicoes[]"
+                                                    value="{{ old('coautores_instituicoes')[$index] ?? '' }}"
+                                                    placeholder="Instituição">
+                                            </div>
+                                            <div class="col-md-2">
+                                                <button class="btn btn-outline-danger w-100" type="button"
+                                                    onclick="removerCoautor(this)">
+                                                    <i class="fas fa-trash"></i> Remover
+                                                </button>
+                                            </div>
                                         </div>
                                     @endforeach
                                 @endif
                             </div>
 
-                            <button type="button" class="btn btn-sm btn-outline-secondary mt-1"
+                            <button type="button" class="btn btn-sm btn-outline-primary mt-2 fw-bold"
                                 onclick="adicionarCoautor()">
-                                + Adicionar Coautor
+                                <i class="fas fa-plus"></i> Adicionar Coautor
                             </button>
                         </div>
                     </div>
@@ -194,9 +220,8 @@
                             e por que ele é adequado para a REVICO.
                         </p>
 
-                        <textarea class="form-control @error('cover_letter') is-invalid @enderror" name="cover_letter"
-                            rows="8" placeholder="Escreva sua carta de apresentação aqui..."
-                            required>{{ old('cover_letter') }}</textarea>
+                        <textarea class="form-control @error('cover_letter') is-invalid @enderror" name="cover_letter" rows="8"
+                            placeholder="Escreva sua carta de apresentação aqui..." required>{{ old('cover_letter') }}</textarea>
                         @error('cover_letter')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -342,7 +367,7 @@
             // ────────────────────────────────────────
             // Tabs
             // ────────────────────────────────────────
-            window.switchTab = function (tab, btn) {
+            window.switchTab = function(tab, btn) {
                 document.querySelectorAll('.revisor-tabs .nav-link')
                     .forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
@@ -360,7 +385,10 @@
             inputBusca.addEventListener('input', () => {
                 clearTimeout(debounce);
                 const q = inputBusca.value.trim();
-                if (q.length < 2) { resultados.style.display = 'none'; return; }
+                if (q.length < 2) {
+                    resultados.style.display = 'none';
+                    return;
+                }
                 debounce = setTimeout(() => buscar(q), 300);
             });
 
@@ -397,7 +425,8 @@
                     disponiveis.forEach(r => {
                         const btn = document.createElement('button');
                         btn.type = 'button';
-                        btn.className = 'list-group-item list-group-item-action d-flex justify-content-between align-items-center';
+                        btn.className =
+                            'list-group-item list-group-item-action d-flex justify-content-between align-items-center';
                         btn.innerHTML = `
                         <span>${r.nome ?? r.name}</span>
                         <span class="revisor-label-badge bg-primary text-white">Cadastrado</span>
@@ -418,7 +447,12 @@
                 if (lista.length >= MAX) return;
                 if (lista.some(r => r.tipo === 'sistema' && r.revisor_id === id)) return;
 
-                lista.push({ tipo: 'sistema', revisor_id: id, nome, email });
+                lista.push({
+                    tipo: 'sistema',
+                    revisor_id: id,
+                    nome,
+                    email
+                });
                 renderTags();
                 renderInputs();
 
@@ -430,7 +464,7 @@
             // ────────────────────────────────────────
             // Revisor externo (não cadastrado)
             // ────────────────────────────────────────
-            window.adicionarExterno = function () {
+            window.adicionarExterno = function() {
                 extErro.style.display = 'none';
                 const nome = extNome.value.trim();
                 const email = extEmail.value.trim();
@@ -449,7 +483,12 @@
                 }
                 if (lista.length >= MAX) return;
 
-                lista.push({ tipo: 'externo', revisor_id: null, nome, email });
+                lista.push({
+                    tipo: 'externo',
+                    revisor_id: null,
+                    nome,
+                    email
+                });
                 renderTags();
                 renderInputs();
 
@@ -538,12 +577,39 @@
                 inputBusca.disabled = cheio;
                 extNome.disabled = cheio;
                 extEmail.disabled = cheio;
-                inputBusca.placeholder = cheio
-                    ? 'Limite de 4 revisores atingido.'
-                    : 'Digite o nome do revisor...';
+                inputBusca.placeholder = cheio ?
+                    'Limite de 4 revisores atingido.' :
+                    'Digite o nome do revisor...';
             }
 
         })();
+
+        function adicionarCoautor() {
+            const container = document.getElementById('container-coautores');
+
+            const div = document.createElement('div');
+            div.classList.add('row', 'g-2', 'mb-2', 'coautor-row', 'align-items-center');
+
+            div.innerHTML = `
+            <div class="col-md-5">
+                <input type="text" class="form-control bg-white" name="coautores_nomes[]" placeholder="Nome do coautor" required>
+            </div>
+            <div class="col-md-5">
+                <input type="text" class="form-control bg-white" name="coautores_instituicoes[]" placeholder="Instituição" required>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-outline-danger w-100 fw-bold" type="button" onclick="removerCoautor(this)">
+                    <i class="fas fa-trash"></i> Remover
+                </button>
+            </div>
+        `;
+
+            container.appendChild(div);
+        }
+
+        function removerCoautor(botao) {
+            botao.closest('.coautor-row').remove();
+        }
     </script>
 
 </body>

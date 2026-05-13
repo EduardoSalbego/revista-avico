@@ -20,9 +20,11 @@
                             <a class="nav-link" href="{{ route('editor.edicoes.create') }}">nova edição</a>
                         </li>
                     @endif
-                    <li class="nav-item">
-                        <a class="nav-link" href="/assinar">assine</a>
-                    </li>
+                    @if (!Auth::user()->isAssinante())
+                        <li class="nav-item">
+                            <a class="nav-link" href="/assinar">assine</a>
+                        </li>
+                    @endif
 
 
                     <div class="dropdown">

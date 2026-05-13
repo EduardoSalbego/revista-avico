@@ -13,6 +13,7 @@ use App\Http\Controllers\Autor\SubmissaoController as AutorSubmissaoController;
 use App\Http\Controllers\Editor\SubmissaoController as EditorSubmissaoController;
 use App\Http\Controllers\RevisorBuscaController;
 use App\Http\Controllers\Revisor\ParecerController;
+use App\Http\Controllers\Artigo\ArtigoController;
 
 // ==========================================
 // 1. ROTAS PÚBLICAS
@@ -23,6 +24,15 @@ Route::get('/revista2', fn() => view('revista/revista'))->name('revista');
 
 Route::prefix('edicoes')->name('edicoes.')->group(function () {
     Route::get('/', [EdicaoController::class, 'index'])->name('index');
+    Route::get('/{id}', [EdicaoController::class, 'show'])
+        ->where('id', '[0-9]+')
+        ->middleware('assinatura')
+        ->name('show');
+});
+Route::prefix('artigo')->name('artigos.')->group(function () {
+    Route::get('/view/{id}', [ArtigoController::class, 'show'])->where('id', '[0-9]+')->name('show');
+    Route::get('/create', [ArtigoController::class, 'create'])->name('create');
+    Route::post('/store', [ArtigoController::class, 'store'])->name('store');
 });
 
 // Autenticação
@@ -37,14 +47,6 @@ Route::middleware('guest')->group(function () {
 // ==========================================
 // 2. ASSINANTES
 // ==========================================
-Route::middleware(['auth', 'assinatura'])->group(function () {
-    Route::prefix('edicoes')->name('edicoes.')->group(function () {
-        Route::get('/{id}', [EdicaoController::class, 'show'])
-            ->where('id', '[0-9]+')
-            ->name('show');
-    });
-});
-
 // ==========================================
 // 3. AUTENTICADAS
 // ==========================================
@@ -134,7 +136,7 @@ Route::middleware(['auth', 'perfil:autor'])
             Route::get('/', [AutorSubmissaoController::class, 'index'])->name('index');
             Route::get('/criar', [AutorSubmissaoController::class, 'create'])->name('create');
             Route::post('/', [AutorSubmissaoController::class, 'store'])->name('store');
-            Route::post('/{id}/docx', [AutorSubmissaoController::class, 'enviarDocx'])->name('docx');
+            Route::post('/{id}/publicacao', [AutorSubmissaoController::class, 'enviarPublicacao'])->name('publicacao');
             Route::post('/{id}/resubmeter', [AutorSubmissaoController::class, 'resubmeter'])->name('resubmeter');
         });
     });

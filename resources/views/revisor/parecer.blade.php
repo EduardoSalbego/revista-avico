@@ -59,7 +59,7 @@
 
                             <div class="d-flex align-items-center gap-2 flex-wrap">
                                 {{-- Status do parecer --}}
-                                @php$revisorAtribuido = $submissao->revisoresAtribuidos->firstWhere(
+                                @php $revisorAtribuido = $submissao->revisoresAtribuidos->firstWhere(
                                         'id',
                                         Auth::user()->revisor->id,
                                     );

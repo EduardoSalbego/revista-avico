@@ -90,6 +90,11 @@ class Submissao extends Model
         return $this->pareceres()->where('decisao', 'major_review')->exists();
     }
 
+    public function artigoEnviado(): bool
+    {
+        return Artigo::where('titulo', $this->titulo)->exists();
+    }
+
     // Helpers de status
     public function isSubmetido(): bool
     {
@@ -106,6 +111,14 @@ class Submissao extends Model
     public function isRejeitado(): bool
     {
         return $this->status === 'rejeitado';
+    }
+    public function isMajorReview(): bool
+    {
+        return $this->status === 'major_review';
+    }
+    public function isRevisaoPontual(): bool
+    {
+        return $this->status === 'revisao_pontual';
     }
 
     // Badge de status para views

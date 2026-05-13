@@ -16,6 +16,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'assinante_ate',
     ];
 
     protected $hidden = ['password', 'remember_token'];
@@ -68,6 +69,12 @@ class User extends Authenticatable
     public function isEditor(): bool
     {
         return $this->hasRole('editor');
+    }
+
+    public function isAssinante(): bool
+    {
+        return $this->assinante_ate &&
+            \Carbon\Carbon::parse($this->assinante_ate)->isFuture();
     }
 
     public function revisorAprovado(): bool

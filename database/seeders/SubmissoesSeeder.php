@@ -15,19 +15,20 @@ class SubmissoesSeeder extends Seeder
         for ($i = 1; $i <= 5; $i++) {
 
             $submissao = Submissao::create([
-                'user_id' => 1,
-                'titulo' => "Artigo de Teste {$i}",
-                'resumo' => "Resumo do artigo {$i}",
+                'user_id' => 6,
+                'titulo' => "Cuidados preventivos e comunicacao em saude publica",
+                'resumo' => "O artigo discute como estrategias de comunicacao clara, cuidado preventivo e acompanhamento continuo contribuem para a adesao da populacao a praticas de saude mais seguras. O artigo discute como estrategias de comunicacao clara, cuidado preventivo e acompanhamento continuo contribuem para a adesao da populacao a praticas de saude mais seguras.",
                 'cover_letter' => "Carta de apresentação do artigo {$i}",
                 'arquivo_pdf' => 'storage/artigos/exemplo.pdf',
                 'arquivo_docx' => null,
-                'status' => 'em_revisao',
+                'status' => 'aceito',
                 'deadline' => now()->addDays(60),
             ]);
 
             DB::table('submissao_autor')->insert([
                 'submissao_id' => $submissao->id,
-                'nome' => "Autor Principal do Artigo {$i}",
+                'nome' => "Paulo Júlio Silva",
+                'instituicao' => "UNIPAMPA - Universidade Federal do Pampa",
                 'autor_principal' => true,
                 'ordem' => 1,
                 'created_at' => now(),
@@ -37,7 +38,8 @@ class SubmissoesSeeder extends Seeder
             DB::table('submissao_autor')->insert([
                 [
                     'submissao_id' => $submissao->id,
-                    'nome' => "Coautor A do Artigo {$i}",
+                    'nome' => "Maria Fernanda Oliveira",
+                    'instituicao' => "UFRJ - Universidade Federal do Rio de Janeiro",
                     'autor_principal' => false,
                     'ordem' => 2,
                     'created_at' => now(),
@@ -45,7 +47,8 @@ class SubmissoesSeeder extends Seeder
                 ],
                 [
                     'submissao_id' => $submissao->id,
-                    'nome' => "Coautor B do Artigo {$i}",
+                    'nome' => "Cláudia Pereira Santos",
+                    'instituicao' => "USP - Universidade de São Paulo",
                     'autor_principal' => false,
                     'ordem' => 3,
                     'created_at' => now(),

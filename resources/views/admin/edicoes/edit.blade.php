@@ -5,18 +5,17 @@
 <body id="page-top" class="bg-light">
     @include('layouts.topbar')
 
-    {{-- Modal de Preview --}}
     <div class="modal fade" id="modalPreview" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Preview do Capítulo</h5>
+                    <h5 class="modal-title">Preview do Artigo</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="container" style="max-width: 800px;">
                         <div id="preview-titulo-capitulo" class="mb-3 text-muted small fw-bold"></div>
-                        <div id="preview-conteudo" class="artigo-duas-colunas conteudo-edicao"></div>
+                        <div id="preview-conteudo" class="conteudo-edicao"></div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -45,7 +44,6 @@
             @method('PUT')
             <input type="hidden" name="status" id="input-status" value="{{ $edicao->status }}">
 
-            {{-- Informações Básicas --}}
             <div class="card p-4 mb-4 shadow-sm border-0">
                 <h4 class="mb-3">Informações Básicas</h4>
 
@@ -56,9 +54,14 @@
                 </div>
 
                 <div class="mb-3">
-                    <label for="autor" class="form-label">Autor</label>
+                    <label for="autor" class="form-label">Organizador</label>
                     <input type="text" class="form-control" id="autor" name="autor"
                         value="{{ old('autor', $edicao->autor) }}" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="resumo" class="form-label">Resumo da Edição</label>
+                    <textarea class="form-control" id="resumo" name="resumo" rows="4" required>{{ old('resumo', $edicao->resumo) }}</textarea>
                 </div>
 
                 <div class="mb-3">
@@ -71,30 +74,47 @@
                         <div class="mt-2">
                             <small class="text-muted">Capa atual:</small><br>
                             <img src="{{ asset($edicao->imagem_capa) }}"
-                                style="height: 100px; border-radius: 5px; margin-top: 5px;">
+                                style="height: 100px; border-radius: 5px; margin-top: 5px;" alt="Capa atual">
                         </div>
                     @endif
                 </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="tipo_acesso" class="form-label">Tipo de acesso</label>
+                        <select class="form-select" id="tipo_acesso" name="tipo_acesso" required>
+                            <option value="publica" {{ old('tipo_acesso', $edicao->tipo_acesso) === 'publica' ? 'selected' : '' }}>Pública</option>
+                            <option value="exclusiva" {{ old('tipo_acesso', $edicao->tipo_acesso) === 'exclusiva' ? 'selected' : '' }}>Exclusiva (assinantes)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3 d-flex align-items-end">
+                        <div class="form-check form-switch">
+                            <input type="hidden" name="permitir_comentarios" value="0">
+                            <input class="form-check-input" type="checkbox" id="permitir_comentarios"
+                                name="permitir_comentarios" value="1"
+                                {{ old('permitir_comentarios', $edicao->permitir_comentarios) ? 'checked' : '' }}>
+                            <label class="form-check-label" for="permitir_comentarios">
+                                Permitir comentários
+                            </label>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            {{-- Capítulos --}}
             <div class="card p-4 mb-4 shadow-sm border-0">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h4 class="mb-0">Capítulos</h4>
+                    <h4 class="mb-0">Artigos</h4>
                     <button type="button" class="btn btn-outline-primary btn-sm" onclick="adicionarCapitulo()">
-                        + Adicionar Capítulo
+                        + Adicionar Artigo
                     </button>
                 </div>
                 <p class="text-muted small mb-4">
-                    Cole o conteúdo do Word diretamente em cada capítulo. Títulos, negrito e formatação são preservados.
+                    O texto de cada artigo será exibido como resumo na página pública da revista.
                 </p>
 
-                <div id="capitulos-container">
-                    {{-- Capítulos existentes são carregados via JS no DOMContentLoaded --}}
-                </div>
+                <div id="capitulos-container"></div>
             </div>
 
-            {{-- Ações --}}
             <div class="mt-4 d-flex justify-content-center gap-3">
                 @if($edicao->status === 'rascunho')
                     <button type="submit" class="btn btn-outline-secondary btn-lg px-5"
@@ -122,7 +142,6 @@
     <script>
         let contadorCapitulos = 0;
 
-        // Carrega os capítulos existentes ao abrir a tela
         document.addEventListener('DOMContentLoaded', () => {
             const capitulosExistentes = @json($edicao->capitulos);
 
@@ -131,19 +150,13 @@
                     adicionarCapitulo(cap.id, cap.titulo, cap.conteudo_html, cap.ordem);
                 });
             } else {
-                adicionarCapitulo(); // garante ao menos um capítulo
+                adicionarCapitulo();
             }
-
-            Sortable.create(document.getElementById('capitulos-container'), {
-                handle: '.drag-handle',
-                animation: 150,
-                onEnd: atualizarOrdens,
-            });
         });
 
         function adicionarCapitulo(capituloId = null, titulo = '', conteudoHtml = '', ordem = null) {
             contadorCapitulos++;
-            const idx = contadorCapitulos; // índice local para nomear os campos
+            const idx = contadorCapitulos;
             const container = document.getElementById('capitulos-container');
 
             const div = document.createElement('div');
@@ -152,69 +165,57 @@
 
             div.innerHTML = `
                 <div class="d-flex align-items-center gap-2 mb-3 border-bottom pb-2">
-                    <strong class="text-primary me-auto">Capítulo ${idx}</strong>
+                    <strong class="text-primary me-auto">Artigo ${idx}</strong>
                     <button type="button" class="btn btn-sm btn-outline-info" onclick="abrirPreview(${idx})">
-                        👁 Preview
+                        Preview
                     </button>
                     <button type="button" class="btn btn-sm btn-outline-danger" onclick="removerCapitulo(this, ${idx})">
                         Excluir
                     </button>
                 </div>
 
-                {{-- ID do capítulo existente (null = novo) --}}
                 <input type="hidden" name="capitulos[${idx}][id]" value="${capituloId ?? ''}">
 
                 <div class="mb-3">
-                    <label class="form-label fw-semibold">Título do Capítulo</label>
+                    <label class="form-label fw-semibold">Título do Artigo</label>
                     <input type="text" class="form-control"
                            name="capitulos[${idx}][titulo]"
-                           placeholder="Ex: Artigos Científicos / Saúde e Bem-Estar"
+                           placeholder="Ex: Interfaces que facilitam ou dificultam?"
                            value="${escapeHtml(titulo)}"
                            required>
                 </div>
 
                 <div class="mb-2">
-                    <label class="form-label fw-semibold">Conteúdo</label>
+                    <label class="form-label fw-semibold">Resumo do Artigo</label>
                 </div>
-                <textarea id="editor_${idx}" name="capitulos[${idx}][conteudo_html]">${conteudoHtml}</textarea>
+                <textarea id="editor_${idx}" name="capitulos[${idx}][conteudo_html]"></textarea>
                 <input type="hidden" name="capitulos[${idx}][ordem]" class="campo-ordem" value="${ordem ?? idx}">
             `;
 
             container.appendChild(div);
+            document.getElementById(`editor_${idx}`).value = conteudoHtml || '';
             inicializarEditor(idx);
         }
 
         function inicializarEditor(idx) {
             tinymce.init({
                 selector: `#editor_${idx}`,
-                height: 450,
+                height: 280,
                 menubar: false,
                 branding: false,
                 plugins: [
-                    'advlist', 'autolink', 'lists', 'link', 'image',
-                    'charmap', 'searchreplace', 'visualblocks',
-                    'fullscreen', 'table', 'wordcount'
+                    'advlist', 'autolink', 'lists', 'link', 'charmap',
+                    'searchreplace', 'visualblocks', 'fullscreen', 'wordcount'
                 ],
                 toolbar:
-                    'undo redo | blocks | ' +
-                    'bold italic underline strikethrough | ' +
-                    'bullist numlist | ' +
-                    'link image table | ' +
-                    'alignleft aligncenter alignright | ' +
-                    'removeformat | fullscreen',
+                    'undo redo | blocks | bold italic underline | bullist numlist | link | removeformat | fullscreen',
                 paste_as_text: false,
                 paste_merge_formats: true,
                 smart_paste: true,
                 valid_elements:
-                    'p,br,h1,h2,h3,h4,h5,h6,' +
-                    'strong/b,em/i,u,s,strike,' +
-                    'ul,ol,li,' +
-                    'a[href|target|rel],' +
-                    'img[src|alt|width|height|style],' +
-                    'table,thead,tbody,tr,th[colspan|rowspan],td[colspan|rowspan],' +
-                    'blockquote,pre,code,hr,sup,sub',
+                    'p,br,h1,h2,h3,h4,h5,h6,strong/b,em/i,u,ul,ol,li,a[href|target|rel],blockquote,hr,sup,sub',
                 block_formats:
-                    'Parágrafo=p; Título 1=h1; Título 2=h2; Título 3=h3; Citação=blockquote; Código=pre',
+                    'Parágrafo=p; Título 2=h2; Título 3=h3; Citação=blockquote',
                 setup(editor) {
                     editor.on('change', () => editor.save());
                 }
@@ -223,10 +224,10 @@
 
         function removerCapitulo(botao, idx) {
             if (contadorCapitulos <= 1) {
-                alert('A edição precisa ter pelo menos um capítulo.');
+                alert('A edição precisa ter pelo menos um artigo.');
                 return;
             }
-            if (!confirm('Excluir este capítulo? Esta ação não pode ser desfeita.')) return;
+            if (!confirm('Excluir este artigo? Esta ação não pode ser desfeita.')) return;
 
             tinymce.get(`editor_${idx}`)?.remove();
             botao.closest('.capitulo-bloco').remove();
@@ -246,7 +247,7 @@
 
             const html = editor.getContent();
             const tituloInput = document.querySelector(`[name="capitulos[${idx}][titulo]"]`);
-            const titulo = tituloInput?.value || `Capítulo ${idx}`;
+            const titulo = tituloInput?.value || `Artigo ${idx}`;
 
             document.getElementById('preview-titulo-capitulo').textContent = titulo;
             document.getElementById('preview-conteudo').innerHTML = html;
@@ -263,7 +264,6 @@
                 .replace(/"/g, '&quot;');
         }
 
-        // Sincroniza todos os editores antes do submit
         document.getElementById('form-edicao').addEventListener('submit', function () {
             tinymce.triggerSave();
         });
