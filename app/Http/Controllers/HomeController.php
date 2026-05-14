@@ -24,7 +24,7 @@ class HomeController extends Controller
     public function index()
     {
         $ultimasEdicoes = Edicao::where('status', 'publicado')
-            ->orderBy('created_at', 'desc')
+            ->orderBy('data_publicacao', 'desc')
             ->take(3)
             ->get();
         return view('welcome', compact('ultimasEdicoes'));

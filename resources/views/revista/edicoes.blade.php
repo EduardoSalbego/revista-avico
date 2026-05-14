@@ -55,7 +55,7 @@
     @include('layouts/topbar')
 
     @php
-        $ehAssinante = auth()->check() && auth()->user()->isAssinante();
+        $ehAssinante = auth()->check() && (auth()->user()->isAssinante() || auth()->user()->isAdmin() || auth()->user()->isEditor());
     @endphp
 
     <main id="content">
