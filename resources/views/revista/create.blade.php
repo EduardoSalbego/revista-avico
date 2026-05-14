@@ -77,7 +77,7 @@
             </div>
 
             {{-- ════════════════════════════════════════════
-                 ARTIGOS DA EDIÇÃO (Apenas do Sistema)
+                 ARTIGOS DA EDIÇÃO
             ════════════════════════════════════════════ --}}
             <div class="card p-4 mb-4 shadow-sm">
                 <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 border-bottom pb-2 gap-2">

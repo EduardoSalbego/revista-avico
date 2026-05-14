@@ -96,16 +96,16 @@ class UserController extends Controller
                     'orcid' => $validated['orcid'] ?? null,
                     'titulacao' => $validated['titulacao'] ?? null,
                     'instituicao' => $validated['instituicao'] ?? null,
-                    // Revisor começa pendente de aprovação
-                    'status' => 'pendente',
+                    'status' => 'ativo',
                 ]),
 
                 'leitor' => Leitor::create([
                     'user_id' => $user->id,
                 ]),
             };
-            return $user;
         });
+        return redirect()->route('admin.usuarios.index')
+            ->with('success', 'Usuário criado com sucesso!');
     }
 
     /**

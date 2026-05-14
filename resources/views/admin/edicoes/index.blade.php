@@ -43,8 +43,8 @@
                                 <td style="max-width: 250px;" class="text-truncate" title="{{ $edicao->titulo }}">
                                     {{ $edicao->titulo }}
                                 </td>
-                                <td>{{ $edicao->autor }}</td>
-                                <td>{{ $edicao->capitulos()->count() }}</td>
+                                <td>{{ $edicao->organizador }}</td>
+                                <td>{{ $edicao->artigo()->count() }}</td>
                                 <td>{!! $edicao->status_badge_html !!}</td>
                                 <td>{!! $edicao->tipo_acesso_badge_html !!}</td>
                                 <td>

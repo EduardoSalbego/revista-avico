@@ -38,6 +38,17 @@ class Artigo extends Model
     }
 
     /**
+     * O artigo pertence a um autor (autor principal)
+     */
+    public function autor()
+    {
+        return $this->submissao?->autores()
+            ->where('autor_principal', true)
+            ->first();
+        ;
+    }
+
+    /**
      * O artigo possui vários autores
      */
     public function autores()

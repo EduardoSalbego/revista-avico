@@ -143,7 +143,9 @@ class EdicaoController extends Controller
     public function edit($id)
     {
         $edicao = Edicao::findOrFail($id);
-        return view('admin.edicoes.edit', compact('edicao'));
+        $artigosEdicao = Artigo::where('edicao_id', $id)->orderBy('ordem')->get();
+        $artigosDisponiveis = Artigo::whereNull('edicao_id')->orderBy('created_at', 'desc')->get();
+        return view('admin.edicoes.edit', compact('edicao', 'artigosEdicao', 'artigosDisponiveis'));
     }
 
     // Salva as atualizações no banco
@@ -151,88 +153,77 @@ class EdicaoController extends Controller
     {
         $edicao = Edicao::findOrFail($id);
 
+        // 1. Validações Corrigidas
         $request->validate([
             'titulo' => 'required|string|max:255',
-            'autor' => 'required|string|max:255',
-            'imagem_capa' => 'nullable|image|max:5120',
+            'organizador' => 'required|string|max:255', // Recebe do formulário
             'resumo' => 'required|string',
+            'imagem_capa' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
             'tipo_acesso' => 'required|in:publica,exclusiva',
-            'permitir_comentarios' => 'nullable|boolean',
             'status' => 'required|in:rascunho,publicado',
-            'capitulos' => 'nullable|array',
-            'capitulos.*.id' => 'nullable|integer|exists:capitulos,id',
-            'capitulos.*.titulo' => 'nullable|string|max:255',
-            'capitulos.*.conteudo_html' => 'nullable|string',
-            'capitulos.*.ordem' => 'nullable|integer',
+            'artigos_ids' => 'nullable|array',
+            'artigos_ids.*' => 'exists:artigos,id',
         ]);
 
-        // Atualiza imagem de capa se enviada
-        $dados = [
-            'titulo' => $request->titulo ?? $edicao->titulo,
-            'autor' => $request->autor ?? $edicao->autor,
-            'resumo' => $request->resumo,
-            'tipo_acesso' => $request->tipo_acesso,
-            'permitir_comentarios' => $request->boolean('permitir_comentarios'),
-            'status' => $request->status,
-        ];
+        try {
+            DB::beginTransaction();
 
-        if ($request->hasFile('imagem_capa')) {
-            // Remove a capa antiga se existir
-            if ($edicao->imagem_capa && file_exists(public_path($edicao->imagem_capa))) {
-                unlink(public_path($edicao->imagem_capa));
-            }
+            $dadosAtualizacao = [
+                'titulo' => $request->titulo,
+                'organizador' => $request->organizador,
+                'resumo' => $request->resumo,
+                'tipo_acesso' => $request->tipo_acesso,
+                'permitir_comentarios' => $request->boolean('permitir_comentarios'),
+                'status' => $request->status,
+            ];
 
-            $arquivo = $request->file('imagem_capa');
-            $nomeArquivo = time() . '_' . $arquivo->getClientOriginalName();
-            $arquivo->move(public_path('capas'), $nomeArquivo);
-            $dados['imagem_capa'] = 'capas/' . $nomeArquivo;
-        }
-
-        $edicao->update($dados);
-
-        // Atualiza capítulos
-        if ($request->filled('capitulos')) {
-
-            // IDs dos capítulos recebidos no form (para detectar os excluídos)
-            $idsRecebidos = collect($request->capitulos)
-                ->pluck('id')
-                ->filter()
-                ->map(fn($id) => (int) $id)
-                ->toArray();
-
-            // Remove artigos que foram excluídos na tela
-            $capitulosParaExcluir = $edicao->capitulos();
-            if (!empty($idsRecebidos)) {
-                $capitulosParaExcluir->whereNotIn('id', $idsRecebidos);
-            }
-            $capitulosParaExcluir->delete();
-
-            foreach ($request->capitulos as $capituloData) {
-
-                $payload = [
-                    'titulo' => $capituloData['titulo'] ?? 'Sem título',
-                    'conteudo_html' => $capituloData['conteudo_html'],
-                    'ordem' => $capituloData['ordem'] ?? 0,
-                    'edicao_id' => $edicao->id,
-                ];
-
-                if (!empty($capituloData['id'])) {
-                    Capitulo::where('id', $capituloData['id'])
-                        ->where('edicao_id', $edicao->id)
-                        ->update($payload);
-                } else {
-                    $edicao->capitulos()->create(array_merge($payload, [
-                        'edicao_id' => $edicao->id
-                    ]));
+            if ($request->hasFile('imagem_capa')) {
+                if ($edicao->imagem_capa && file_exists(public_path($edicao->imagem_capa))) {
+                    unlink(public_path($edicao->imagem_capa));
                 }
+
+                $arquivo = $request->file('imagem_capa');
+                $nomeArquivo = time() . '_' . $arquivo->getClientOriginalName();
+                $arquivo->move(public_path('capas'), $nomeArquivo);
+                $dadosAtualizacao['imagem_capa'] = 'capas/' . $nomeArquivo;
             }
+
+            if ($request->status === 'publicado' && is_null($edicao->data_publicacao)) {
+                $dadosAtualizacao['data_publicacao'] = now();
+            }
+
+            $edicao->update($dadosAtualizacao);
+
+            $novosArtigosIds = $request->input('artigos_ids', []);
+
+            // A) Desvincular artigos removidos na tela
+            Artigo::where('edicao_id', $edicao->id)
+                ->whereNotIn('id', $novosArtigosIds)
+                ->update([
+                    'edicao_id' => null
+                ]);
+
+            // B) Vincular e ordenar os artigos exatamente como ficou no Drag & Drop
+            foreach ($novosArtigosIds as $index => $artigoId) {
+                Artigo::where('id', $artigoId)->update([
+                    'edicao_id' => $edicao->id,
+                    'ordem' => $index + 1,
+                ]);
+            }
+
+            DB::commit();
+
+            $mensagem = $request->status === 'rascunho'
+                ? 'Rascunho atualizado com sucesso!'
+                : 'Edição atualizada e publicada com sucesso!';
+
+            return redirect()->route('admin.edicoes.index')->with('success', $mensagem);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Ocorreu um erro interno ao atualizar: ' . $e->getMessage());
         }
-
-        $mensagem = $request->status === 'rascunho'
-            ? 'Rascunho salvo com sucesso!'
-            : 'Edição atualizada e publicada!';
-
-        return redirect()->route('admin.edicoes.index')->with('success', $mensagem);
     }
-
 }

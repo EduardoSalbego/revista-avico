@@ -11,15 +11,15 @@
             <a href="{{ route('admin.usuarios.create') }}" class="btn btn-success">+ Novo Usuário</a>
         </div>
 
-        @if(session('success'))
+        @if (session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
         @endif
-         @if(session('error'))
-             <div class="alert alert-danger">{{ session('error') }}</div>   
+        @if (session('error'))
+            <div class="alert alert-danger">{{ session('error') }}</div>
         @endif
 
         {{-- Seção de contas pendentes (só aparece se houver) --}}
-        @if($pendentes->isNotEmpty())
+        @if ($pendentes->isNotEmpty())
             <div class="card border-warning shadow-sm mb-5">
                 <div class="card-header bg-warning text-dark fw-bold">
                     ⏳ Revisores Aguardando Aprovação ({{ $pendentes->count() }})
@@ -36,11 +36,19 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($pendentes as $revisor)
+                            @foreach ($pendentes as $revisor)
                                 <tr>
                                     <td>{{ $revisor->user->name }}</td>
                                     <td>{{ $revisor->user->email }}</td>
-                                    <td>{!! $revisor->user->role_badge_html !!}</td>
+                                    <td>
+                                        <div class="d-flex flex-wrap gap-1">
+                                            @foreach ($revisor->user->funcoes as $funcao)
+                                                <span class="badge {{ $funcao['classe'] }} border shadow-sm">
+                                                    <i class="{{ $funcao['icone'] }}"></i> {{ $funcao['nome'] }}
+                                                </span>
+                                            @endforeach
+                                        </div>
+                                    </td>
                                     <td>{{ \Carbon\Carbon::parse($revisor->user->created_at)->format('d/m/Y') }}</td>
                                     <td class="text-center">
                                         {{-- Aprovar --}}
@@ -89,12 +97,20 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($usuarios as $user)
+                        @foreach ($usuarios as $user)
                             <tr>
                                 <td>{{ $user->id }}</td>
                                 <td>{{ $user->name }}</td>
                                 <td>{{ $user->email }}</td>
-                                <td>{!! $user->role_badge_html !!}</td>
+                                <td>
+                                    <div class="d-flex flex-wrap gap-1">
+                                        @foreach ($user->funcoes as $funcao)
+                                            <span class="badge {{ $funcao['classe'] }} border shadow-sm">
+                                                <i class="{{ $funcao['icone'] }}"></i> {{ $funcao['nome'] }}
+                                            </span>
+                                        @endforeach
+                                    </div>
+                                </td>
                                 <td>{{ \Carbon\Carbon::parse($user->created_at)->format('d/m/Y') }}</td>
                                 <td class="text-center">
                                     <a href="{{ route('admin.usuarios.edit', $user->id) }}"

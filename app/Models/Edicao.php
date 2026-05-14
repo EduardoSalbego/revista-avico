@@ -23,6 +23,11 @@ class Edicao extends Model
         'permitir_comentarios' => 'boolean',
     ];
 
+    public function Artigo()
+    {
+        return $this->hasMany(Artigo::class, 'edicao_id');
+    }
+
     //HAS MANY
     public function capitulos()
     {
