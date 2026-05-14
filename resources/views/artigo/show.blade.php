@@ -72,7 +72,7 @@
                         class="text-decoration-none">Edições</a></li>
                 <li class="breadcrumb-item"><a href="{{ route('edicoes.show', $artigo->edicao_id) }}"
                         class="text-decoration-none">{{ $artigo->edicao->titulo ?? 'Edição Atual' }}</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Artigo</li>
+                <li class="breadcrumb-item active" aria-current="page">{{ $artigo->titulo }}</li>
             </ol>
         </nav>
 
